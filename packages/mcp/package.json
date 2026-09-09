@@ -1,0 +1,11 @@
+{
+  "name": "@standrig/mcp",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.4.3"
+  },
+  "license": "Apache-2.0"
+}

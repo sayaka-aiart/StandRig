@@ -1,0 +1,394 @@
+{
+  "format": "standrig-modeling-extraction-v1",
+  "extractedAt": "2026-09-09T06:11:18.245Z",
+  "sourceCommit": "f81b9773b10842d99a52cd99d1958f68cbac8730",
+  "sourceIncludesWorkingTreeEdits": true,
+  "sourcePackageVersion": "0.1.0",
+  "removedRoutes": [
+    "/api/tracker/launch",
+    "/api/geometry-assist/status",
+    "/api/geometry-assist/candidates",
+    "/api/geometry-assist/selection/validate",
+    "/api/geometry-assist/operation-draft/validate",
+    "/api/geometry-assist/approval/validate",
+    "/api/geometry-assist/apply/preflight",
+    "/api/geometry-assist/apply/reconcile",
+    "/api/geometry-assist/rollback/preflight",
+    "/api/geometry-assist/rollback",
+    "/api/geometry-assist/apply",
+    "/api/geometry-assist/operation-draft/dry-run",
+    "/api/geometry-assist/candidate/run",
+    "/api/geometry-assist/runs",
+    "/api/tracking/stream",
+    "/api/tracking-recordings",
+    "/api/tracking-runs",
+    "/api/tracking-profile",
+    "/api/tracking/apply",
+    "/api/tracking"
+  ],
+  "includedSourceFiles": [
+    {
+      "path": "src/server/rigApiPlugin.ts",
+      "sourceSha256": "854805de0b573aa59f745c08dd44e86861833cde53aa32728ac76122bbda1d47",
+      "transformed": "Removed tracking, tracker launch/stream/recordings and external Geometry Assist routes; updated health inventory; removed unused imports."
+    },
+    {
+      "path": "src/rig/alphaBleed.ts",
+      "sourceSha256": "0e31d4892b7f31c97fe7001a66e9c0be9f6276fc73ac2115c3256716adf2ce68"
+    },
+    {
+      "path": "src/rig/png.ts",
+      "sourceSha256": "18228b0b337a2c87b5a1c14d0a53a757f148f84a093170d8c39ebc9eef31571e"
+    },
+    {
+      "path": "src/rig/types.ts",
+      "sourceSha256": "7d3c56f18f3cd0d9d086ec720492ee1bf35c1fe9cf2ac6ee601fecf374c2428c"
+    },
+    {
+      "path": "src/rig/artMeshAsset.ts",
+      "sourceSha256": "ed9da14b90eaff9ec3f0eee57ff69faca8e635516159ada44c20577ca4754450"
+    },
+    {
+      "path": "src/rig/artMeshCandidates.ts",
+      "sourceSha256": "5786265aac426ad8cc70518ac366f2a4335bf5bef5a7ec229a6150c9bcf3e7fd"
+    },
+    {
+      "path": "src/rig/artMeshDistortion.ts",
+      "sourceSha256": "9b748a505a55592b49eeee7486ca1d4345a369e4832760296c9a81e929a902b3"
+    },
+    {
+      "path": "src/rig/artMesh.ts",
+      "sourceSha256": "dd0591a8e8e2db3a87106a18a32ca8afa16e9b8d29adf1a0bade1adf9d1c7c09"
+    },
+    {
+      "path": "src/rig/bindings.ts",
+      "sourceSha256": "207a948f8793bef5a0d46098adbb93a27dcf32499e9edbde08b5b0a03f11f914"
+    },
+    {
+      "path": "src/rig/bindingPreparation.ts",
+      "sourceSha256": "d3fbbfd5d2ca52e19c487950f331e13469f746c70dc4180c272d7e695ca08633"
+    },
+    {
+      "path": "src/rig/artMeshMulti.ts",
+      "sourceSha256": "f007e21061fbf6b037eda8f4d7099c1e1f5a8c33cc3ce9e0409d1564bea386a6"
+    },
+    {
+      "path": "src/rig/artMeshBlendShape.ts",
+      "sourceSha256": "eeb78c07cb792b22d25de103c34a557bf70ec1ce4d572773db4874db9aa49f5a"
+    },
+    {
+      "path": "src/rig/parameters.ts",
+      "sourceSha256": "d54ce92d10978786d4f4874c50953a738a3a1c3f96cd0ad46157fe527f23fd44"
+    },
+    {
+      "path": "src/rig/evaluator.ts",
+      "sourceSha256": "ca487cd7a51933fdfde22461152f0857766ddf83245c4d71f0b7f5c2660b1a9c"
+    },
+    {
+      "path": "src/rig/multiBindings.ts",
+      "sourceSha256": "fb3fe6ed26477b73d5bed5e99763d7877695300293b562602cb4e308be57edf6"
+    },
+    {
+      "path": "src/rig/deformers.ts",
+      "sourceSha256": "39a1e94d1cc289e114b0da7b16c8db93678580c9092b7e7216059857c67034ae"
+    },
+    {
+      "path": "src/rig/warp.ts",
+      "sourceSha256": "465ed43139fec4fad02768f1ce2adde08086182beadacb662ba5b508f57ca9f8"
+    },
+    {
+      "path": "src/rig/sharedWarp.ts",
+      "sourceSha256": "65a95dab30281f2a8f0d64a1ae69fb8f9591ac70dd48afc8e70ad0529278f324"
+    },
+    {
+      "path": "src/rig/headProxy.ts",
+      "sourceSha256": "16add18768eab3245dca2186cfd750d2fd96091e0e4fa4285bbd222ec296d7e4"
+    },
+    {
+      "path": "src/rig/symmetryQa.ts",
+      "sourceSha256": "632ac468cb9b2195e162836448c7919c68619fdb5bdbd1279200ba8e744761f1"
+    },
+    {
+      "path": "src/rig/modelingOps.ts",
+      "sourceSha256": "d24ee7068d93e28514c362053d71186a3a50d056fb4840a03d0667d862bc1bff"
+    },
+    {
+      "path": "src/rig/tint.ts",
+      "sourceSha256": "deb063ba51d7f74790cd7240ef884e8fe6207534a250d4d5af10a9e95d5e2f1b"
+    },
+    {
+      "path": "src/rig/contourShade.ts",
+      "sourceSha256": "1a69f1d14d7012021419af4c92f20532c07cb9dc0881b746afc17cb8793c094d"
+    },
+    {
+      "path": "src/rig/alphaReveal.ts",
+      "sourceSha256": "d4c50e5e85b0f5eb67452bf33098eda06aac08493ec2bf431b474273da14d751"
+    },
+    {
+      "path": "src/rig/artMeshPresets.ts",
+      "sourceSha256": "6144c9e94a3275271748ed168ff7eb8306d166b065b9cc474cf300cb4c71d363"
+    },
+    {
+      "path": "src/rig/artPathQa.ts",
+      "sourceSha256": "1169a07b0ccb83f2d2c2f1187c39374a3f25b3f8163fe48326294dbb083defb9"
+    },
+    {
+      "path": "src/rig/artPath.ts",
+      "sourceSha256": "d2cc57b60aa738d3200d9fc0bccef3346c88e947ce8a6a017f1df31b37a09fff"
+    },
+    {
+      "path": "src/rig/artPathTransaction.ts",
+      "sourceSha256": "999f815c1ca488b2df1a8526cafad05077d9c64403b0b93f32875ca1791f3cfe"
+    },
+    {
+      "path": "src/rig/assetManifest.ts",
+      "sourceSha256": "c99db1bf3f46e98d613a15edd66f56dc8380adf69ba36bdef8bc3f85b30d04dc"
+    },
+    {
+      "path": "src/rig/bundle.ts",
+      "sourceSha256": "e150b77612ea8b07f05f707ad8a5453afb20ff15d6ddde254c70b41eda6f7c1b"
+    },
+    {
+      "path": "src/rig/trackingProfile.ts",
+      "sourceSha256": "191cbb7c84ce6ca43f2bb49b56f791b2d3848f932fc77bb01236d561d8dd94d7"
+    },
+    {
+      "path": "src/rig/tracking.ts",
+      "sourceSha256": "3652af37e96e2a1aa96adb6a535942d9b8d20b813080035924b207387a3cbdf2"
+    },
+    {
+      "path": "src/rig/correspondenceSolver.ts",
+      "sourceSha256": "e56dbac11d492619d8edd410a05090a0aa226f858096a99f82826ed358a56820"
+    },
+    {
+      "path": "src/rig/detailRegions.ts",
+      "sourceSha256": "b112414216c8dc6bbae5406878db8941ed717b240e5573d03132ad34318b0de8"
+    },
+    {
+      "path": "src/rig/exposureQa.ts",
+      "sourceSha256": "dd95d77ea1a901df7c2a471cb8a417f09880899aee100ebbdb248b9535b4d3e1"
+    },
+    {
+      "path": "src/rig/modeling.ts",
+      "sourceSha256": "56afa9de41d7d256ffa385d8a3f7c0b47d08793e5f5cf030d5fc82482f2acc7e"
+    },
+    {
+      "path": "src/rig/serverRenderer.ts",
+      "sourceSha256": "eaa5f14a56bc23bd6a0a93d8c1f7a4e05746fb406d7260e3d52301c18e6b0ed0"
+    },
+    {
+      "path": "src/rig/glueWarp.ts",
+      "sourceSha256": "e31cb280a45dc009a3df2eeff632d6bccc8400c52f1a3f48986d9f15b4820b78"
+    },
+    {
+      "path": "src/rig/glue.ts",
+      "sourceSha256": "50413ad9092e8780a8db46c6a569e752fd9b8f7a11b355542c32a34e51e9de7f"
+    },
+    {
+      "path": "src/rig/sharedWarpProjection.ts",
+      "sourceSha256": "67b59092653809e583f544568b84821d3c0350ea7b2447b035259d383b5620bf"
+    },
+    {
+      "path": "src/rig/skinning.ts",
+      "sourceSha256": "568363938de337602c4f1fbc9fc52d9c3572e9c4368ee0d8badc27d41428972c"
+    },
+    {
+      "path": "src/rig/glueVertex.ts",
+      "sourceSha256": "bbb7f7ffcd0b2990b46cb3f68dca53dba6b38ba4bab62c812d77ec21a6124ba7"
+    },
+    {
+      "path": "src/rig/triangleCoverage.ts",
+      "sourceSha256": "1809cc2c28f2ea9fe4d49deb7e62d939cfac5db851f969e84f2e2d22225f4e64"
+    },
+    {
+      "path": "src/rig/mask.ts",
+      "sourceSha256": "c44602998b1bfbeb8ef48851446f6460c566cbea0fdb438a2afd2da688fccc71"
+    },
+    {
+      "path": "src/rig/reference.ts",
+      "sourceSha256": "00ae497958e97786e2e28a9f6fbebc58e2efb49c7b3c2b3ceb2518bd35f3e23c"
+    },
+    {
+      "path": "src/rig/generationRequests.ts",
+      "sourceSha256": "a919aa7a90d54831330566415ad0c8703a47915fe0290f8c4b05076c814539df"
+    },
+    {
+      "path": "src/rig/partRoles.ts",
+      "sourceSha256": "99f2671caffc3ceba9626d84313eed5648b0807cfcde3999d69ea412a19b35cf"
+    },
+    {
+      "path": "src/rig/geometryExport.ts",
+      "sourceSha256": "21046966f3e3c6519ed14256480ad1db70fbff39677f706bb9f845a2fded23b6"
+    },
+    {
+      "path": "src/rig/geometryExportV11.ts",
+      "sourceSha256": "8e10d69a5ee42d7340a577eba12c096661858fe573d034a76909ea327118558f"
+    },
+    {
+      "path": "src/rig/glueVertexCandidates.ts",
+      "sourceSha256": "9e87375f2848388337866d0229883a9e12f00be06512abcc1bf6da375f77e913"
+    },
+    {
+      "path": "src/rig/headProxyCalibration.ts",
+      "sourceSha256": "2c1bd757d2ed41949a4bfe979068f0edba482929f8b05c597928a7085bdba2ec"
+    },
+    {
+      "path": "src/rig/inspect.ts",
+      "sourceSha256": "1e1e03fb478aa48d120cc3f98bc5c9754395007fdc3b3559d8c6dbb25a32220d"
+    },
+    {
+      "path": "src/rig/joinQa.ts",
+      "sourceSha256": "5b76360dc85373585f713a9bbce74bddf2902af9fd0c515c5de47a73b4104bc6"
+    },
+    {
+      "path": "src/rig/joinTransaction.ts",
+      "sourceSha256": "dc6f390eb9498f6e59b970f188f4c22ae97712e0708e225bd6abc5ea64f4a171"
+    },
+    {
+      "path": "src/rig/l2ReadinessQa.ts",
+      "sourceSha256": "ca9aa0f9ec4078b5fd5026844da42bbd7f8c2fe70edee7dd29b34d37056f91f2"
+    },
+    {
+      "path": "src/rig/readiness.ts",
+      "sourceSha256": "2c60ec9789a7778eee1972b2483930eb894b4c8407c85976bcf0e6b9e580f56d"
+    },
+    {
+      "path": "src/rig/qaCheck.ts",
+      "sourceSha256": "bd891b34cf87aac3af02308890bfbb89cbf95b57d84c713232a04492f27d2b3c"
+    },
+    {
+      "path": "src/rig/imageAudit.ts",
+      "sourceSha256": "97df7c46ba7dd823615a8d436ee189c73d9f22e3df8235131a5d54b124bd6e05"
+    },
+    {
+      "path": "src/rig/motionSweep.ts",
+      "sourceSha256": "a763546b11e577fcc961a3eea3dd761bcbb6a844809bc16ed70ef3780bc6e178"
+    },
+    {
+      "path": "src/rig/migration.ts",
+      "sourceSha256": "75ce0fa81dbbc37b3c0c5b30cca0820eeee750259f5af8e73b158b6641c508aa"
+    },
+    {
+      "path": "src/rig/modelFreeze.ts",
+      "sourceSha256": "6e62474f5d867f4a21da2aa77dda8cc28d6f063558c49859c7298bb89c98f6b1"
+    },
+    {
+      "path": "src/rig/modelingAudit.ts",
+      "sourceSha256": "f977e836e5d2a4e01c0cb4d9e7e8002e2fb5b83919f923581b296e2091a2fd16"
+    },
+    {
+      "path": "src/rig/parameterDistribution.ts",
+      "sourceSha256": "5d9a63e0ec98afa6ac08774561e070c4ab222894d6e251684c9267702de1d52a"
+    },
+    {
+      "path": "src/rig/physicsPresets.ts",
+      "sourceSha256": "4f0fc276d9304361305699251ab262afe275be9651f72efd47a5228f7ea2d093"
+    },
+    {
+      "path": "src/rig/physicsQa.ts",
+      "sourceSha256": "06073ebaceece3e913e5f65d3a0ef341f07ed28fb39251069654810b556e7109"
+    },
+    {
+      "path": "src/rig/modelingTechniqueGuide.ts",
+      "sourceSha256": "e7d2a4d0d8449de7e930fc395c1918cda5a8fc7d593e780f7c869a37e7f9e6f0"
+    },
+    {
+      "path": "src/rig/phonemes.ts",
+      "sourceSha256": "32720b8f01229be3e51b4f2ac5dfa0f93adb447d246a92bdf81270b08331dc46"
+    },
+    {
+      "path": "src/rig/physicsSafety.ts",
+      "sourceSha256": "d969be264db3446096f45de7a9e84dfb7e393f54d397f76647b3e8c346093c7a"
+    },
+    {
+      "path": "src/rig/physicsSettlingQa.ts",
+      "sourceSha256": "41244652f46ced86b8acbc9cfb5510cedaf0eae8cd2edeb39c718258e00bd5e8"
+    },
+    {
+      "path": "src/rig/qaFailureImage.ts",
+      "sourceSha256": "ff567b122ec02f36c7f2be69c987e27e9596348457c60b19eb78e0db9e5c42a0"
+    },
+    {
+      "path": "src/rig/readinessCalibration.ts",
+      "sourceSha256": "4ac5ab70b88df274d6f607aa67b49cde0bdcf7147467489872606adcadadd38e"
+    },
+    {
+      "path": "src/rig/recipePromotion.ts",
+      "sourceSha256": "1567813cdbf1b8f0ecfe3f5ee48366c5bf02b8fd62d59fad0b81467d2c7e63bc"
+    },
+    {
+      "path": "src/rig/shadowSeparation.ts",
+      "sourceSha256": "ff7b2bf4efdfe746ffd4b80e65585806a6a1be696e2989e97ca5258bd7d12441"
+    },
+    {
+      "path": "src/rig/skinningQa.ts",
+      "sourceSha256": "5d98961b7e0358c5bbec77a43e8a2e73e32135b38d33581868beedc03a4d397b"
+    },
+    {
+      "path": "src/rig/skinningRenderQa.ts",
+      "sourceSha256": "80e2796c7f1c0ce7e7dd0f7a7bad8ca0194db91b302c627a65da222ce8d42cd7"
+    },
+    {
+      "path": "src/rig/symmetry.ts",
+      "sourceSha256": "963f43d37498c7db910c4a252d826c8438d38aab1dfc8df9d92fd3f85c55be52"
+    },
+    {
+      "path": "src/rig/warpPinLinks.ts",
+      "sourceSha256": "e99aac9e2727e3ed42d4c06b547704652d0d76a5a98e82c197a742c4beb0c986"
+    },
+    {
+      "path": "src/server/modelingTransactionResult.ts",
+      "sourceSha256": "09ba2012907c10d1db2b4c21c811dd0ff09fc2a90017841bf5caa706d2523970"
+    },
+    {
+      "path": "src/rig/importers.ts",
+      "sourceSha256": "0bc9bb94631ed2e1a3d1069ce3bd3329b1824572589bb5a0c13163e9e5f4137a"
+    },
+    {
+      "path": "src/rig/renderer.ts",
+      "sourceSha256": "e555dcfeb51821680720808afe54ddbe7e2966f10aca8e09b066599599a10c99"
+    },
+    {
+      "path": "src/rig/hitTesting.ts",
+      "sourceSha256": "3b5529e9755e20398df2757166ace49585d5349d5c34227c0c4ae86f660ee49a"
+    },
+    {
+      "path": "src/rig/webglMesh.ts",
+      "sourceSha256": "6b8f80d5072e24e517e4c8f4eeca19b74cffc6eec435e21c4571b515f8441be9"
+    },
+    {
+      "path": "src/rig/io.ts",
+      "sourceSha256": "7783ab218d620f65c2a239df2c3da3fbb37a110a4bff8955e81362207c867e03"
+    },
+    {
+      "path": "src/vite-env.d.ts",
+      "sourceSha256": "25d85b07236ea5d1648c49f5c85d7e38ea40da505fd62d91e235939e0596f469"
+    },
+    {
+      "path": "src/pako.d.ts",
+      "sourceSha256": "2a686cf96c2280a07dcb777c371fb64e1c943e40aaac238178fb9c59019b3611"
+    },
+    {
+      "path": "tsconfig.json",
+      "sourceSha256": "a69845adc12ddddf46e5ed510fd047b4fe4022c03c532ead9580099ef99986d7"
+    },
+    {
+      "path": "public/rig.schema.json",
+      "sourceSha256": "96814294854093bbff6d7761cbc5955bd4662d7586d414311612d6715d547da5"
+    },
+    {
+      "path": "scripts/ts-test-loader.mjs",
+      "sourceSha256": "c62c8e46f077a7affac668885f2babacab3445bed0174811e61290ba8d6f0471"
+    }
+  ],
+  "distributionAdaptations": [
+    "New modeling-only preview/import UI and local route boundary",
+    "Portable bundle embeds external local PNG assets and rejects escaped paths",
+    "New AI guide, core OpenAPI, action reference, isolated smoke tests and release checks",
+    "Core/runtime/service/preview/MCP workspaces; independent Node HTTP service",
+    "Parts-separated PSD-only importer; removed PNG import and composite fallback",
+    "Transient playback input, SSE player, checkpoints and Apache-2.0 licensing by owner selection"
+  ],
+  "restructuredVersion": "0.2.0",
+  "historicalPathNote": "Original extraction file paths/hashes are historical. Current files have moved to npm workspaces; see DISTRIBUTION-MANIFEST.json for current hashes."
+}

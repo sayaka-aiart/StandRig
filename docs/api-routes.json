@@ -1,0 +1,730 @@
+{
+  "format": "standrig-route-inventory-v1",
+  "routes": [
+    "/api/health",
+    "/api/schema",
+    "/api/assets/externalize",
+    "/api/assets/alpha-bleed",
+    "/api/assets/shadow-separation",
+    "/api/qa/exposure",
+    "/api/qa/check",
+    "/api/qa/symmetry-angle-x",
+    "/api/qa/symmetry-artmesh-bindings",
+    "/api/generation/requests/from-exposure",
+    "/api/generation/requests",
+    "/api/generation/accept",
+    "/api/generation/assets",
+    "/api/generation/regenerate",
+    "/api/generation/delete",
+    "/api/qa/joins",
+    "/api/qa/failure-image",
+    "/api/changes",
+    "/api/geometry/export",
+    "/api/context",
+    "/api/readiness/calibration",
+    "/api/readiness/l2-qa",
+    "/api/readiness/promotion",
+    "/api/readiness",
+    "/api/rig/summary",
+    "/api/rig/validate",
+    "/api/rig/inspect",
+    "/api/modeling/audit",
+    "/api/audit/modeling",
+    "/api/modeling/symmetry-artmesh-candidates",
+    "/api/modeling/symmetry-artmesh-transaction-dry-run",
+    "/api/modeling/head-proxy/calibrate",
+    "/api/modeling/correspondence",
+    "/api/modeling/physics-safety",
+    "/api/modeling/skinning-candidates",
+    "/api/modeling/skinning-approval",
+    "/api/modeling/head-proxy",
+    "/api/modeling/symmetry",
+    "/api/qa/golden",
+    "/api/modeling/join-transaction",
+    "/api/qa/art-paths",
+    "/api/modeling/art-path-transaction",
+    "/api/modeling/transaction",
+    "/api/modeling/role-suggestions",
+    "/api/modeling/artmesh-presets",
+    "/api/modeling/part-key",
+    "/api/modeling/warp-pin-mirror",
+    "/api/modeling/techniques",
+    "/api/modeling",
+    "/api/reference/sheet",
+    "/api/reference",
+    "/api/phonemes",
+    "/api/screenshot",
+    "/api/glue/vertex-pairs",
+    "/api/glue-candidates",
+    "/api/glue",
+    "/api/parts",
+    "/api/deformers",
+    "/api/bundle",
+    "/api/params",
+    "/api/rig",
+    "/api/sample",
+    "/api/exports/bundle",
+    "/api/playback/events",
+    "/api/playback",
+    "/api/playback/parameters",
+    "/api/playback/control",
+    "/api/playback/reload",
+    "/api/checkpoints",
+    "/api/checkpoints/restore"
+  ],
+  "endpoints": [
+    {
+      "path": "/api/health",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 658,
+      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+    },
+    {
+      "path": "/api/schema",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 671,
+      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+    },
+    {
+      "path": "/api/assets/externalize",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 681,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/assets/alpha-bleed",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 713,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/assets/shadow-separation",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 766,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/exposure",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 836,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/check",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 844,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/symmetry-angle-x",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 853,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/symmetry-artmesh-bindings",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 869,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/generation/requests/from-exposure",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 877,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/generation/requests",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 908,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/generation/accept",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 929,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/generation/assets",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 940,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/generation/regenerate",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 948,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/generation/delete",
+      "methods": [
+        "POST",
+        "DELETE"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 958,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/joins",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 969,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/failure-image",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 977,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/changes",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 985,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/geometry/export",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 998,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/context",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1044,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/readiness/calibration",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1051,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/readiness/l2-qa",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1075,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/readiness/promotion",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1089,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/readiness",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1112,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/rig/summary",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1132,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/rig/validate",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1144,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/rig/inspect",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1157,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/audit",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1182,
+      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+    },
+    {
+      "path": "/api/audit/modeling",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1183,
+      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+    },
+    {
+      "path": "/api/modeling/symmetry-artmesh-candidates",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1184,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/symmetry-artmesh-transaction-dry-run",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1204,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/head-proxy/calibrate",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1248,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/correspondence",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1274,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/physics-safety",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1325,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/skinning-candidates",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1374,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/skinning-approval",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1477,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/head-proxy",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1580,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/symmetry",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1613,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/golden",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1625,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/join-transaction",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1673,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/qa/art-paths",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1709,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/art-path-transaction",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1718,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/transaction",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1769,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/role-suggestions",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1819,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/artmesh-presets",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1842,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/part-key",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1879,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/warp-pin-mirror",
+      "methods": [
+        "POST",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 1962,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling/techniques",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2028,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/modeling",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2040,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/reference/sheet",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2085,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/reference",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2136,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/phonemes",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2160,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/screenshot",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2174,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/glue/vertex-pairs",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2228,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/glue-candidates",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2271,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/glue",
+      "methods": [
+        "GET",
+        "PATCH",
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2335,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/parts",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2441,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/deformers",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2486,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/bundle",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2550,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/params",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2566,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/rig",
+      "methods": [
+        "GET",
+        "PUT",
+        "POST"
+      ],
+      "source": "apps/service/src/rigApiPlugin.ts",
+      "line": 2591,
+      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+    },
+    {
+      "path": "/api/sample",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 74,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/exports/bundle",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 77,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/playback/events",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 85,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/playback",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 86,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/playback/parameters",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 87,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/playback/control",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 88,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/playback/reload",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 89,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/checkpoints",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 92,
+      "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/checkpoints/restore",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 101,
+      "methodNotes": "Exact local service route."
+    }
+  ]
+}

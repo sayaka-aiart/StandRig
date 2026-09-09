@@ -1,0 +1,102 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { request as httpRequest } from 'node:http';
+import { fileURLToPath } from 'node:url';
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import { createLocalService } from '../apps/service/dist/service.js';
+import { createStandRigMcp } from '../packages/mcp/src/server.mjs';
+import { validateParameterPatch } from '@standrig/runtime/playback';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const sample = JSON.parse(await readFile(new URL('../examples/sample.standrig.json', import.meta.url), 'utf8'));
+test('reject external MCP origins', () => {
+  for (const url of ['https://example.com','http://127.0.0.1:5180/api','http://user:secret@localhost:5180','http://localhost:5180/?x=1']) assert.throws(() => createStandRigMcp(url));
+});
+test('numeric input validates atomically and rejects unknown, nonfinite, out-of-range values', () => {
+  assert.deepEqual(validateParameterPatch(sample,{ParamAngleZ:15}),{ParamAngleZ:15});
+  for (const input of [{missing:1},{ParamAngleZ:NaN},{ParamAngleZ:31},[],null]) assert.throws(() => validateParameterPatch(sample,input));
+});
+test('real stdio MCP, transaction rollback, transient input and SSE', async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(),'standrig-integration-'));
+  let service, client, transport;
+  const abort = new AbortController();
+  try {
+    service = await createLocalService({dataDir:dir,port:0});
+    const call = async (route,method='GET',body) => {
+      const response = await fetch(service.url+route,{method,headers:body===undefined?undefined:{'content-type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
+      return {status:response.status,data:await response.json()};
+    };
+    assert.equal((await call('/api/context')).data.context.summary.counts.assets,0);
+    assert.equal((await call('/api/rig','POST',sample)).status,200);
+    const stored = await readFile(path.join(dir,'public/rig.json'),'utf8');
+    assert.equal((await fetch(service.url+'/api/context',{headers:{origin:'https://untrusted.example'}})).status,403);
+    const foreignHost = await new Promise((resolve, reject) => {
+      const request = httpRequest(service.url+'/api/context',{headers:{host:'untrusted.example'}}, response => { response.resume(); resolve(response.statusCode); });
+      request.on('error',reject); request.end();
+    });
+    assert.equal(foreignHost,403);
+    assert.equal((await call('/api/tracking')).status,404);
+    assert.equal((await call('/api/playback/parameters','POST',{source:'tracker',sequence:1,values:{ParamAngleZ:20}})).status,200);
+    assert.equal((await call('/api/playback/parameters','POST',{source:'tracker',sequence:1,values:{ParamAngleZ:0}})).status,400);
+    assert.equal((await call('/api/playback/parameters','POST',{source:'tracker',sequence:2,values:{ParamAngleZ:0,invalid:1}})).status,400);
+    assert.equal((await call('/api/playback')).data.playback.values.ParamAngleZ,20);
+    assert.equal(await readFile(path.join(dir,'public/rig.json'),'utf8'),stored);
+    const stream = await fetch(service.url+'/api/playback/events',{signal:abort.signal});
+    const reader=stream.body.getReader();
+    assert.match(new TextDecoder().decode((await reader.read()).value),/event: playback/);
+    await call('/api/playback/control','POST',{command:'play'});
+    assert.match(new TextDecoder().decode((await reader.read()).value),/"playing":true/);
+    assert.equal((await call('/api/playback')).data.playback.connectedOutputs,1);
+    assert.equal((await call('/api/playback')).data.playback.outputAcknowledged,false);
+    abort.abort();
+    transport = new StdioClientTransport({command:process.execPath,args:[path.join(root,'packages/mcp/src/cli.mjs')],env:{...process.env,STANDRIG_URL:service.url},stderr:'pipe',cwd:os.tmpdir()});
+    let stderr=''; transport.stderr?.on('data',chunk=>stderr+=chunk);
+    client=new Client({name:'standrig-integration',version:'1.0.0'});
+    await client.connect(transport);
+    const tools=await client.listTools();
+    assert.equal(tools.tools.length,12);
+    const invoke=(name,args={})=>client.callTool({name,arguments:args});
+    const context=(await invoke('standrig_context')).structuredContent.context;
+    assert.equal(context.summary.counts.assets,4);
+    assert.equal((await invoke('standrig_render',{kind:'snapshot'})).isError,true);
+    const input={expectedRevision:context.revision,commit:false,operations:[{id:'move',name:'Move demo body',target:{partIds:['body']},action:{type:'transform',property:'x',operator:'add',value:2}}],qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}};
+    const dry=await invoke('standrig_modeling_transaction',input);
+    assert.equal(dry.isError,undefined,JSON.stringify(dry));
+    assert.equal(dry.structuredContent.committed,false);
+    assert.equal(await readFile(path.join(dir,'public/rig.json'),'utf8'),stored);
+    const committed=await invoke('standrig_modeling_transaction',{...input,commit:true});
+    assert.equal(committed.structuredContent.committed,true,JSON.stringify(committed));
+    assert.ok(committed.structuredContent.rollbackCheckpoint.id);
+    const stale=await invoke('standrig_modeling_transaction',{...input,commit:true});
+    assert.equal(stale.isError,true);
+    assert.equal(stale.structuredContent.error,'revision mismatch');
+    const revision=(await invoke('standrig_context')).structuredContent.context.revision;
+    const restored=await invoke('standrig_restore',{id:committed.structuredContent.rollbackCheckpoint.id,expectedRevision:revision});
+    assert.equal(restored.isError,undefined,JSON.stringify(restored));
+    assert.equal((await invoke('standrig_context')).structuredContent.context.revision,context.revision);
+    const qa=await invoke('standrig_qa_check',{poses:['neutral'],regions:['full']});
+    assert.equal(qa.isError,undefined,JSON.stringify(qa));
+    const rendered=await invoke('standrig_render',{kind:'snapshot'});
+    assert.equal(rendered.content[0].type,'image',JSON.stringify(rendered));
+    assert.deepEqual([...Buffer.from(rendered.content[0].data,'base64').subarray(0,8)],[137,80,78,71,13,10,26,10]);
+    assert.equal((await invoke('standrig_playback_parameters',{values:{ParamMouthOpen:0.8}})).isError,undefined);
+    assert.equal((await invoke('standrig_playback_state')).structuredContent.playback.values.ParamMouthOpen,0.8);
+    const exported=(await invoke('standrig_export')).structuredContent;
+    const bundle=JSON.parse(await readFile(exported.path,'utf8'));
+    assert.equal(bundle.format,'standrig-bundle');
+    assert.ok(bundle.rig.assets.every(a=>a.src.startsWith('data:image/png;base64,')));
+    const resources=await client.listResources(); assert.equal(resources.resources.length,5);
+    const guide=await client.readResource({uri:'standrig://docs/guide'});
+    assert.match(guide.contents[0].text,/parts-separated PSD/);
+    assert.equal(stderr,'');
+  } finally {
+    abort.abort(); await client?.close(); await transport?.close(); await service?.close();
+    assert.equal(path.dirname(path.resolve(dir)),path.resolve(os.tmpdir()));
+    assert.ok(path.basename(dir).startsWith('standrig-integration-'));
+    await rm(dir,{recursive:true,force:true});
+  }
+});

@@ -1,0 +1,544 @@
+{
+  "schemaVersion": "0.1.0",
+  "name": "Sample Bot — geometric API demo",
+  "stage": {
+    "width": 320,
+    "height": 360,
+    "background": "transparent"
+  },
+  "assets": [
+    {
+      "id": "head",
+      "name": "head",
+      "type": "image",
+      "width": 112,
+      "height": 104,
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAABoCAYAAAApZXS9AAABsUlEQVR4nO3ZwVHDQBQEUYdLlKRBOHDFhTGSdsv9Z+ip6rv033FvN+fIvX28f65Ef/+/2iqWqC/eq8AE3TgaS8wLo1HEvDgaQMiLow8u5MXRBxZyYfRRRbw4+pB09P2XRh9vSrTD6dEHmxrtcmj0kaZH+zwdfZyUaKeHo4+SFu11N/oYqdFuwqVD0j/ekngFiVeQeAWJV5B4BQkYnngFiVeQgOGJV5CA4YlXkIDhiVeQgOGJV5CA4QkYnngFCRiegOGJV5CA4QkYnoDhCRieeAUJGJ6A4QkYnoDhCRiegOEJGJ6A4QkYnoDhCRiegOEJGJ4vEsH5HhiegOEJGJ6A4f0AFDGnh3gC5iRgeL8Ciji/p3gCzk/A8P4EFHFuh/AEnNthQBHndQpPwHmdBhRxTpfwBJzTZUAR+ZbwBORbBhQxHE/EAjwBCwBFDMcTsQBPxAI8EQvwRCzAE7AAUMhwuO+jj5EW7fVw9FFSop2ejj7O9GifQ6OPNDXa5fTog02JdlgafTw6+v7bRh9SuA2jjyreptEHFm7T6IMLt2k0gHAbR6OItnE0lmibJ1jhxHLR+wJPT8BLZJSH5AAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "body",
+      "name": "body",
+      "type": "image",
+      "width": 88,
+      "height": 112,
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABwCAYAAACaardvAAABFklEQVR4nO3YsY3DUAwFQVfluq4eN+vrQI6+yBWGwOYPE/L1urj33+er310ZXt708EqAAbcDDLgd3I3I04NrAQbcDjDgdoABt4O7CXl6aDXAgNsBBtwOMOB2cDcgTw+sBxhwO8CA2wEG3A7wJPD0uKcEGHA7wIDbAQbcDvAE8PSopwUYcDvAgNsBBtwO8J3A02OeGmDA7QADbgcYcDvAgNsBBtwOMOB2gAG3Awy4naf7XbiAAecCDLgdYMDtAN8NDPkwLmDAmQADbgcYcDvAU8CQD+MCBrw+wIDbAQbcDjDgdj+BIR/GBQx4bYABtwMMuB3gLcCQD+MCBrwuwIDbAQbcDvA2YMiHcQEDXhNgwO0AA253ZfgPFEvXewJnzcUAAAAASUVORK5CYII="
+    },
+    {
+      "id": "eye",
+      "name": "eye",
+      "type": "image",
+      "width": 12,
+      "height": 20,
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAUCAYAAAC58NwRAAAAGUlEQVR4nGMQUTX8TwpmGNUwqmFUw2DWAACj9lKAlxR7/QAAAABJRU5ErkJggg=="
+    },
+    {
+      "id": "mouth",
+      "name": "mouth",
+      "type": "image",
+      "width": 26,
+      "height": 8,
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAICAYAAADnVO9eAAAAF0lEQVR4nGMQUTX8Tw/MMGrRqEXD1yIAM2AlYJqxOK0AAAAASUVORK5CYII="
+    }
+  ],
+  "parameters": [
+    {
+      "id": "ParamAngleX",
+      "label": "Angle X",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Face"
+    },
+    {
+      "id": "ParamAngleY",
+      "label": "Angle Y",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Face"
+    },
+    {
+      "id": "ParamAngleZ",
+      "label": "Angle Z",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Face"
+    },
+    {
+      "id": "ParamEyeBallX",
+      "label": "Eye Ball X",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Gaze"
+    },
+    {
+      "id": "ParamEyeBallY",
+      "label": "Eye Ball Y",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Gaze"
+    },
+    {
+      "id": "ParamBodyAngleX",
+      "label": "Body X",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Body"
+    },
+    {
+      "id": "ParamBodyAngleY",
+      "label": "Body Y",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Body"
+    },
+    {
+      "id": "ParamMouthOpen",
+      "label": "Mouth",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamMouthForm",
+      "label": "Mouth Form",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamMouthSmile",
+      "label": "Mouth Smile",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeLOpen",
+      "label": "Eye L",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeROpen",
+      "label": "Eye R",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamBodyAngleZ",
+      "label": "Body Z",
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "step": 0.1,
+      "group": "Body"
+    },
+    {
+      "id": "ParamBreath",
+      "label": "Breath",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Body"
+    },
+    {
+      "id": "ParamCheek",
+      "label": "Cheek",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeLSmile",
+      "label": "Eye L Smile",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeRSmile",
+      "label": "Eye R Smile",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamBrowLY",
+      "label": "Brow L Y",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRY",
+      "label": "Brow R Y",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowLX",
+      "label": "Brow L X",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRX",
+      "label": "Brow R X",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowLAngle",
+      "label": "Brow L Angle",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRAngle",
+      "label": "Brow R Angle",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowLForm",
+      "label": "Brow L Form",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRForm",
+      "label": "Brow R Form",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamHairFront",
+      "label": "Hair Front",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamHairSide",
+      "label": "Hair Side",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamHairBack",
+      "label": "Hair Back",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamSkirt",
+      "label": "Skirt",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamRibbon",
+      "label": "Ribbon",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    }
+  ],
+  "parts": [
+    {
+      "id": "root",
+      "name": "Root",
+      "kind": "group",
+      "parentId": null,
+      "visible": true,
+      "drawOrder": -10000,
+      "transform": {
+        "x": 0,
+        "y": 0,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0,
+        "pivotY": 0,
+        "opacity": 1
+      }
+    },
+    {
+      "id": "body",
+      "name": "body",
+      "kind": "image",
+      "parentId": "root",
+      "assetId": "body",
+      "visible": true,
+      "drawOrder": 1,
+      "transform": {
+        "x": 160,
+        "y": 242,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "opacity": 1
+      },
+      "bindings": [
+        {
+          "parameter": "ParamBodyAngleZ",
+          "property": "rotation",
+          "keys": [
+            {
+              "input": -10,
+              "value": -10
+            },
+            {
+              "input": 0,
+              "value": 0
+            },
+            {
+              "input": 10,
+              "value": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "head-group",
+      "name": "Head group",
+      "kind": "group",
+      "parentId": "root",
+      "visible": true,
+      "drawOrder": 2,
+      "transform": {
+        "x": 160,
+        "y": 119,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0,
+        "pivotY": 0,
+        "opacity": 1
+      },
+      "bindings": [
+        {
+          "parameter": "ParamAngleZ",
+          "property": "rotation",
+          "keys": [
+            {
+              "input": -30,
+              "value": -30
+            },
+            {
+              "input": 0,
+              "value": 0
+            },
+            {
+              "input": 30,
+              "value": 30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "head",
+      "name": "head",
+      "kind": "image",
+      "parentId": "head-group",
+      "assetId": "head",
+      "visible": true,
+      "drawOrder": 3,
+      "transform": {
+        "x": 0,
+        "y": 0,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "opacity": 1
+      }
+    },
+    {
+      "id": "left-eye",
+      "name": "left-eye",
+      "kind": "image",
+      "parentId": "head-group",
+      "assetId": "eye",
+      "visible": true,
+      "drawOrder": 4,
+      "transform": {
+        "x": -23,
+        "y": -7,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "opacity": 1
+      },
+      "bindings": [
+        {
+          "parameter": "ParamEyeLOpen",
+          "property": "scaleY",
+          "keys": [
+            {
+              "input": 0,
+              "value": -0.9
+            },
+            {
+              "input": 1,
+              "value": 0
+            }
+          ],
+          "additive": true
+        }
+      ]
+    },
+    {
+      "id": "right-eye",
+      "name": "right-eye",
+      "kind": "image",
+      "parentId": "head-group",
+      "assetId": "eye",
+      "visible": true,
+      "drawOrder": 5,
+      "transform": {
+        "x": 23,
+        "y": -7,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "opacity": 1
+      },
+      "bindings": [
+        {
+          "parameter": "ParamEyeROpen",
+          "property": "scaleY",
+          "keys": [
+            {
+              "input": 0,
+              "value": -0.9
+            },
+            {
+              "input": 1,
+              "value": 0
+            }
+          ],
+          "additive": true
+        }
+      ]
+    },
+    {
+      "id": "mouth",
+      "name": "mouth",
+      "kind": "image",
+      "parentId": "head-group",
+      "assetId": "mouth",
+      "visible": true,
+      "drawOrder": 6,
+      "transform": {
+        "x": 0,
+        "y": 26,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "opacity": 1
+      },
+      "bindings": [
+        {
+          "parameter": "ParamMouthOpen",
+          "property": "scaleY",
+          "keys": [
+            {
+              "input": 0,
+              "value": 0
+            },
+            {
+              "input": 1,
+              "value": 2
+            }
+          ],
+          "additive": true
+        }
+      ]
+    }
+  ],
+  "physics": {
+    "enabled": false,
+    "chains": []
+  },
+  "deformers": []
+}

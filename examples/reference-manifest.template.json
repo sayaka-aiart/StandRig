@@ -1,0 +1,12 @@
+{
+  "format": "standrig-visual-reference-v1",
+  "status": "TEMPLATE_NOT_ACCEPTED",
+  "source": { "revision": "REPLACE_WITH_CONTEXT_REVISION", "semanticHash": "REPLACE_WITH_CONTEXT_HASH", "psdSha256": "REPLACE_WITH_SOURCE_SHA256" },
+  "sheets": [
+    { "id": "face", "path": "face-target.png", "sha256": "REPLACE_WITH_IMAGE_SHA256", "panelOrder": ["neutral", "yaw-min", "yaw-max", "pitch-min", "pitch-max", "roll-min", "roll-max"], "parameterExtremes": "REPLACE_WITH_ACTUAL_VALUES_PER_PANEL", "prompt": "REPLACE_WITH_ACTUAL_TARGET_CREATION_INSTRUCTIONS" },
+    { "id": "body", "path": "body-target.png", "sha256": "REPLACE_WITH_IMAGE_SHA256", "panelOrder": ["neutral", "body-yaw-min", "body-yaw-max", "body-pitch-min", "body-pitch-max", "body-roll-min", "body-roll-max"], "parameterExtremes": "REPLACE_WITH_ACTUAL_VALUES_PER_PANEL", "prompt": "REPLACE_WITH_ACTUAL_TARGET_CREATION_INSTRUCTIONS" },
+    { "id": "connections", "path": "connection-target.png", "sha256": "REPLACE_WITH_IMAGE_SHA256", "panelOrder": ["hair-roots-back-hair", "jaw-neck", "neck-collar-shoulders", "sleeves-arms", "waist-skirt-thighs", "thighs-lower-legs"], "parameterExtremes": "REPLACE_WITH_CONNECTION_EXTREMES", "prompt": "REPLACE_WITH_ACTUAL_TARGET_CREATION_INSTRUCTIONS" }
+  ],
+  "acceptanceChecks": ["All required panels and images exist", "Preserve approved source artwork", "No square transparency holes", "No detached features or connection gaps", "Rotation has appropriate perspective", "Maximum and intermediate poses visually compared"],
+  "visualReview": { "accepted": false, "reportPath": null, "reviewedAt": null }
+}

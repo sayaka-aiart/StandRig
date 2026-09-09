@@ -1,0 +1,65 @@
+# Architecture
+
+StandRig is a local modeling and playback engine with an MCP adapter. The engine does not require an AI provider or MCP client. Version 0.2.0 is an initial developer release.
+
+```mermaid
+flowchart TD
+  AI[AI client] --> MCP[packages/mcp: stdio]
+  MCP --> Service[apps/service: local HTTP]
+  UI[apps/preview: PSD import and pose preview] --> Service
+  Service --> Core[packages/core: model operations and evaluation]
+  Tracker[External tracker adapter] --> Input[Numeric parameter input]
+  Input --> Service
+  Service -->|SSE playback state| Player[Transparent player page]
+  Player --> Runtime[packages/runtime: browser playback]
+  Runtime --> Core
+  Player -->|Browser Source URL| OBS[External OBS]
+  Bridge[Future Live2D Bridge] -. independent adapter .-> Service
+```
+
+## Modules and dependencies
+
+| Module | Responsibility | Imports |
+| --- | --- | --- |
+| `packages/core` | Model types, mesh/deformer operations, shared evaluator, validation, numeric QA and file-format utilities | pako for PNG; ag-psd only for the optional browser PSD importer |
+| `packages/runtime` | Canvas/WebGL renderer, `StandRigPlayer`, playback and adapter contracts | core; no MCP, Vite, camera or OBS dependency |
+| `apps/service` | Model storage, HTTP API, serialized model requests, checkpoints, transient playback state, static preview serving | core, runtime; Node built-ins |
+| `packages/mcp` | Validated tools and documentation resources over stdio | Official MCP SDK and Zod; communicates with the local service by HTTP |
+| `apps/preview` | Parts-separated PSD import, simple pose controls, transparent player | core, runtime; Vite is build/dev tooling only |
+
+The `core` root export is headless. Browser-specific helpers (`core/importers`, `core/io`) and Node-specific helpers (`core/serverRenderer`, filesystem QA) are explicit subpath imports. These helpers are not interchangeable across environments. The numerical evaluator and modeling operations themselves do not call the PSD parser or MCP SDK. This is a package boundary, not a claim that every module in core has zero external dependencies.
+
+Public entry points are `@standrig/core`, `@standrig/runtime` and their documented types. Other core subpaths expose the extracted implementation and may change during 0.x. Workspace packages are private to avoid accidental npm publication; their source is usable under Apache-2.0.
+
+## Commands versus continuous input
+
+MCP controls modeling transactions, QA, checkpoints, export, playback poses and play/pause/reset. It is not used for every tracking frame.
+
+An in-process tracker calls `player.setParameters(values)`. A separate process posts mapped numeric frames to `/api/playback/parameters`. The service broadcasts the latest state over SSE; browser outputs render locally. Sequence numbers reject duplicate/out-of-order frames for each input source. The last accepted value wins **per parameter** across sources. There is no blending or priority scheduler yet.
+
+Playback state is memory-only. Parameter changes never write keyforms or `rig.json`. Reset restores the model's saved preview/default values; it does not erase source sequence counters. Model reload resets values and sequence counters. Server restart resets transient playback state. `connectedOutputs` measures open SSE connections, including the preview UI; it does not prove a rendered frame or OBS capture. `outputAcknowledged` remains false in this release.
+
+## Storage
+
+Default data directory: `workspace/`, excluded from Git and releases. `npm start -- --data-dir /absolute/project` selects another directory. A new directory is initialized from `templates/` without replacing an existing model.
+
+```text
+workspace/
+  public/rig.json           current working model
+  public/assets/            externalized model textures
+  public/goldens/           model-specific QA baselines
+  checkpoints/             self-contained restoration snapshots
+  exports/                 portable model bundles
+  references/              operator-created target sheets and manifest
+```
+
+One service process owns one data directory. Model API handlers run in order within that service. Do not start two processes against the same directory. MCP commits require `expectedRevision` and `qa`, and create a checkpoint before attempting the commit. Legacy direct write APIs remain lower-level compatibility surfaces and do not all enforce these safeguards. Visual target preparation/review is an operator contract in AGENTS.md, not automatically verified by the service.
+
+## Extension status
+
+- Implemented: model core, runtime, local service, stdio MCP, minimal UI, numeric input and transparent player.
+- External: face inference, camera access, smoothing/calibration, OBS configuration/control. No tracking model or OBS plugin is shipped.
+- Reserved: `TrackingAdapter` and `BridgeAdapter` contracts. The bridge interface is a discovery/disconnection skeleton only.
+- Not implemented: Live2D/Cubism connection, cmo3/moc3 conversion or playback, one-image automatic part separation, cloud hosting, production multi-user service.
+
+The output format is StandRig JSON / `standrig-bundle`. A future Cubism editor bridge, Cubism runtime adapter and model converter would be separate capabilities and must not be presented as equivalent.

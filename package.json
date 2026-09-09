@@ -1,0 +1,31 @@
+{
+  "name": "standrig",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspace=@standrig/core && npm run build --workspace=@standrig/runtime && npm run build --workspace=@standrig/service && npm run build --workspace=@standrig/preview",
+    "start": "node apps/service/dist/cli.js",
+    "mcp": "node packages/mcp/src/cli.mjs",
+    "dev": "npm run dev --workspace=@standrig/preview",
+    "test": "node scripts/smoke.mjs && node --test tests/*.test.mjs",
+    "verify": "node scripts/verify-package.mjs",
+    "docs": "node scripts/generate-api-docs.mjs",
+    "notices": "node scripts/collect-notices.mjs",
+    "release": "node scripts/package-release.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.2",
+    "typescript": "5.9.3",
+    "vite": "8.1.3",
+    "@modelcontextprotocol/client": "2.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "license": "Apache-2.0"
+}

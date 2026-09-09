@@ -1,0 +1,11 @@
+{
+  "expectedRevision": "REPLACE_WITH_CONTEXT_REVISION",
+  "commit": false,
+  "operations": [{
+    "id": "adjust-selected-part-001",
+    "name": "Adjust selected part by one stage pixel",
+    "target": { "partIds": ["REPLACE_WITH_CONFIRMED_PART_ID"] },
+    "action": { "type": "transform", "property": "x", "operator": "add", "value": 1 }
+  }],
+  "qa": { "poses": ["neutral"], "regions": ["full"], "width": 240, "height": 240, "physics": false }
+}

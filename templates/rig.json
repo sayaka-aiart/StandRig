@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "0.1.0",
+  "name": "Untitled model",
+  "stage": {
+    "width": 900,
+    "height": 1200,
+    "background": "transparent"
+  },
+  "assets": [],
+  "parameters": [
+    {
+      "id": "ParamAngleX",
+      "label": "Angle X",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Face"
+    },
+    {
+      "id": "ParamAngleY",
+      "label": "Angle Y",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Face"
+    },
+    {
+      "id": "ParamAngleZ",
+      "label": "Angle Z",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Face"
+    },
+    {
+      "id": "ParamEyeBallX",
+      "label": "Eye Ball X",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Gaze"
+    },
+    {
+      "id": "ParamEyeBallY",
+      "label": "Eye Ball Y",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Gaze"
+    },
+    {
+      "id": "ParamBodyAngleX",
+      "label": "Body X",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Body"
+    },
+    {
+      "id": "ParamBodyAngleY",
+      "label": "Body Y",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "step": 1,
+      "group": "Body"
+    },
+    {
+      "id": "ParamMouthOpen",
+      "label": "Mouth",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamMouthForm",
+      "label": "Mouth Form",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamMouthSmile",
+      "label": "Mouth Smile",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeLOpen",
+      "label": "Eye L",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeROpen",
+      "label": "Eye R",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamBodyAngleZ",
+      "label": "Body Z",
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "step": 0.1,
+      "group": "Body"
+    },
+    {
+      "id": "ParamBreath",
+      "label": "Breath",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Body"
+    },
+    {
+      "id": "ParamCheek",
+      "label": "Cheek",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeLSmile",
+      "label": "Eye L Smile",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamEyeRSmile",
+      "label": "Eye R Smile",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Expression"
+    },
+    {
+      "id": "ParamBrowLY",
+      "label": "Brow L Y",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRY",
+      "label": "Brow R Y",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowLX",
+      "label": "Brow L X",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRX",
+      "label": "Brow R X",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowLAngle",
+      "label": "Brow L Angle",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRAngle",
+      "label": "Brow R Angle",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowLForm",
+      "label": "Brow L Form",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamBrowRForm",
+      "label": "Brow R Form",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Brow"
+    },
+    {
+      "id": "ParamHairFront",
+      "label": "Hair Front",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamHairSide",
+      "label": "Hair Side",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamHairBack",
+      "label": "Hair Back",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamSkirt",
+      "label": "Skirt",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    },
+    {
+      "id": "ParamRibbon",
+      "label": "Ribbon",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "step": 0.01,
+      "group": "Physics"
+    }
+  ],
+  "parts": [
+    {
+      "id": "root",
+      "name": "Root",
+      "kind": "group",
+      "parentId": null,
+      "visible": true,
+      "drawOrder": -10000,
+      "transform": {
+        "x": 0,
+        "y": 0,
+        "rotation": 0,
+        "scaleX": 1,
+        "scaleY": 1,
+        "pivotX": 0,
+        "pivotY": 0,
+        "opacity": 1
+      }
+    }
+  ],
+  "physics": {
+    "enabled": false,
+    "chains": []
+  },
+  "deformers": []
+}
