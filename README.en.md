@@ -61,7 +61,7 @@ The sample is a geometric model. Parameters without bindings will not produce mo
 
 Choose a mode under **「動作デモ」 (Motion demo)** above the preview, then click **「デモを開始」 (Start demo)**.
 
-- **Showcase — Fast & Wide:** Automatically exercises head, body, gaze and expressions. It uses the original application's choreography at 1.3x speed, with wider small-angle swings.
+- **Showcase — Fast & Wide:** Automatically exercises head, body, gaze and expressions.
 - **Mouse + Expressions:** Head, body and gaze follow your pointer within the preview, with automatic blinks, winks and mouth opening. Moving the pointer outside the preview returns it to the center.
 
 Both modes appear in the preview and the player page. **「デモを停止」 (Stop demo)** restores the starting pose and playback state. Sliders, external parameter input, Play/Pause/Reset and model changes also end the demo. The saved model is unchanged. Demos run in the service, so closing a browser tab alone does not stop them.

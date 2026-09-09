@@ -65,14 +65,14 @@
     {
       "path": "README.en.md",
       "normalization": "lf",
-      "bytes": 11103,
-      "sha256": "377527c17ce1ba615c2b993a4b2f2e9faa12f7df25a4bfa73c554a904816d310"
+      "bytes": 11009,
+      "sha256": "26d8454c32c8f222691d44c1ba34e17a4108049a1490fb0a4cf29c309a9678c7"
     },
     {
       "path": "README.md",
       "normalization": "lf",
-      "bytes": 12154,
-      "sha256": "17f59366f73e8dd562603115762d872518433475c1d80815cc5c9341a9061765"
+      "bytes": 12058,
+      "sha256": "29d4441d97a0089e7df919a5f48dca185368d2902dd2fbf61b1a1eabadb6a104"
     },
     {
       "path": "SECURITY.md",
