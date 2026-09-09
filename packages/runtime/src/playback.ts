@@ -7,6 +7,7 @@ export interface ParameterFrame { source: string; sequence: number; values: Para
 export interface PlaybackSnapshot {
   version: 1; sessionId: string; revision: number; modelVersion: number;
   playing: boolean; values: ParameterValues; lastSource: string | null;
+  demo?: { active: boolean; parameterIds: string[]; mode: 'showcase-active' | 'mouse-expression' };
 }
 export interface TrackingAdapter {
   start(emit: (frame: ParameterFrame) => void): Promise<void>;

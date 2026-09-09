@@ -379,6 +379,12 @@
     {
       "path": "scripts/ts-test-loader.mjs",
       "sourceSha256": "c62c8e46f077a7affac668885f2babacab3445bed0174811e61290ba8d6f0471"
+    },
+    {
+      "path": "src/app/motionPreview.ts",
+      "sourceSha256": "bb76127bd16e5c92b10c1c98016c7a59dc10911206efb5431d693f66401c1c99",
+      "distributionPath": "packages/runtime/src/motionPreview.ts",
+      "transformed": "Ported only showcase-active and mouse-expression modes; retained their original choreography, removed unused modes and changed the type import to @standrig/core/types. Service wrapper clamps to model ranges."
     }
   ],
   "distributionAdaptations": [

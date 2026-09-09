@@ -57,6 +57,17 @@ When you see `StandRig local service: http://127.0.0.1:5180`, open **http://127.
 
 The sample is a geometric model. Parameters without bindings will not produce movement. **「再生」 (Play)** advances time and physics; it does not start automatic gestures or camera tracking.
 
+### 4. Try a motion demo
+
+Choose a mode under **「動作デモ」 (Motion demo)** above the preview, then click **「デモを開始」 (Start demo)**.
+
+- **Showcase — Fast & Wide:** Automatically exercises head, body, gaze and expressions. It uses the original application's choreography at 1.3x speed, with wider small-angle swings.
+- **Mouse + Expressions:** Head, body and gaze follow your pointer within the preview, with automatic blinks, winks and mouth opening. Moving the pointer outside the preview returns it to the center.
+
+Both modes appear in the preview and the player page. **「デモを停止」 (Stop demo)** restores the starting pose and playback state. Sliders, external parameter input, Play/Pause/Reset and model changes also end the demo. The saved model is unchanged. Demos run in the service, so closing a browser tab alone does not stop them.
+
+Only parts with authored bindings move. The sample demonstrates basic movements such as head tilt and mouth opening, not every expression. A demo does not automatically rig an imported PSD or replace maximum-pose quality checks.
+
 ## Import your PSD
 
 1. Click **「PSDを選択」 (Select PSD)**, choose one file, then click **「PSDを読み込む」 (Import PSD)**.

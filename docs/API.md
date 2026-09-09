@@ -115,7 +115,7 @@ Data lives under the selected data directory (default `workspace/`): `public/rig
 | GET | `/api/playback` | `{ok,playback}`; transient values, sessionId, modelVersion, playing, connectedOutputs |
 | GET | `/api/playback/events` | SSE `playback` events and keepalives |
 | POST | `/api/playback/parameters` | `{source,sequence,values}`; see ADAPTERS.md |
-| POST | `/api/playback/control` | `{command:"play"|"pause"|"reset"}` |
+| POST | `/api/playback/control` | `{command:"play"|"pause"|"reset"|"demo-start"|"demo-stop"|"demo-pointer", mode?, x?, y?}` |
 | POST | `/api/playback/reload` | Reload the stored model; resets transient values/source counters |
 | GET, POST | `/api/checkpoints` | List metadata / create a self-contained checkpoint |
 | POST | `/api/checkpoints/restore` | `{id,expectedRevision}`; saves current state first; returns rollback metadata |
@@ -123,6 +123,10 @@ Data lives under the selected data directory (default `workspace/`): `public/rig
 | GET | `/api/sample` | Bundled geometric sample RigDocument; no import/write by this GET |
 
 New playback inputs are atomically rejected with 400 on invalid values or stale source sequences. Model restore uses 409 on revision mismatch. Output connections are not rendering acknowledgments. The service rejects foreign Host/Origin with 403. Requests and frames are local only; there is no remote authentication.
+
+`demo-start` accepts `mode:"showcase-active"` (default, original Showcase Fast & Wide) or `mode:"mouse-expression"`. The service emits demo poses at approximately 30 Hz. `demo-pointer` requires finite `x` and `y` in [-1,1] and an active mouse-expression demo; +X points right, +Y down. Mouse input is smoothed. `playback.demo` reports `active`, `mode` and discovered authored `parameterIds`. Unrigged models reject demo start. The choreography uses standard parameter IDs and clamps values to the model's declared ranges; custom-only bindings are not automatically choreographed.
+
+`demo-stop` restores the starting values, playing flag and input source. Play/pause/reset or a valid parameter frame first stops the demo, then applies the requested change to the restored state. Invalid input leaves the demo running. Model reload/import/restore and service shutdown also stop it. Demos are transient and never edit the saved rig; closing a browser tab does not stop the service's demo.
 
 Checkpoint creation and bundle export return **201**; restore returns **200**. Model imports and legacy handlers allow up to 64 MiB request bodies; playback/checkpoint control bodies have a 1 MiB limit. Errors must be inspected even when HTTP status is 200. The checkpoint/export files stay on the service host; returned paths are not download URLs.
 

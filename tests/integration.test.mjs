@@ -72,6 +72,13 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const tools=await client.listTools();
     assert.equal(tools.tools.length,12);
     const invoke=(name,args={})=>client.callTool({name,arguments:args});
+    const beforeDemo=(await call('/api/playback')).data.playback.values;
+    const demo = await invoke('standrig_playback_control',{command:'demo-start',mode:'mouse-expression'});
+    assert.equal(demo.structuredContent.playback.demo.active,true);
+    assert.equal((await invoke('standrig_playback_control',{command:'demo-pointer',x:0.5,y:-0.5})).isError,undefined);
+    assert.equal((await invoke('standrig_playback_control',{command:'demo-stop'})).structuredContent.playback.demo.active,false);
+    assert.deepEqual((await call('/api/playback')).data.playback.values,beforeDemo);
+    assert.equal(await readFile(path.join(dir,'public/rig.json'),'utf8'),stored);
     const context=(await invoke('standrig_context')).structuredContent.context;
     assert.equal(context.summary.counts.assets,4);
     assert.equal((await invoke('standrig_render',{kind:'snapshot'})).isError,true);

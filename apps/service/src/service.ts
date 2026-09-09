@@ -85,7 +85,7 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     if (route === '/api/playback/events' && req.method === 'GET') { playback.subscribe(res); return; }
     if (route === '/api/playback' && req.method === 'GET') { json(res, 200, { ok: true, playback: playback.snapshot() }); return; }
     if (route === '/api/playback/parameters' && req.method === 'POST') { json(res, 200, { ok: true, playback: playback.input(await body(req)) }); return; }
-    if (route === '/api/playback/control' && req.method === 'POST') { json(res, 200, { ok: true, playback: playback.control((await body(req)).command) }); return; }
+    if (route === '/api/playback/control' && req.method === 'POST') { const input = await body(req); json(res, 200, { ok: true, playback: playback.control(input.command, input) }); return; }
     if (route === '/api/playback/reload' && req.method === 'POST') {
       playback.reload(await readRig()); json(res, 200, { ok: true, playback: playback.snapshot() }); return;
     }

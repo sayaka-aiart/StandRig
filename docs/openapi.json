@@ -3703,6 +3703,27 @@
                         "playing": {
                           "type": "boolean"
                         },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
                         "values": {
                           "type": "object",
                           "additionalProperties": {
@@ -3876,6 +3897,27 @@
                         },
                         "playing": {
                           "type": "boolean"
+                        },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "values": {
                           "type": "object",
@@ -4085,6 +4127,27 @@
                         "playing": {
                           "type": "boolean"
                         },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
                         "values": {
                           "type": "object",
                           "additionalProperties": {
@@ -4223,10 +4286,31 @@
                     "enum": [
                       "play",
                       "pause",
-                      "reset"
+                      "reset",
+                      "demo-start",
+                      "demo-stop",
+                      "demo-pointer"
                     ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "showcase-active",
+                      "mouse-expression"
+                    ]
+                  },
+                  "x": {
+                    "type": "number",
+                    "minimum": -1,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": -1,
+                    "maximum": 1
                   }
-                }
+                },
+                "description": "demo-start defaults to showcase-active; demo-pointer requires x/y and active mouse-expression mode. Stop/play/pause/reset and valid numeric input restore the pre-demo pose before applying the command."
               }
             }
           }
@@ -4281,6 +4365,27 @@
                         },
                         "playing": {
                           "type": "boolean"
+                        },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "values": {
                           "type": "object",

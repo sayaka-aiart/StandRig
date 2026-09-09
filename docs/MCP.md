@@ -49,7 +49,9 @@ After saving, reconnect/restart the MCP connection in your client. Confirm that 
 | `standrig_export` | Write a self-contained bundle and return its local path |
 | `standrig_playback_state` | Transient parameters, play state and output connections |
 | `standrig_playback_parameters` | Pose/expression input without editing the model |
-| `standrig_playback_control` | play / pause / reset / reload |
+| `standrig_playback_control` | play / pause / reset / reload / demo-start / demo-stop / demo-pointer |
+
+動作デモは `{command:"demo-start", mode:"showcase-active"}`（既定）または `{command:"demo-start", mode:"mouse-expression"}`。マウス位置は `{command:"demo-pointer", x:0.5, y:-0.5}` のように -1〜1 の座標を渡します（画面右が+X、下が+Y）。`demo-stop` で開始前の姿勢・再生状態を復元します。通常のパラメータ入力はデモを止め、元の姿勢に入力値を適用します。保存モデルは変更しません。
 
 All tools have input schemas. The transaction envelope is validated by Zod; the 33 action-specific variants are documented in the operations resource and evaluated by the core. Do not assume the loose action object is a complete discriminated JSON Schema. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`.
 

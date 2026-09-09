@@ -115,7 +115,7 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
   tool('standrig_playback_state', 'Read transient playback state and connected outputs. An open output connection does not prove successful rendering or OBS capture.', z.object({}), true, () => request('/api/playback'));
   tool('standrig_playback_parameters', 'Set a pose/expression without modifying the model file. External trackers stream directly to the runtime/input API, outside MCP.', z.object({ values }), false,
     input => request('/api/playback/parameters', 'POST', { source, sequence: ++sequence, values: input.values }));
-  tool('standrig_playback_control', 'Play, pause, reset parameters or reload the working model. Open /player to see playback.', z.object({ command: z.enum(['play','pause','reset','reload']) }), false,
-    ({ command }) => request(command === 'reload' ? '/api/playback/reload' : '/api/playback/control', 'POST', { command }));
+  tool('standrig_playback_control', 'Play, pause, reset or reload. demo-start runs Showcase Fast & Wide or Mouse + Expressions; demo-stop restores the starting pose. demo-pointer supplies normalized mouse x/y. Manual parameter input stops the demo. View in preview or /player.', z.object({ command: z.enum(['play','pause','reset','reload','demo-start','demo-stop','demo-pointer']), mode: z.enum(['showcase-active','mouse-expression']).optional(), x: z.number().min(-1).max(1).optional(), y: z.number().min(-1).max(1).optional() }), false,
+    (input) => request(input.command === 'reload' ? '/api/playback/reload' : '/api/playback/control', 'POST', input));
   return server;
 }

@@ -35,6 +35,8 @@ Public entry points are `@standrig/core`, `@standrig/runtime` and their document
 
 MCP controls modeling transactions, QA, checkpoints, export, playback poses and play/pause/reset. It is not used for every tracking frame.
 
+The runtime also contains the original application's Showcase Fast & Wide and Mouse + Expressions choreography. The service schedules these optional demos and publishes transient poses over SSE; both preview and player use `StandRigPlayer` for rendering and physics. Demo state is additive under `playback.demo`; manual input stops a demo and restores its starting pose before applying the new input.
+
 An in-process tracker calls `player.setParameters(values)`. A separate process posts mapped numeric frames to `/api/playback/parameters`. The service broadcasts the latest state over SSE; browser outputs render locally. Sequence numbers reject duplicate/out-of-order frames for each input source. The last accepted value wins **per parameter** across sources. There is no blending or priority scheduler yet.
 
 Playback state is memory-only. Parameter changes never write keyforms or `rig.json`. Reset restores the model's saved preview/default values; it does not erase source sequence counters. Model reload resets values and sequence counters. Server restart resets transient playback state. `connectedOutputs` measures open SSE connections, including the preview UI; it does not prove a rendered frame or OBS capture. `outputAcknowledged` remains false in this release.

@@ -35,6 +35,8 @@ GET `/api/playback` returns the current state. POST `/api/playback/control` with
 
 Run `node examples/tracker-input.mjs` after loading Sample Bot for a synthetic input demonstration of about 5 seconds plus request latency. This is not webcam tracking. The example resets parameters and pauses playback at the end.
 
+Built-in motion demos use the same transient state transport. Start with `{command:"demo-start",mode:"showcase-active"}` or `mode:"mouse-expression"` on `/api/playback/control`; mouse mode accepts `{command:"demo-pointer",x:0.5,y:-0.5}`. `demo-stop` restores the starting pose and playback state. A valid external parameter frame automatically stops the demo before applying the frame, so tracking input takes over without competing with an ongoing demo timer. See [API.md](API.md) for the complete control contract.
+
 ## OBS connection
 
 The independent transparent page is `http://127.0.0.1:5180/player`. An external OBS setup can use that URL as a Browser Source and set the desired output dimensions. The service must remain running. This package does not install an OBS plugin, change scenes, start streaming or control recording.
