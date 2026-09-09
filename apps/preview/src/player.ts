@@ -5,6 +5,7 @@ const canvas = document.querySelector('canvas')!;
 const error = document.querySelector('#error')!;
 let player: StandRigPlayer | undefined;
 let modelVersion = -1;
+let sessionId: string | undefined;
 let pending: PlaybackSnapshot | undefined;
 let applying = false;
 async function drain() {
@@ -14,12 +15,13 @@ async function drain() {
     while (pending) {
       const state = pending;
       pending = undefined;
-      if (!player || modelVersion !== state.modelVersion) {
+      if (!player || modelVersion !== state.modelVersion || sessionId !== state.sessionId) {
         const rig = await fetchRigDocument();
         player?.dispose();
         player = new StandRigPlayer(canvas, rig);
         await player.load();
         modelVersion = state.modelVersion;
+        sessionId = state.sessionId;
       }
       if (!state.playing) player.pause();
       player.setParameters(state.values);

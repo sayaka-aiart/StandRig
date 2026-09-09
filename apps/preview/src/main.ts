@@ -22,6 +22,7 @@ let runtime: RigRuntime;
 let values: ParameterValues;
 let importing = false;
 let modelVersion = -1;
+let sessionId: string | undefined;
 let latest: PlaybackSnapshot | undefined;
 let reloadQueue = Promise.resolve();
 let inputSequence = 0;
@@ -56,7 +57,7 @@ function parameters() {
   }
 }
 function applyState() {
-  if (!latest || !rig || modelVersion !== latest.modelVersion) return;
+  if (!latest || !rig || modelVersion !== latest.modelVersion || sessionId !== latest.sessionId) return;
   values = { ...latest.values };
   for (const input of document.querySelectorAll<HTMLInputElement>('#params input')) {
     const id = input.getAttribute('aria-label')!;
@@ -67,9 +68,11 @@ function applyState() {
 function reload() {
   reloadQueue = reloadQueue.catch(() => {}).then(async () => {
     const version = latest?.modelVersion ?? -1;
+    const session = latest?.sessionId;
     rig = await fetchRigDocument(); values = previewParameterValuesForRig(rig);
     const previewRig = structuredClone(rig); previewRig.physics.enabled = false;
     runtime = new RigRuntime(previewRig); await runtime.loadAssets(); modelVersion = version;
+    sessionId = session;
     document.querySelector('#model-name')!.textContent = rig.name;
     document.querySelector<HTMLElement>('#empty')!.hidden = rig.assets.length > 0;
     qaButton.disabled = rig.assets.length === 0;
@@ -109,8 +112,9 @@ qaButton.onclick = async () => {
 const events = new EventSource('/api/playback/events');
 events.addEventListener('playback', event => {
   const previousVersion = latest?.modelVersion;
+  const previousSession = latest?.sessionId;
   latest = JSON.parse((event as MessageEvent).data);
-  if (previousVersion !== latest?.modelVersion) void reload().catch(report);
+  if (previousVersion !== latest?.modelVersion || previousSession !== latest?.sessionId) void reload().catch(report);
   else applyState();
 });
 events.onerror = () => { status.textContent = '再生サービスへ再接続しています…'; };

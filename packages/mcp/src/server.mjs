@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const repository = new URL('../../../', import.meta.url);
 const documents = {
-  guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md',
+  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md',
   architecture: 'docs/ARCHITECTURE.md', adapters: 'docs/ADAPTERS.md', api: 'docs/API.md'
 };
 const values = z.record(z.string(), z.number().finite());
@@ -84,7 +84,7 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
   });
   tool('standrig_qa_check', 'Run numeric QA before requesting images; maximum-pose visual review is still required.', qa, true, async input => {
     const result = await request('/api/qa/check', 'POST', input);
-    qaEvidence = { revision: result.structuredContent?.revision, failed: result.structuredContent?.failed ?? [], ok: !result.isError };
+    qaEvidence = { revision: result.structuredContent?.revision, failed: result.structuredContent?.failed ?? [], failureRegions: result.structuredContent?.failureRegions ?? [], ok: !result.isError };
     return result;
   });
   tool('standrig_render', 'After QA on the current revision, request one PNG. Failure images require a failed pose/region pair. Use 240px diagnostics.', z.object({
@@ -94,7 +94,9 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
     if (!qaEvidence || qaEvidence.revision !== context.structuredContent?.context?.revision) throw new Error('Run standrig_qa_check on the current stored revision first');
     if (input.kind === 'failure') {
       if (!qaEvidence.failed.some(f => f.poseId === input.poseId && f.region === input.region)) throw new Error('poseId/region must be in the last QA failed list');
-      return request('/api/qa/failure-image', 'POST', { poseId: input.poseId, region: input.region, width: 240, height: 240, physics: false });
+      const failure = qaEvidence.failureRegions.find(f => f.poseId === input.poseId && f.region === input.region);
+      if (!failure?.imageRequest) throw new Error('QA did not return a reproducible failure image request');
+      return request('/api/qa/failure-image', 'POST', { ...failure.imageRequest, width: 240, height: 240 });
     }
     if (!qaEvidence.ok) throw new Error('QA failed; use kind=failure for a returned failed region');
     if (input.kind === 'reference') {

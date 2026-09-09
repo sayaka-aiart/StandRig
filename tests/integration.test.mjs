@@ -10,9 +10,18 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { createLocalService } from '../apps/service/dist/service.js';
 import { createStandRigMcp } from '../packages/mcp/src/server.mjs';
 import { validateParameterPatch } from '@standrig/runtime/playback';
+import { PlaybackSession } from '../apps/service/dist/playback.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const sample = JSON.parse(await readFile(new URL('../examples/sample.standrig.json', import.meta.url), 'utf8'));
+test('new service sessions distinguish modelVersion zero after a restart',()=>{
+  const first=new PlaybackSession(sample), second=new PlaybackSession(sample);
+  assert.equal(first.snapshot().modelVersion,second.snapshot().modelVersion);
+  assert.notEqual(first.snapshot().sessionId,second.snapshot().sessionId);
+  const sessionId=first.snapshot().sessionId;
+  first.reload(sample);
+  assert.equal(first.snapshot().sessionId,sessionId);
+});
 test('reject external MCP origins', () => {
   for (const url of ['https://example.com','http://127.0.0.1:5180/api','http://user:secret@localhost:5180','http://localhost:5180/?x=1']) assert.throws(() => createStandRigMcp(url));
 });
@@ -31,6 +40,9 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
       return {status:response.status,data:await response.json()};
     };
     assert.equal((await call('/api/context')).data.context.summary.counts.assets,0);
+    const health=(await call('/api/health')).data;
+    assert.ok(health.endpoints.includes('/api/checkpoints/restore'));
+    assert.ok(health.endpoints.includes('/api/playback/parameters'));
     assert.equal((await call('/api/rig','POST',sample)).status,200);
     const stored = await readFile(path.join(dir,'public/rig.json'),'utf8');
     assert.equal((await fetch(service.url+'/api/context',{headers:{origin:'https://untrusted.example'}})).status,403);
@@ -89,9 +101,18 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const bundle=JSON.parse(await readFile(exported.path,'utf8'));
     assert.equal(bundle.format,'standrig-bundle');
     assert.ok(bundle.rig.assets.every(a=>a.src.startsWith('data:image/png;base64,')));
-    const resources=await client.listResources(); assert.equal(resources.resources.length,5);
+    const resources=await client.listResources(); assert.equal(resources.resources.length,6);
+    const contract=await client.readResource({uri:'standrig://docs/contract'});
+    assert.match(contract.contents[0].text,/Mandatory pre-model visual reference gate/);
     const guide=await client.readResource({uri:'standrig://docs/guide'});
     assert.match(guide.contents[0].text,/parts-separated PSD/);
+    const failedQa=await invoke('standrig_qa_check',{poseSamples:[{poseId:'custom-failed-pose',values:{ParamAngleZ:25}}],regions:['full'],minCoverage:1});
+    assert.equal(failedQa.isError,true);
+    assert.equal(failedQa.structuredContent.failureRegions[0].imageRequest.values.ParamAngleZ,25);
+    const failure=await invoke('standrig_render',{kind:'failure',poseId:'custom-failed-pose',region:'full'});
+    assert.equal(failure.isError,undefined,JSON.stringify(failure));
+    assert.equal(failure.content[0].type,'image');
+    assert.equal((await invoke('standrig_render',{kind:'failure',poseId:'unreported',region:'full'})).isError,true);
     assert.equal(stderr,'');
   } finally {
     abort.abort(); await client?.close(); await transport?.close(); await service?.close();

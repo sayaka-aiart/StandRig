@@ -1,23 +1,43 @@
 # StandRig
 
+[日本語](README.md) | [English](README.en.md)
+
 **AIから編集できる2Dモデリングコアと、組み込み可能な再生ランタイム。**
 
-Local 2D modeling and playback with an MCP interface. Import a parts-separated PSD, edit and validate its rig through AI tools, then drive the resulting model with numerical parameters. Initial developer release: **0.2.0**.
+パーツ分け済みPSDを読み込み、MCP対応のAIクライアントからメッシュ・デフォーマー・キーフォームを編集し、数値パラメータで動かせます。PSD読込と動作確認用のブラウザUIも付属します。開発者向け初期版 **0.2.0** です。
 
-## できること
+![パーツ分け済みキャラクターPSDを読み込んだStandRigの実画面](docs/images/character-preview.jpg)
 
-- パーツ分け済みPSDから、レイヤー位置・階層を持つモデルを読み込む。
-- MCPからArtMesh、Deformer、キーフォームなどを編集し、変更の試行・数値QA・確定・復元を行う。
-- 独立した再生画面や、自作アプリへ組み込んだランタイムでモデルを動かす。
-- 外部トラッカーから数値パラメータを入力する。透過再生画面を外部OBSのBrowser Sourceへ接続する。
+パーツ分け済みキャラクターPSDを読み込んだ実画面です。掲載キャラクターのPSD・モデルは同梱していません。「サンプルを試す」では図形モデルが開きます。画像は検証用ポート5196で撮影しており、通常の起動先は5180です。[掲載画像の扱い](docs/images/NOTICE.md)
 
-素材入力は**PSDのみ**です。描画内容のある画像レイヤーが2つ以上必要です。PNG直接読み込み、統合画像・単一レイヤーPSD、PSB、自動パーツ分けは対象外です。レイヤー数の検査は、顔や関節のパーツ分けが適切であることまで保証しません。
+## できること・対応範囲
 
-カメラ追跡・OBS制御は外部接続、Live2D Bridgeは将来拡張です。現時点でCubismのcmo3/moc3を作成・再生するツールではありません。出力はStandRig JSON / bundleです。
+| 機能 | 対応 |
+| --- | --- |
+| 素材の読み込み | パーツ分け済みPSDの画像レイヤー・位置・階層などを取り込む |
+| モデリング | MCP / HTTP APIから編集、試行、数値QA、確定、復元 |
+| 再生 | 透過再生ページ、数値パラメータ入力、ブラウザへのランタイム組み込み |
+| トラッキング | 外部ツールで追跡して数値を入力。カメラ推論は同梱しない |
+| OBS | 外部OBSのブラウザソースに再生ページを指定。OBS制御は同梱しない |
+| Live2D / Cubism | Bridgeは将来拡張。現在はcmo3/moc3の作成・変換・再生には非対応 |
 
-## 起動
+**PSDを読み込むだけでは、完成した動きは付きません。** AIへ指示して必要な設定を作り、実際の表示を確認します。自動パーツ分け、AIモデル、画像生成サービスは提供しません。
 
-Node.js **22.12以上の22系、または24以上**が必要です。初回は依存パッケージの取得にインターネット接続を使います。
+## 最初に試す
+
+必要なものは **Node.js 22.12以上の22系、または24以上**とブラウザです。確認済みの環境はWindows / Node.js 24です。初回インストールにはインターネット接続が必要です。サンプルの表示とスライダー操作にはAIの契約やMCP接続は不要です。
+
+### 1. ファイルを入手する
+
+このリポジトリをGitHub DesktopでCloneするか、**Code → Download ZIP**でダウンロードして展開します。Releasesに公開されたソースZIPも使えます。
+
+`README.md`、`package.json`、`start-modeling-tools.cmd` があるフォルダを開きます。ZIPを開いたまま実行せず、先に展開してください。
+
+### 2. 起動する
+
+**Windows:** `start-modeling-tools.cmd` をダブルクリックします。初回インストール、ビルド、サービス起動を行います。コマンド画面は使用中そのまま開いておきます。
+
+**ターミナルから:** リポジトリのフォルダへ移動して実行します。
 
 ```sh
 npm ci
@@ -25,18 +45,85 @@ npm run build
 npm start
 ```
 
-Windowsでは `start-modeling-tools.cmd` でも起動できます。
+`StandRig local service: http://127.0.0.1:5180` が表示されたら、ブラウザで **http://127.0.0.1:5180/** を開きます。ブラウザは自動では開きません。
 
-1. `http://127.0.0.1:5180/` を開く。
-2. パーツ分け済みPSDを選んで読み込む。まず動作を見る場合は「サンプルを試す」を使う。
-3. [MCP接続設定](docs/MCP.md)をAIクライアントへ登録し、[AI操作ガイド](AI_OPERATING_GUIDE.md)を読ませる。
-4. 「再生画面を開く」で結果を確認する。サンプルでは `ParamAngleZ`、`ParamMouthOpen`、目の開き、`ParamBodyAngleZ` を試せる。
+### 3. サンプルを動かす
 
-MCPはAIクライアントから別プロセスとして起動します。サービスの自動起動やAIモデルの提供は行いません。
+1. **「サンプルを試す」**を押します。現在のモデルは先にチェックポイントへ保存されます。
+2. **「再生画面を開く」**を押します。
+3. 元の画面を下へスクロールし、**Angle Z**（`ParamAngleZ`、頭の傾き）、**Mouth**（`ParamMouthOpen`、口の開き）などのスライダーを動かします。再生画面にも反映されれば基本動作を確認できています。
 
-停止は Ctrl+C。ポートが使用中なら `npm start -- --port 5182` とし、ブラウザとMCPの接続先も変更してください。
+サンプルは図形モデルです。設定のないパラメータを動かしても対応する動きは出ません。「再生」は時間更新・物理演算を進める操作で、自動的な身振りやカメラ追跡を始めるボタンではありません。
 
-## 構成
+## 自分のPSDを使う
+
+1. **「PSDを選択」**で1ファイル選び、**「PSDを読み込む」**を押します。
+2. 表示位置・重なり・色・表示/非表示が意図どおりか確認します。
+3. AIを接続し、動かしたい部位と範囲を伝えます。
+
+対応素材は **PSDのみ**で、描画内容のある画像レイヤーが2つ以上必要です。PNG直接読込、統合画像・単一レイヤーPSD、PSB、自動パーツ分けは対象外です。レイヤー数だけでは適切なパーツ分けか判定できません。Photoshopの全機能を再現するものではありません。[PSD入力ガイド](docs/PSD.md)を参照してください。
+
+## AIを接続する
+
+stdio MCPに対応したAIクライアントを別途用意します。AIの契約・料金・ツール実行設定は、そのクライアント側で管理します。StandRigのサービスは起動したままにします。
+
+`mcpServers` 形式を受け付けるクライアントでは、次を登録します。`args` を自分の配置先の**絶対パス**へ置き換えてください。
+
+```json
+{
+  "mcpServers": {
+    "standrig": {
+      "command": "node",
+      "args": ["C:/path/to/StandRig/packages/mcp/src/cli.mjs"],
+      "env": { "STANDRIG_URL": "http://127.0.0.1:5180" }
+    }
+  }
+}
+```
+
+設定の保存場所・書式はクライアントによって異なります。[MCP接続ガイド](docs/MCP.md)に確認方法をまとめています。
+
+最初にAIへ渡す文章の例です。
+
+> StandRigのMCPリソース standrig://docs/contract と standrig://docs/guide を読んでください。standrig_contextで現在のモデルを確認し、パーツ構成と設定済みの動きを説明してください。まだモデルは変更しないでください。
+
+モデリング依頼の例です。
+
+> このPSDから、まず目の開閉を設定してください。既存のパーツIDと構造を確認し、操作ルールに従って必要な参照画像とマニフェストを準備してから、dry-run、数値QA、確定、実際の表示確認の順に進めてください。参照画像を用意する手段が足りない場合は、必要な資料を説明してください。
+
+MCPだけでは参照画像の新規作画や任意ファイルの保存はできません。AIクライアントのファイル・画像ツール、または利用者が用意した資料を使います。数値QAの合格だけで見た目の完成を判定しないでください。
+
+## 保存・復元・受け渡し
+
+- 読み込みと確定した編集はサーバー側へ保存されます。スライダー操作や再生状態は一時的で、モデルの編集にはなりません。
+- 既定の保存先は **`workspace/`**。モデルは `workspace/public/rig.json`、復元点は `workspace/checkpoints/`、bundle出力は `workspace/exports/` に入ります。
+- PSD/サンプルの読み込み前とMCPでの確定前にチェックポイントを作ります。復元は `standrig_checkpoint` で一覧を取得し、現在のrevisionとIDを使って `standrig_restore` を呼びます。
+- 「モデルJSONを書き出す」はJSON単体です。画像込みで渡すには `standrig_export` で **bundle** を作ります。受け取り側の読込方法は[APIガイド](docs/API.md#bundleの再読み込み)を参照してください。
+- 元PSD・参照画像も別途バックアップしてください。`workspace/` はGit・配布ZIP対象外なので、pushしても作業データのバックアップにはなりません。
+
+別モデル用の保存先を指定する例です。同じ保存先に複数のサービスを起動しないでください。
+
+```sh
+npm start -- --data-dir "C:/Models/My Character"
+```
+
+停止はコマンド画面で **Ctrl+C**。次回は起動ファイル、または `npm start` で再開します。ソース更新後は `npm ci` と `npm run build` をやり直します。
+
+## 困ったとき
+
+| 症状 | 確認すること |
+| --- | --- |
+| `node` / `npm` が見つからない | 対応Node.jsをインストールし、ターミナルやAIクライアントを開き直す |
+| PowerShellで `npm.ps1` が拒否される | `npm.cmd ci` など `.cmd` を指定するか、Windowsの起動ファイルを使う |
+| 画面が開かない / `fetch failed` | サービスが起動中か、URL・ポートが一致しているか確認する |
+| `EADDRINUSE` | 起動済みでないか確認。別ポートなら `npm start -- --port 5182` とし、ブラウザとMCPの接続先も5182にする |
+| MCPで `node` が見つからない | `command` にNode実行ファイルの絶対パスを指定する |
+| MCP接続直後にプロトコルエラー | `npm run mcp` ではなく、上記の `node` と `cli.mjs` を使う |
+| PSDは表示されるが動かない | 対象パラメータの設定を確認する。PSD読込だけでは完成しない |
+| `empty-image` | PSDまたはサンプルを読み込む。空モデルのQAは失敗する |
+| `revision mismatch` | 最新contextを取得し、変更内容を再確認して試行し直す |
+
+## 開発者向け
 
 ```text
 packages/core/       モデル形式・モデリング・評価・QA
@@ -45,31 +132,19 @@ packages/mcp/        AI操作用stdio MCPサーバー
 apps/service/        ローカルAPI・保存・復元・再生状態
 apps/preview/        PSD読込・姿勢確認・透過再生画面
 examples/            合成サンプルモデルと接続例
-templates/           初回作業フォルダ用の空モデル・スキーマ
 ```
 
-詳しくは[構成と依存関係](docs/ARCHITECTURE.md)、[トラッキング・OBS・将来Bridgeの接続境界](docs/ADAPTERS.md)を参照してください。`core` / `runtime` はMCPなしでも利用できます。Viteは画面の開発・ビルド用で、通常起動のAPIサーバーは独立しています。
-
-## 作業データ
-
-モデル、チェックポイント、出力は既定で `workspace/` に保存します。このフォルダはGitと配布ZIPから除外します。別モデルは `npm start -- --data-dir /absolute/model-project` で分けてください。同じデータフォルダへ複数のサービスを起動しないでください。
-
-読み込み前とMCPの確定前にチェックポイントを保存します。MCPの `standrig_restore` で復元できます。チェックポイントは画像込みですが、元PSDや外部の参照資料のバックアップも別途保管してください。
-
-プレビューの「モデルJSONを書き出す」はJSON単体です。モデルを別環境へ渡す場合は `standrig_export` または `POST /api/exports/bundle` で画像込みbundleを書き出します。作成物の権利は、元のPSD・画像の条件に従います。
-
-## 開発・検証
+`core` / `runtime` はMCPなしでも利用できます。npmへは未公開なので、このソースのnpm workspacesで開発します。[構成](docs/ARCHITECTURE.md)、[外部接続・組み込み](docs/ADAPTERS.md)、[API](docs/API.md)、[操作一覧](docs/OPERATIONS.md)を参照してください。
 
 ```sh
 npm run build
 npm test
-npm run verify
 ```
 
-UI開発時はサービスを起動したまま `npm run dev` を実行し、5181番へ接続します。検証結果と限界は[VALIDATION.md](docs/VALIDATION.md)を参照してください。数値QAの成功だけでモデルの見た目や配信動作を保証するものではありません。
+UI開発はサービスを5180番で起動したまま、別ターミナルで `npm run dev` を実行し、http://127.0.0.1:5181/ を開きます。通常起動はViteから独立したNode.jsサービスです。
 
-GitHub向けCI・Issue/PRテンプレートと、作業素材を含めない配布スクリプトを同梱しています。[公開手順](docs/RELEASING.md)を参照してください。GitHubやnpmへの自動公開は設定していません。
+配布物のハッシュ確認は `npm run verify`。ソース変更後は不一致になるため、通常の開発テストとは区別してください。配布時の生成・検証は[RELEASING.md](docs/RELEASING.md)、検証範囲は[VALIDATION.md](docs/VALIDATION.md)に記載しています。
 
 ## License
 
-独自コードと同梱の合成サンプルは [Apache-2.0](LICENSE)。[NOTICE](NOTICE)、[第三者ライブラリの表記](THIRD_PARTY_NOTICES.md)を参照してください。ユーザーが持ち込むPSD・キャラクター画像には、このリポジトリのライセンスを適用しません。
+独自コード・ドキュメント本文・合成サンプルは [Apache-2.0](LICENSE)。[NOTICE](NOTICE)、[第三者ライブラリの表記](THIRD_PARTY_NOTICES.md)も参照してください。持ち込むPSD・キャラクター画像、およびスクリーンショット内のキャラクターには、このリポジトリのライセンスを適用しません。[掲載画像の扱い](docs/images/NOTICE.md)を参照してください。

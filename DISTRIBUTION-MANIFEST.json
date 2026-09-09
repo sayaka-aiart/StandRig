@@ -23,8 +23,8 @@
     {
       "path": ".github/workflows/ci.yml",
       "normalization": "lf",
-      "bytes": 572,
-      "sha256": "b6e1f8e32483513f954db5827c7ec4973e78b36aec2409320a45b6c9e56b8e8d"
+      "bytes": 665,
+      "sha256": "44009089b199f96c42e1e95c3d5e32729e8b1a5c12c6e221946a13ebce40b089"
     },
     {
       "path": ".gitignore",
@@ -35,20 +35,20 @@
     {
       "path": "AGENTS.md",
       "normalization": "lf",
-      "bytes": 3319,
-      "sha256": "e3f5bf524ae4a0e960b4d72ee7df38ff8d0d1eac4d68eaf7a7c0133590a358c5"
+      "bytes": 3797,
+      "sha256": "5edcb951b0911c04b27c56d7deb6958d2ce4f651b5587bce33da3913dbefe182"
     },
     {
       "path": "AI_OPERATING_GUIDE.md",
       "normalization": "lf",
-      "bytes": 8636,
-      "sha256": "8f820b8b9bcda5f7d1caa2f209a94eb936ee148082bc85a1ced0cb5bb19f5c0b"
+      "bytes": 9472,
+      "sha256": "455fd0738636b8e9b3021906565f9fc47a4cafad20b8d6e30016159d3bd02281"
     },
     {
       "path": "CONTRIBUTING.md",
       "normalization": "lf",
-      "bytes": 807,
-      "sha256": "295e94ab75f68d48d0acb5c0a1684b4d100757a5bfd63d4f6f210b4847497561"
+      "bytes": 1147,
+      "sha256": "f37ea0a0b73bf7988345e47ca7036e6fc220e9008e7ebbbff15a0919f6984519"
     },
     {
       "path": "LICENSE",
@@ -63,10 +63,16 @@
       "sha256": "18ccdaaeb82f137c3e378d6aec35df57bef50626abe230733aa25cb514704092"
     },
     {
+      "path": "README.en.md",
+      "normalization": "lf",
+      "bytes": 9998,
+      "sha256": "5072fe804dbf35b8f282ab60fac7da187a369ad25df4fcf4570252591eea6bf3"
+    },
+    {
       "path": "README.md",
       "normalization": "lf",
-      "bytes": 5066,
-      "sha256": "a256ada93915c3010fea32284f2974018f67d0be3aa794e3af28dac382f59781"
+      "bytes": 10827,
+      "sha256": "54c240ad4bc572789647e47b64bb5bd67ca94634e9b5c3bd2f2b1646c889ac4b"
     },
     {
       "path": "SECURITY.md",
@@ -107,14 +113,14 @@
     {
       "path": "apps/preview/src/main.ts",
       "normalization": "lf",
-      "bytes": 8839,
-      "sha256": "cdbe96bab8265a743d8768089839a5188a99fc5c6b4fee20e7f5d8061e04bd09"
+      "bytes": 9058,
+      "sha256": "2d48e2bc4bc94dbec07e9a0a0b093f4f13241c84b0c24eb9152765f05de11c4e"
     },
     {
       "path": "apps/preview/src/player.ts",
       "normalization": "lf",
-      "bytes": 1545,
-      "sha256": "275642435a9752f85b73d555481d9ca907bd543a846fa5e3f35609a91f96391c"
+      "bytes": 1650,
+      "sha256": "03d17c197b31a55481242faeba0e884c990053d8dbfa6923b4963e20078664ce"
     },
     {
       "path": "apps/preview/src/styles.css",
@@ -167,8 +173,8 @@
     {
       "path": "apps/service/src/playback.ts",
       "normalization": "lf",
-      "bytes": 3185,
-      "sha256": "38cf609eb2e2384b903ce976df909c386877205c6c028eeefee286c5a3182ee5"
+      "bytes": 3252,
+      "sha256": "506aa59e06057f3c1b0c473c584b95fb37185204ffcf87fd4d49130991ab7da6"
     },
     {
       "path": "apps/service/src/portableBundle.ts",
@@ -179,8 +185,8 @@
     {
       "path": "apps/service/src/rigApiPlugin.ts",
       "normalization": "lf",
-      "bytes": 166775,
-      "sha256": "9a19055df830adf2bd2cb6693dd7056aac1abe8fc4c89800275d52ed25057261"
+      "bytes": 166791,
+      "sha256": "78a3bbefb5d4968814872cabb1bf4b87fee0695bea11b500cccc462a07c749a0"
     },
     {
       "path": "apps/service/src/service.ts",
@@ -197,26 +203,26 @@
     {
       "path": "docs/ADAPTERS.md",
       "normalization": "lf",
-      "bytes": 3623,
-      "sha256": "15dbb5187ffa9ead997da28e60c903438be0c05f216fc54861f2acb62022555b"
+      "bytes": 4027,
+      "sha256": "a984775a9f5ef159c8c96fc131450be9c1c9898b3afbc17822dc2e0f27a8da48"
     },
     {
       "path": "docs/API.md",
       "normalization": "lf",
-      "bytes": 8695,
-      "sha256": "492119c24bfbb852235de919859d9d7703f58ad24fd46e42a8451183a4821751"
+      "bytes": 11288,
+      "sha256": "c364a94c71c9313e4478ecc29358843339a64ff1c8b6fa9df6c23ff3eecc7eef"
     },
     {
       "path": "docs/ARCHITECTURE.md",
       "normalization": "lf",
-      "bytes": 5292,
-      "sha256": "5c716ed3c46fc8c63ed40353c9fdddabf8ac34d531a9de1ee5f6e774b9a76eb4"
+      "bytes": 5710,
+      "sha256": "2a152ee59b499f34dcb9ada1c4967104ebf3b1fd344a35873ab7f0630e27ad98"
     },
     {
       "path": "docs/MCP.md",
       "normalization": "lf",
-      "bytes": 4271,
-      "sha256": "72ad7c1140accc4d56a4d00d2117d3591692ba8dc94a2a692f95af4b1d1bedb9"
+      "bytes": 5784,
+      "sha256": "63b3934820e535bd4be8112beeb9a4e97262648720f21aa890164e1701bcc028"
     },
     {
       "path": "docs/OPERATIONS.md",
@@ -225,28 +231,46 @@
       "sha256": "caeafcbb5a384ff350eac9e298665dc0db0ea3abed96c94897e0464cfd53c407"
     },
     {
+      "path": "docs/PSD.md",
+      "normalization": "lf",
+      "bytes": 3102,
+      "sha256": "05bce36114e3512af74242dd0804a9ca8ce0360cfeb7fe7bf2ab709025d076f3"
+    },
+    {
       "path": "docs/RELEASING.md",
       "normalization": "lf",
-      "bytes": 2916,
-      "sha256": "1cf0176bccdd4748839d61d9f4dec23122d4089b7e003cc16d36df6928f06aaa"
+      "bytes": 3120,
+      "sha256": "8b5224d4d1e3dd8da9cbda801c481ca4518f06363f703cd8ae44259809f39b67"
     },
     {
       "path": "docs/VALIDATION.md",
       "normalization": "lf",
-      "bytes": 2910,
-      "sha256": "b2cffc8824704a03102d9bbfa1ce7f44b3d61a7141ef56368000d024f0bdb52e"
+      "bytes": 5680,
+      "sha256": "a0dc6766ec5ab55e2d08272d625d4c3b473ae14c2bb9866c3bb9b5d61df52dfc"
     },
     {
       "path": "docs/api-routes.json",
       "normalization": "lf",
       "bytes": 19873,
-      "sha256": "aac925b97b0bbbd1e0a018e0e27648a116cfdd648c29d9884441f245c86fe0b5"
+      "sha256": "bd28dd95e7594598c009f78178e1457d76a73bd295ee81179f72c9299c111816"
+    },
+    {
+      "path": "docs/images/NOTICE.md",
+      "normalization": "lf",
+      "bytes": 732,
+      "sha256": "ee8fe7390fc59dcdcc4f91e52d05e386c18a96115cb0c214fed889b12758a53b"
+    },
+    {
+      "path": "docs/images/character-preview.jpg",
+      "normalization": "none",
+      "bytes": 79268,
+      "sha256": "dd87f21b7b8a05bb90bc3bb85579842984201924baabe5cf7cab1964df534848"
     },
     {
       "path": "docs/openapi.json",
       "normalization": "lf",
-      "bytes": 108994,
-      "sha256": "fb0d666513e52b909d5e23af91383236f8275f8b94a56a8de99c6d88eff236ae"
+      "bytes": 147113,
+      "sha256": "75d5ac5bc500b3150ab61638286d36ba1b65254d19599da47546d03387fd49e9"
     },
     {
       "path": "examples/agent-client.mjs",
@@ -863,14 +887,14 @@
     {
       "path": "packages/core/src/qaCheck.ts",
       "normalization": "lf",
-      "bytes": 9428,
-      "sha256": "55cdd225d0aeccfc53994073517f2ff3e0b07cf8982c9be2365486f17300ff90"
+      "bytes": 10298,
+      "sha256": "ac92650479b16c1315a0275c93cb44768efe9d89f521cfb887909d3545ec5c4a"
     },
     {
       "path": "packages/core/src/qaFailureImage.ts",
       "normalization": "lf",
-      "bytes": 3256,
-      "sha256": "d67a0b1b19f7a2b1939a3afeed0c97853e69172ceacdf6b29dce492c065a72e5"
+      "bytes": 3870,
+      "sha256": "ba1942e70b929c45f79fe61b3c6bffdc61d50207ae53b869508757b7a041b296"
     },
     {
       "path": "packages/core/src/readiness.ts",
@@ -1013,8 +1037,8 @@
     {
       "path": "packages/mcp/src/server.mjs",
       "normalization": "lf",
-      "bytes": 9061,
-      "sha256": "f80a664da364765d8e2c640c10cbcf4bc13fd9b2e1d8192e630f4fb3c1f9ed62"
+      "bytes": 9337,
+      "sha256": "61b210fb94b55a71cf49ea3184f879969b4d3b7a4ee2de7f91cc3578f7480d17"
     },
     {
       "path": "packages/runtime/package.json",
@@ -1031,8 +1055,8 @@
     {
       "path": "packages/runtime/src/playback.ts",
       "normalization": "lf",
-      "bytes": 3377,
-      "sha256": "33b8db623beb0e7a098fad017653da58bcaa9d1053c2557c1e15a457ec518a8d"
+      "bytes": 3396,
+      "sha256": "adddc8f046891b91f717e17f69e70522c385984238a00d5388ea735f3d8ff9c7"
     },
     {
       "path": "packages/runtime/src/renderer.ts",
@@ -1067,8 +1091,8 @@
     {
       "path": "scripts/generate-api-docs.mjs",
       "normalization": "lf",
-      "bytes": 8464,
-      "sha256": "a908c68a9425ab378273d6025ba7e7df6303ba5f66d1de623936bdcc2e8a448c"
+      "bytes": 11267,
+      "sha256": "b5981f354d5a99b72ece24bb9ecabb65301cda63659b8ad3cd0cdd594db21154"
     },
     {
       "path": "scripts/init-empty.mjs",
@@ -1079,8 +1103,8 @@
     {
       "path": "scripts/package-release.mjs",
       "normalization": "lf",
-      "bytes": 4474,
-      "sha256": "f3e8578fdceabe81778fa15aaca47d5319feb5d1530dc198cd77e083ddad3b92"
+      "bytes": 4489,
+      "sha256": "e13dce3b3e6064a1df8f22d52459fad6452b68c40e580561ac33723cb28352fb"
     },
     {
       "path": "scripts/register-loader.mjs",
@@ -1139,14 +1163,20 @@
     {
       "path": "tests/integration.test.mjs",
       "normalization": "lf",
-      "bytes": 7464,
-      "sha256": "cf9446e6768cbb013405180de9eb8ccb03c7623af102f7894865bd6c326a5d7b"
+      "bytes": 8974,
+      "sha256": "98371ccb5ba75911b40a6a6d89f6fcf1db9d7fb32c328dab79e31b6fdcffb934"
     },
     {
       "path": "tests/psd.test.mjs",
       "normalization": "lf",
       "bytes": 2168,
       "sha256": "2f539adeea8d1a792eefe688429c866a06826de6cc0bd9d23ba1ac408d376d46"
+    },
+    {
+      "path": "tests/qa.test.mjs",
+      "normalization": "lf",
+      "bytes": 1599,
+      "sha256": "2eda47b0116cf7bde8590ba345210d9c80347d4a1dbb78d14146ff897714ab90"
     },
     {
       "path": "tsconfig.json",

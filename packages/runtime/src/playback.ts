@@ -5,7 +5,7 @@ import { RigRuntime } from './renderer.js';
 /** Input is already mapped into model coordinates. Camera/face inference stays outside. */
 export interface ParameterFrame { source: string; sequence: number; values: ParameterValues }
 export interface PlaybackSnapshot {
-  version: 1; revision: number; modelVersion: number;
+  version: 1; sessionId: string; revision: number; modelVersion: number;
   playing: boolean; values: ParameterValues; lastSource: string | null;
 }
 export interface TrackingAdapter {

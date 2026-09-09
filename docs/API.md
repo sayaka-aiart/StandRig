@@ -45,6 +45,8 @@ The API runs with `npm start` after `npm run build`. `npm run dev` starts only t
 
 The modeling route inventory and new service routes are in `api-routes.json`, generated from `apps/service/src/rigApiPlugin.ts` with source line numbers. GET endpoints occasionally describe further actions. For advanced skinning, symmetry, glue, generation request/asset acceptance and art paths, follow the listed source handler and its imported request types. The generation endpoints manage requests and provided artwork; this package does not include an image-generation service.
 
+The inventory also reads exact service routes from `apps/service/src/service.ts`. Inventory method lists summarize a handler; not every method applies to every subpath. `openapi.json` covers the principal workflows, not every inherited action-specific schema. See `docs/OPERATIONS.md` and the referenced TypeScript types for those bodies.
+
 ## Modeling transaction
 
 ```json
@@ -95,6 +97,8 @@ The server clones the current rig, applies operations to the clone, runs validat
 
 Use actual ranges from `/api/params`; 30 is only an example. The response includes the stored `revision`, `ok`, `entries`, `failed`, `failureRegions`, `renderedCount`, `imagePolicy` and `cache`. Each failureRegions entry supplies an `imageRequest` accepted by `/api/qa/failure-image`. If the model is empty, `empty-image` is expected.
 
+Pass the returned `imageRequest` intact: it includes sampled `values`, `beforeValues` and physics settings needed to reproduce custom `poseSamples`. Pose IDs in custom samples are labels, not necessarily registered modeling poses. Duplicate sample labels and unknown named poses/regions are rejected. The comparison panels are neutral/baseline pose, failed pose and pixel difference of the **same stored model**, not revisions before and after an edit.
+
 `GET /api/screenshot?width=240&height=240&physics=0&ParamAngleX=30` renders the stored model. Query parameters support `set`, `detail`, `partIds`, `focusParts`, `forceParts`, `width`, `height`, `padding`, `transparent`, `physics`, `physicsTime`, `physicsSteps`, `supersample`, and parameter IDs. Read available sets/details from `/api/modeling` and `/api/reference`. Dimensions refer to panels for contact-sheet modes. Do numeric QA before diagnostic images; do not repeatedly request large full-body renders.
 
 ## Errors and persistence
@@ -108,7 +112,7 @@ Data lives under the selected data directory (default `workspace/`): `public/rig
 
 | Method | Path | Body / result |
 | --- | --- | --- |
-| GET | `/api/playback` | `{ok,playback}`; transient values, modelVersion, playing, connectedOutputs |
+| GET | `/api/playback` | `{ok,playback}`; transient values, sessionId, modelVersion, playing, connectedOutputs |
 | GET | `/api/playback/events` | SSE `playback` events and keepalives |
 | POST | `/api/playback/parameters` | `{source,sequence,values}`; see ADAPTERS.md |
 | POST | `/api/playback/control` | `{command:"play"|"pause"|"reset"}` |
@@ -119,3 +123,18 @@ Data lives under the selected data directory (default `workspace/`): `public/rig
 | GET | `/api/sample` | Bundled geometric sample RigDocument; no import/write by this GET |
 
 New playback inputs are atomically rejected with 400 on invalid values or stale source sequences. Model restore uses 409 on revision mismatch. Output connections are not rendering acknowledgments. The service rejects foreign Host/Origin with 403. Requests and frames are local only; there is no remote authentication.
+
+Checkpoint creation and bundle export return **201**; restore returns **200**. Model imports and legacy handlers allow up to 64 MiB request bodies; playback/checkpoint control bodies have a 1 MiB limit. Errors must be inspected even when HTTP status is 200. The checkpoint/export files stay on the service host; returned paths are not download URLs.
+
+## Bundleの再読み込み
+
+別環境へ移す場合は `standrig_export`（HTTP: `POST /api/exports/bundle`）で作成されたファイルを渡します。このJSONは `{format:"standrig-bundle", rig: ...}` という包みになっており、画像は `rig.assets` に埋め込まれています。
+
+受け取り側で新しいデータフォルダを指定してサービスを起動し、次の順に操作します。
+
+1. `POST /api/checkpoints` に `{}` を送り、現在のモデルのバックアップ成功を確認する。
+2. 受け取ったJSONの `format` が `standrig-bundle` であることを確認し、`rig` フィールドを取り出す。
+3. `PUT /api/rig?includeAssets=1` に **rigオブジェクトそのもの**をJSONで送る。bundle全体を送らない。
+4. `GET /api/context` と `GET /api/rig/validate` を確認し、ブラウザの「再読み込み」で表示を確認する。
+
+この全体置換APIには `expectedRevision` による競合保護がありません。同時編集を止めてから使ってください。MCPにはbundle読み込みツールはなく、HTTPを利用できるクライアントが必要です。「モデルJSONを書き出す」のJSONは最初からrig本体ですが、外部画像を参照している場合は単体では移動できません。通常の作業再開には再インポートは不要で、同じデータフォルダで起動します。

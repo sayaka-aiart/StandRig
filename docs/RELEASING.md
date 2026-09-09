@@ -24,7 +24,7 @@ For GitHub, create a repository from the extracted source folder, check the file
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` builds/tests on Windows and Ubuntu with Node 22 and 24. It has read-only repository permissions and does not publish artifacts or packages. Configuration is included; remote CI is not considered passed until it has actually run on GitHub.
+`.github/workflows/ci.yml` builds/tests on Windows and Ubuntu with Node 22 and 24, then regenerates API docs and checks that they match the committed files. Release-manifest verification is a separate packaging step: ordinary source changes should not require rebuilding a release ZIP just to pass development CI. CI has read-only repository permissions and does not publish artifacts or packages. Remote CI is not considered passed until it has actually run on GitHub.
 
 ## License and provenance
 

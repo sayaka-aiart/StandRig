@@ -2,7 +2,7 @@
 
 ## Embedding playback directly
 
-Build the workspace packages first. In a browser project with a bundler:
+Build the workspace packages first. The packages are not published to npm. Develop inside this repository's npm workspaces (as apps/preview does), or bring both core and runtime into your own workspace and resolve runtime's core dependency locally. `npm install @standrig/runtime` from the public registry is not a supported installation path. In that browser project with a bundler:
 
 ```ts
 import { StandRigPlayer } from '@standrig/runtime';
@@ -33,7 +33,7 @@ Content-Type: application/json
 
 GET `/api/playback` returns the current state. POST `/api/playback/control` with `{"command":"play"}`, `pause` or `reset` controls the player. POST `/api/playback/reload` reloads the working model. State does not persist to disk. GET `/api/playback/events` emits `event: playback` SSE records plus keepalives; slow connections are closed and can reconnect to the latest state. State broadcasts are a local interoperability transport, not a hard real-time guarantee.
 
-Run `node examples/tracker-input.mjs` after loading Sample Bot for a 5-second synthetic input demonstration. This is not webcam tracking.
+Run `node examples/tracker-input.mjs` after loading Sample Bot for a synthetic input demonstration of about 5 seconds plus request latency. This is not webcam tracking. The example resets parameters and pauses playback at the end.
 
 ## OBS connection
 

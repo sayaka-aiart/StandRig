@@ -12,6 +12,8 @@ Open `http://127.0.0.1:5180/`, import a parts-separated PSD or load the geometri
 
 ## Client configuration
 
+日本語の初回起動手順は [README](../README.md#aiを接続する) を参照してください。設定画面では「コマンド」=`node`、「引数」=`配置先/packages/mcp/src/cli.mjs` の絶対パス、「環境変数」=`STANDRIG_URL=http://127.0.0.1:5180` に相当する値を指定します。これはstdio接続です。サービスのHTTP URLをリモートMCPのURL欄へ入力しても接続できません。
+
 For clients accepting an `mcpServers` JSON configuration, replace the absolute path below:
 
 ```json
@@ -27,6 +29,8 @@ For clients accepting an `mcpServers` JSON configuration, replace the absolute p
 ```
 
 Use the equivalent command/args/env fields in other clients. If `node` is not on that client's PATH, use the absolute path to the Node executable. Paths containing spaces remain a single array argument. The MCP process works from any current directory. Use `node .../cli.mjs` directly in client configuration: `npm run mcp` prints npm's own messages and is for terminal inspection, not a clean stdio transport.
+
+After saving, reconnect/restart the MCP connection in your client. Confirm that all 12 `standrig_*` tools are listed, then call `standrig_context`. A successful response contains `context.revision` and model counts. An empty model has zero assets: import your PSD in the browser before asking for modeling. If tools are missing, check the executable/path; if a tool returns `fetch failed`, check the running service and STANDRIG_URL. Tool listing alone does not prove service connectivity.
 
 `STANDRIG_URL` accepts only loopback HTTP origins and does not follow redirects. The process does not start the service, import files, open a browser, buy AI API credits or configure OBS. SDK 2.0.0's `serveStdio` supports the modern protocol and legacy initialization; the installed version is fixed in the lockfile. [Official SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 
@@ -51,7 +55,7 @@ All tools have input schemas. The transaction envelope is validated by Zod; the 
 
 ## Resources and workflow
 
-Read `standrig://docs/guide` first. Additional resources: `operations`, `architecture`, `adapters`, `api` under the same URI prefix.
+Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide`. Additional resources: `operations`, `architecture`, `adapters`, `api` under the same URI prefix (six resources total). If your client cannot read MCP resources, give it the corresponding local files; do not skip the contract.
 
 1. Read context and confirmed parts. Prepare visual targets under the model's data directory before PSD modeling.
 2. Read poses and the operations resource; dry-run a bounded transaction with `expectedRevision`, `commit:false`, and explicit QA.
@@ -60,5 +64,7 @@ Read `standrig://docs/guide` first. Additional resources: `operations`, `archite
 5. Set playback parameters and open `/player`. Numeric success and connected outputs alone do not prove the final visual result.
 
 `standrig_render` requires QA evidence for the current revision within that MCP session. Failed QA permits only a reported pose/region failure image. Reference sheets are the explicit image-size exception in AGENTS.md. These images render the stored model; they never show an uncommitted dry-run candidate. Restarting MCP clears its QA evidence.
+
+Failure rendering reuses the QA result's sampled values and physics settings, including custom `poseSamples`. The diagnostic is rendered at 240px per panel. `snapshot` uses explicit `values`; `reference` uses an available sheet `set`; `poseId` and `region` select a `failure` only. Preparing new reference artwork and saving arbitrary files requires separate tools; the MCP renderer only renders the existing model.
 
 For a reproducible sample round trip, load Sample Bot and run `node examples/mcp-demo.mjs`. It changes only transient playback, after numeric QA. The example uses the SDK client installed as a development dependency.

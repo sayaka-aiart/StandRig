@@ -38,6 +38,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -61,6 +72,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -123,6 +145,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -146,6 +179,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -208,6 +252,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -231,6 +286,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -293,6 +359,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -316,6 +393,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -378,6 +466,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -401,6 +500,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -463,6 +573,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -486,6 +607,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -548,6 +680,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -571,6 +714,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -633,6 +787,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -656,6 +821,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -718,6 +894,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -741,6 +928,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -803,6 +1001,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -826,6 +1035,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -888,6 +1108,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -911,6 +1142,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -973,6 +1215,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -996,6 +1249,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1058,6 +1322,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1081,6 +1356,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1143,6 +1429,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1166,6 +1463,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1228,6 +1536,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1251,6 +1570,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1313,6 +1643,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1336,6 +1677,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1398,6 +1750,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1421,6 +1784,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1483,6 +1857,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1506,6 +1891,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1578,6 +1974,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1601,6 +2008,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1673,6 +2091,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1696,6 +2125,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1768,6 +2208,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1791,6 +2242,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1861,6 +2323,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1884,6 +2357,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -1968,6 +2452,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -1991,6 +2486,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2063,6 +2569,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2086,6 +2603,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2158,6 +2686,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2181,6 +2720,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2266,6 +2816,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2289,6 +2850,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2425,6 +2997,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2448,6 +3031,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2584,6 +3178,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2607,6 +3212,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2671,8 +3287,36 @@
                   "physics": {
                     "type": "boolean",
                     "default": false
+                  },
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    },
+                    "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                  },
+                  "beforeValues": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    },
+                    "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                  },
+                  "physicsTime": {
+                    "type": "number"
+                  },
+                  "physicsSteps": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 240
+                  },
+                  "supersample": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2
                   }
-                }
+                },
+                "description": "Pass a failureRegions[].imageRequest returned by QA, preserving sampled values and physics settings. Panels compare two poses of the same stored model."
               }
             }
           }
@@ -2706,6 +3350,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2729,6 +3384,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2769,7 +3435,7 @@
         "summary": "Local service /api/exports/bundle",
         "operationId": "post__api_exports_bundle",
         "responses": {
-          "200": {
+          "201": {
             "description": "JSON result. Inspect ok, errors and commit/QA fields.",
             "content": {
               "application/json": {
@@ -2781,6 +3447,17 @@
             }
           },
           "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2814,6 +3491,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2853,7 +3541,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false
               }
             }
           }
@@ -2876,6 +3564,17 @@
             }
           },
           "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2909,6 +3608,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2950,7 +3660,85 @@
         "operationId": "get__api_playback",
         "responses": {
           "200": {
-            "description": "JSON result. Inspect ok, errors and commit/QA fields.",
+            "description": "Transient playback state; not a render acknowledgment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "playback"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -2960,7 +3748,7 @@
               }
             }
           },
-          "400": {
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -2994,6 +3782,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3035,7 +3834,85 @@
         "operationId": "post__api_playback_parameters",
         "responses": {
           "200": {
-            "description": "JSON result. Inspect ok, errors and commit/QA fields.",
+            "description": "Transient playback state; not a render acknowledgment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "playback"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -3045,7 +3922,7 @@
               }
             }
           },
-          "400": {
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3089,6 +3966,17 @@
               }
             }
           },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "422": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -3118,7 +4006,30 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "required": [
+                  "source",
+                  "sequence",
+                  "values"
+                ],
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+                  },
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Strictly increasing per source. Use a new source ID for a new input session."
+                  },
+                  "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    },
+                    "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                  }
+                }
               }
             }
           }
@@ -3131,7 +4042,85 @@
         "operationId": "post__api_playback_control",
         "responses": {
           "200": {
-            "description": "JSON result. Inspect ok, errors and commit/QA fields.",
+            "description": "Transient playback state; not a render acknowledgment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "playback"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -3141,7 +4130,7 @@
               }
             }
           },
-          "400": {
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3185,6 +4174,17 @@
               }
             }
           },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "422": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -3214,7 +4214,19 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "required": [
+                  "command"
+                ],
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "enum": [
+                      "play",
+                      "pause",
+                      "reset"
+                    ]
+                  }
+                }
               }
             }
           }
@@ -3227,7 +4239,85 @@
         "operationId": "post__api_playback_reload",
         "responses": {
           "200": {
-            "description": "JSON result. Inspect ok, errors and commit/QA fields.",
+            "description": "Transient playback state; not a render acknowledgment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "playback"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
                 "schema": {
@@ -3237,7 +4327,7 @@
               }
             }
           },
-          "400": {
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3281,6 +4371,17 @@
               }
             }
           },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "422": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -3310,7 +4411,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false
               }
             }
           }
@@ -3344,6 +4445,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -3367,6 +4479,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3405,7 +4528,7 @@
         "summary": "Local service /api/checkpoints",
         "operationId": "post__api_checkpoints",
         "responses": {
-          "200": {
+          "201": {
             "description": "JSON result. Inspect ok, errors and commit/QA fields.",
             "content": {
               "application/json": {
@@ -3417,6 +4540,17 @@
             }
           },
           "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3460,6 +4594,17 @@
               }
             }
           },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "422": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -3489,7 +4634,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "additionalProperties": false
               }
             }
           }
@@ -3523,6 +4668,17 @@
               }
             }
           },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
           "404": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -3546,6 +4702,17 @@
             }
           },
           "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
             "description": "Request, revision, validation, or server error",
             "content": {
               "application/json": {
@@ -3585,7 +4752,20 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "required": [
+                  "id",
+                  "expectedRevision"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "expectedRevision": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
               }
             }
           }

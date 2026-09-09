@@ -79,7 +79,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 658,
+      "line": 650,
       "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
     },
     {
@@ -88,7 +88,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 671,
+      "line": 663,
       "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
     },
     {
@@ -99,7 +99,7 @@
         "PUT"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 681,
+      "line": 673,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -108,7 +108,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 713,
+      "line": 705,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -117,7 +117,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 766,
+      "line": 758,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -126,7 +126,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 836,
+      "line": 828,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -135,7 +135,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 844,
+      "line": 836,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -144,7 +144,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 853,
+      "line": 845,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -153,7 +153,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 869,
+      "line": 861,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -162,7 +162,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 877,
+      "line": 869,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -172,7 +172,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 908,
+      "line": 900,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -181,7 +181,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 929,
+      "line": 921,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -190,7 +190,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 940,
+      "line": 932,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -199,7 +199,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 948,
+      "line": 940,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -209,7 +209,7 @@
         "DELETE"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 958,
+      "line": 950,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -218,7 +218,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 969,
+      "line": 961,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -227,7 +227,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 977,
+      "line": 969,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -236,7 +236,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 985,
+      "line": 977,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -245,7 +245,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 998,
+      "line": 990,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -254,7 +254,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1044,
+      "line": 1036,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -263,7 +263,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1051,
+      "line": 1043,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -272,7 +272,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1075,
+      "line": 1067,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -281,7 +281,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1089,
+      "line": 1081,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -290,7 +290,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1112,
+      "line": 1104,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -299,7 +299,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1132,
+      "line": 1124,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -310,7 +310,7 @@
         "PUT"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1144,
+      "line": 1136,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -321,7 +321,7 @@
         "PUT"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1157,
+      "line": 1149,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -330,7 +330,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1182,
+      "line": 1174,
       "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
     },
     {
@@ -339,7 +339,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1183,
+      "line": 1175,
       "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
     },
     {
@@ -348,7 +348,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1184,
+      "line": 1176,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -357,7 +357,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1204,
+      "line": 1196,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -366,7 +366,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1248,
+      "line": 1240,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -375,7 +375,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1274,
+      "line": 1266,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -385,7 +385,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1325,
+      "line": 1317,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -394,7 +394,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1374,
+      "line": 1366,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -403,7 +403,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1477,
+      "line": 1469,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -412,7 +412,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1580,
+      "line": 1572,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -421,7 +421,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1613,
+      "line": 1605,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -431,7 +431,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1625,
+      "line": 1617,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -440,7 +440,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1673,
+      "line": 1665,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -449,7 +449,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1709,
+      "line": 1701,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -458,7 +458,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1718,
+      "line": 1710,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -467,7 +467,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1769,
+      "line": 1761,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -476,7 +476,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1819,
+      "line": 1811,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -485,7 +485,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1842,
+      "line": 1834,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -496,7 +496,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1879,
+      "line": 1871,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -506,7 +506,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1962,
+      "line": 1954,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -515,7 +515,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2028,
+      "line": 2020,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -525,7 +525,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2040,
+      "line": 2032,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -534,7 +534,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2085,
+      "line": 2077,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -543,7 +543,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2136,
+      "line": 2128,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -552,7 +552,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2160,
+      "line": 2152,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -561,7 +561,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2174,
+      "line": 2166,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -570,7 +570,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2228,
+      "line": 2220,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -580,7 +580,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2271,
+      "line": 2263,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -591,7 +591,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2335,
+      "line": 2327,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -601,7 +601,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2441,
+      "line": 2433,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -611,7 +611,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2486,
+      "line": 2478,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -620,7 +620,7 @@
         "GET"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2550,
+      "line": 2542,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -630,7 +630,7 @@
         "PATCH"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2566,
+      "line": 2558,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {
@@ -641,7 +641,7 @@
         "POST"
       ],
       "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2591,
+      "line": 2583,
       "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
     },
     {

@@ -1,4 +1,5 @@
 import type { ServerResponse } from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
 import type { RigDocument } from '@standrig/core/types';
 import { validateParameterPatch, type PlaybackSnapshot } from '@standrig/runtime/playback';
@@ -8,7 +9,7 @@ export class PlaybackSession {
   private streams = new Set<ServerResponse>();
   private state: PlaybackSnapshot;
   constructor(private rig: RigDocument) {
-    this.state = { version: 1, revision: 0, modelVersion: 0, playing: false,
+    this.state = { version: 1, sessionId: randomUUID(), revision: 0, modelVersion: 0, playing: false,
       values: previewParameterValuesForRig(rig), lastSource: null };
   }
   snapshot() { return { ...this.state, values: { ...this.state.values }, connectedOutputs: this.streams.size,

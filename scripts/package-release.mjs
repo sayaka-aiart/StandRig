@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root=fileURLToPath(new URL('..',import.meta.url));
 const pkg=JSON.parse(await readFile(path.join(root,'package.json'),'utf8'));
 const roots=['packages','apps','scripts','tests','examples','templates','docs','licenses','.github'];
-const rootFiles=['package.json','package-lock.json','tsconfig.json','README.md','AI_OPERATING_GUIDE.md','AGENTS.md','LICENSE','NOTICE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md','SECURITY.md','SOURCE-PROVENANCE.json','.gitignore','.gitattributes','start-modeling-tools.cmd'];
+const rootFiles=['package.json','package-lock.json','tsconfig.json','README.md','README.en.md','AI_OPERATING_GUIDE.md','AGENTS.md','LICENSE','NOTICE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md','SECURITY.md','SOURCE-PROVENANCE.json','.gitignore','.gitattributes','start-modeling-tools.cmd'];
 const omitted=new Set(['node_modules','dist','workspace','reports','releases','public','.git','.vite','.vite-temp','backups','checkpoints','exports']);
 const names=[...rootFiles];
 async function walk(relative) {

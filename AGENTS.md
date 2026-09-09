@@ -11,13 +11,13 @@
 
 ## Low-token workflow
 
-1. Start with `GET /api/context`; do not open `public/rig.json` unless the context API explicitly lacks required detail.
+1. Start with `GET /api/context` (MCP: `standrig_context`); do not open the data directory's `public/rig.json` (default `workspace/public/rig.json`) unless the context API explicitly lacks required detail.
 2. Address parts by confirmed role ID and then request a compact part/deformer record only when needed.
 3. Poll `/api/changes?since=<revision>` before reloading context; resync only when it reports `resyncRequired`.
 4. Run numeric QA before requesting any image.
 5. Call `/api/qa/failure-image` only for entries returned in `failed`; it returns one before/after/diff comparison PNG.
 6. Request failure-region images only; use 240px crops or one contact sheet, never a set of independent full-body PNGs.
-7. Apply modeling changes through `/api/modeling/transaction` once available. Until then, use dry-run modeling operations and preserve a rollback point.
+7. Apply modeling changes through `standrig_modeling_transaction` or `/api/modeling/transaction`. Start with `commit:false`, supply the current `expectedRevision` and explicit `qa`, and preserve a rollback point before committing.
 8. After every accepted change, run QA/golden checks before editing another region.
 
 ## Data-size rules
@@ -35,3 +35,5 @@
 ## Distribution entry point
 
 Read AI_OPERATING_GUIDE.md, docs/MCP.md and docs/API.md. Work only on parts-separated PSDs; no automatic part separation. Default model data is in workspace/, which must never be published. Start at http://127.0.0.1:5180/api/context.
+
+This contract governs artwork/model edits. Source-code maintenance and tests using synthetic fixtures are not PSD modeling writes. Visual-target creation and review are operator obligations: the service does not automatically validate reference files. MCP resources expose this file as `standrig://docs/contract`.

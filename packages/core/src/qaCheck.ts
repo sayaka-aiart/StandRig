@@ -7,11 +7,12 @@ import { previewParameterValuesForRig } from "./parameters.js";
 import { auditRigArtMeshDistortion, type ArtMeshDistortionAudit } from "./artMeshDistortion.js";
 import { auditMotionSweep, type MotionSweepAudit, type MotionSweepRequest } from "./motionSweep.js";
 import type { ParameterValues, RigDocument } from "./types.js";
+import type { QaFailureImageRequest } from "./qaFailureImage.js";
 
 export interface QaCheckPoseSample { poseId: string; values: ParameterValues; }
 export interface QaCheckRequest { poses?: string[]; poseSamples?: QaCheckPoseSample[]; regions?: string[]; width?: number; height?: number; physics?: boolean; physicsTime?: number; physicsSteps?: number; minCoverage?: number; failOnEdgeContact?: boolean; expectedHashes?: Record<string, string>; checkTriangleDistortion?: boolean; maxTriangleStretchRatio?: number; maxTriangleCompressionRatio?: number; maxTriangleAnisotropy?: number; motionSweep?: boolean | MotionSweepRequest; supersample?: number; }
 export interface QaCheckEntry { poseId: string; region: DetailRegionId; pass: boolean; issues: string[]; audit: RgbaImageAudit; coverage: number; motionDiffPixelRatio: number | null; baselineHash: string; expectedHash?: string; baselineMatch?: boolean; artMeshDistortion?: ArtMeshDistortionAudit; }
-export interface QaFailureRegion { poseId: string; region: DetailRegionId; issues: string[]; imageRequest: { poseId: string; region: DetailRegionId; beforePoseId?: string; width: number; height: number; physics: boolean; }; }
+export interface QaFailureRegion { poseId: string; region: DetailRegionId; issues: string[]; imageRequest: QaFailureImageRequest; }
 export interface QaCheckResult { ok: boolean; entries: QaCheckEntry[]; failed: QaCheckEntry[]; failureRegions: QaFailureRegion[]; renderedCount: number; imagePolicy: "numeric-only"; cache: "hit" | "miss"; motionSweep?: MotionSweepAudit; issues?: string[]; }
 const QA_CACHE = new Map<string, QaCheckResult>();
 
@@ -24,7 +25,12 @@ export async function runQaCheck(rig: RigDocument, publicDir: string, request: Q
     ? request.poseSamples.filter((sample): sample is QaCheckPoseSample => Boolean(sample) && typeof sample.poseId === "string" && sample.poseId.trim().length > 0 && Boolean(sample.values) && typeof sample.values === "object" && !Array.isArray(sample.values)).map((sample) => ({ poseId: sample.poseId.trim(), values: { ...previewParameterValuesForRig(rig), ...sample.values } }))
     : poses.map((poseId) => ({ poseId, values: modelingPoseValuesForRig(rig, poseId, previewParameterValuesForRig(rig)) })).filter((sample): sample is { poseId: string; values: ParameterValues } => Boolean(sample.values));
   if (!poseSamples.length) throw new Error("at least one valid QA pose or poseSamples entry is required");
+  if (new Set(poseSamples.map(sample => sample.poseId)).size !== poseSamples.length) throw new Error('QA pose IDs must be unique');
+  if (request.poseSamples?.length && poseSamples.length !== request.poseSamples.length) throw new Error('Invalid QA poseSamples entry');
+  if (!request.poseSamples?.length && poseSamples.length !== poses.length) throw new Error('Unknown QA pose');
+  if (poseSamples.some(sample => Object.values(sample.values).some(value => typeof value !== 'number' || !Number.isFinite(value)))) throw new Error('QA values must be finite numbers');
   const regions = unique(request.regions?.length ? request.regions : ["full"]).filter(isDetailRegionId) as DetailRegionId[];
+  if (request.regions?.some(region => !isDetailRegionId(region))) throw new Error('Unknown QA region');
   const width = clamp(request.width ?? 240, 64, 480); const height = clamp(request.height ?? 240, 64, 480);
   const physics = request.physics === true; const physicsTime = finite(request.physicsTime, 0); const physicsSteps = clamp(request.physicsSteps ?? 18, 0, 240);
   const minCoverage = Math.max(0, Math.min(1, finite(request.minCoverage, 0.001))); const failOnEdgeContact = request.failOnEdgeContact === true;
@@ -66,7 +72,7 @@ export async function runQaCheck(rig: RigDocument, publicDir: string, request: Q
   }
   const failed = entries.filter((entry) => !entry.pass);
   const issues = motionSweep && !motionSweep.pass ? ["motion-sweep"] : undefined;
-  const failureRegions: QaFailureRegion[] = failed.map((entry) => ({ poseId: entry.poseId, region: entry.region, issues: entry.issues, imageRequest: { poseId: entry.poseId, region: entry.region, ...(entry.poseId === "neutral" ? {} : { beforePoseId: "neutral" }), width, height, physics } }));
+  const failureRegions: QaFailureRegion[] = failed.map((entry) => ({ poseId: entry.poseId, region: entry.region, issues: entry.issues, imageRequest: { poseId: entry.poseId, region: entry.region, beforePoseId: "neutral", values: poseSamples.find(sample => sample.poseId === entry.poseId)!.values, beforeValues: poseSamples.find(sample => sample.poseId === "neutral")?.values ?? previewParameterValuesForRig(rig), width, height, physics, physicsTime, physicsSteps, supersample: clamp(request.supersample ?? 1, 1, 2) } }));
   const result: QaCheckResult = { ok: failed.length === 0 && !issues?.length, entries, failed, failureRegions, renderedCount: entries.length + regions.filter(() => !poseSamples.some((sample) => sample.poseId === "neutral")).length, imagePolicy: "numeric-only", cache: "miss", motionSweep, issues };
   QA_CACHE.set(cacheKey, result); if (QA_CACHE.size > 24) QA_CACHE.delete(QA_CACHE.keys().next().value!);
   return result;

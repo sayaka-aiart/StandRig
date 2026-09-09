@@ -152,15 +152,7 @@ function sendJson(res: import("node:http").ServerResponse, status: number, body:
 }
 
 function readBody(req: import("node:http").IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let body = "";
-    req.setEncoding("utf8");
-    req.on("data", (chunk) => {
-      body += chunk;
-    });
-    req.on("end", () => resolve(body));
-    req.on("error", reject);
-  });
+  return readBodyLimited(req, 64 * 1024 * 1024);
 }
 
 function readBodyLimited(req: import("node:http").IncomingMessage, limit: number): Promise<string> {
@@ -661,7 +653,7 @@ export function registerModelingApi(rootDir: string, server: ApiHost): void {
           app: "standrig-modeling-tools",
           version: "0.2.0",
           capabilities: { modeling: true, playback: true, mcp: "separate-stdio-process", tracker: "external", obs: "external-browser-source", live2dBridge: false },
-          endpoints: ["/api/health","/api/schema","/api/assets/externalize","/api/assets/alpha-bleed","/api/assets/shadow-separation","/api/qa/exposure","/api/qa/check","/api/qa/symmetry-angle-x","/api/qa/symmetry-artmesh-bindings","/api/generation/requests/from-exposure","/api/generation/requests","/api/generation/accept","/api/generation/assets","/api/generation/regenerate","/api/generation/delete","/api/qa/joins","/api/qa/failure-image","/api/changes","/api/geometry/export","/api/context","/api/readiness/calibration","/api/readiness/l2-qa","/api/readiness/promotion","/api/readiness","/api/rig/summary","/api/rig/validate","/api/rig/inspect","/api/modeling/audit","/api/audit/modeling","/api/modeling/symmetry-artmesh-candidates","/api/modeling/symmetry-artmesh-transaction-dry-run","/api/modeling/head-proxy/calibrate","/api/modeling/correspondence","/api/modeling/physics-safety","/api/modeling/skinning-candidates","/api/modeling/skinning-approval","/api/modeling/head-proxy","/api/modeling/symmetry","/api/qa/golden","/api/modeling/join-transaction","/api/qa/art-paths","/api/modeling/art-path-transaction","/api/modeling/transaction","/api/modeling/role-suggestions","/api/modeling/artmesh-presets","/api/modeling/part-key","/api/modeling/warp-pin-mirror","/api/modeling/techniques","/api/modeling","/api/reference/sheet","/api/reference","/api/phonemes","/api/screenshot","/api/glue/vertex-pairs","/api/glue-candidates","/api/glue","/api/parts","/api/deformers","/api/bundle","/api/params","/api/rig"],
+          endpoints: ["/api/health","/api/schema","/api/assets/externalize","/api/assets/alpha-bleed","/api/assets/shadow-separation","/api/qa/exposure","/api/qa/check","/api/qa/symmetry-angle-x","/api/qa/symmetry-artmesh-bindings","/api/generation/requests/from-exposure","/api/generation/requests","/api/generation/accept","/api/generation/assets","/api/generation/regenerate","/api/generation/delete","/api/qa/joins","/api/qa/failure-image","/api/changes","/api/geometry/export","/api/context","/api/readiness/calibration","/api/readiness/l2-qa","/api/readiness/promotion","/api/readiness","/api/rig/summary","/api/rig/validate","/api/rig/inspect","/api/modeling/audit","/api/audit/modeling","/api/modeling/symmetry-artmesh-candidates","/api/modeling/symmetry-artmesh-transaction-dry-run","/api/modeling/head-proxy/calibrate","/api/modeling/correspondence","/api/modeling/physics-safety","/api/modeling/skinning-candidates","/api/modeling/skinning-approval","/api/modeling/head-proxy","/api/modeling/symmetry","/api/qa/golden","/api/modeling/join-transaction","/api/qa/art-paths","/api/modeling/art-path-transaction","/api/modeling/transaction","/api/modeling/role-suggestions","/api/modeling/artmesh-presets","/api/modeling/part-key","/api/modeling/warp-pin-mirror","/api/modeling/techniques","/api/modeling","/api/reference/sheet","/api/reference","/api/phonemes","/api/screenshot","/api/glue/vertex-pairs","/api/glue-candidates","/api/glue","/api/parts","/api/deformers","/api/bundle","/api/params","/api/rig","/api/sample","/api/playback","/api/playback/events","/api/playback/parameters","/api/playback/control","/api/playback/reload","/api/checkpoints","/api/checkpoints/restore","/api/exports/bundle"],
           rigPath
         });
       });

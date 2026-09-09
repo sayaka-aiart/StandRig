@@ -4,7 +4,7 @@ You are operating StandRig, a local modeling and playback engine accessed throug
 
 ## Connection and first reads
 
-For MCP setup and the 12 available tools, read `docs/MCP.md`. Read `standrig://docs/guide` via MCP resources. For imports, use only a parts-separated PSD with at least two drawable image layers; PNG/flattened PSD/PSB inputs are not supported. The parser cannot certify whether the layer separation is suitable for animation.
+For MCP setup and the 12 available tools, read `docs/MCP.md`. Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide` via MCP resources. For imports, use only a parts-separated PSD with at least two drawable image layers; PNG/flattened PSD/PSB inputs are not supported. The parser cannot certify whether the layer separation is suitable for animation.
 
 Default base URL: `http://127.0.0.1:5180`. Start with `GET /api/context`.
 Read `context.revision`, `context.semanticHash`, `context.summary.counts`, role/modeling audit and freeze state. Never reuse IDs or revisions from an example or another model.
@@ -16,14 +16,18 @@ Route inventory: `docs/api-routes.json`. Main API schemas: `docs/openapi.json`. 
 
 ## Import and project isolation
 
-PSD parsing is browser-side through the supplied import screen; there is no HTTP multipart PSD endpoint. PNG import creates initial layer placement; original PSD layer coordinates require PSD import.
+PSD parsing is browser-side through the supplied import screen; there is no HTTP multipart PSD endpoint or MCP PSD-import tool. Import preserves initial layer placement, not a finished rig or automatic motion bindings. See docs/PSD.md for preparation and Photoshop feature limitations.
 An AI with an existing compatible RigDocument can use `PUT /api/rig?includeAssets=1` with the whole document. This replaces the active model and is an import/restore operation, not a modeling transaction. Obtain a backup first.
-External files belong under this distribution's `public/`; `/assets/a.png` refers to `public/assets/a.png`. Embedded PNGs work before externalization. `POST /api/assets/externalize` requires `{rig: FULL_RIG, dryRun:true}`; set `dryRun:false` only to persist files and the rewritten rig. This endpoint returns full rig data and must be used deliberately.
+External textures belong under the selected data directory's `public/`: by default `/assets/a.png` resolves to `workspace/public/assets/a.png`, not the repository's `public/`. Embedded PNG textures work before externalization; this is an internal representation, not PNG source import. `POST /api/assets/externalize` requires `{rig: FULL_RIG, dryRun:true}`; set `dryRun:false` only to persist files and the rewritten rig. This endpoint returns full rig data and must be used deliberately.
+
+To restore a portable `standrig-bundle`, read `bundle.rig` and import that RigDocument after making a checkpoint; never submit the bundle wrapper as the rig. No model JSON/bundle picker is included in the PSD UI. See docs/API.md for the round trip.
 
 ## Required visual reference gate
 
 Before the first modeling write for a PSD, create the three required project-local target sheets: face neutral/max yaw/pitch/roll; full body neutral/max body yaw/pitch/roll; connections (hair roots/back hair, jaw/neck, neck/collar/shoulders, sleeves/arms, waist/skirt/thighs, thighs/lower legs).
 Save source revision/hash, panel order, intended parameter extremes, prompts and acceptance checks beside them. Use `examples/reference-manifest.template.json`; placeholder entries are not evidence. All actual images must exist and be visually inspected. Do not treat snapshots of the current faulty model as accepted target artwork.
+
+The MCP server has no image-generation or arbitrary-file-writing tool. Use separately available file/image tools or owner-provided targets to prepare these materials in the selected data directory. Explain missing capabilities if unavailable; never claim these resources were created merely by calling standrig_render.
 This is an operator requirement from AGENTS.md: the inherited transaction endpoint does not automatically inspect the manifest or judge the images. Enforce it yourself; the endpoint's HTTP success is not evidence that the visual gate passed.
 When source coverage is missing, extend the missing artwork before deformation according to the owner's method. RGB alpha bleed fills invisible RGB, not visible alpha coverage.
 

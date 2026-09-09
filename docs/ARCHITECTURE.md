@@ -39,6 +39,8 @@ An in-process tracker calls `player.setParameters(values)`. A separate process p
 
 Playback state is memory-only. Parameter changes never write keyforms or `rig.json`. Reset restores the model's saved preview/default values; it does not erase source sequence counters. Model reload resets values and sequence counters. Server restart resets transient playback state. `connectedOutputs` measures open SSE connections, including the preview UI; it does not prove a rendered frame or OBS capture. `outputAcknowledged` remains false in this release.
 
+Each service session has a unique `sessionId`. Outputs compare both `sessionId` and `modelVersion` when deciding to reload assets: `modelVersion` alone restarts at zero and cannot identify a new service process. While paused, parameter updates still display a new pose; pause stops continuous time/physics updates, not input reception. Play does not generate motion without time-dependent bindings or external input.
+
 ## Storage
 
 Default data directory: `workspace/`, excluded from Git and releases. `npm start -- --data-dir /absolute/project` selects another directory. A new directory is initialized from `templates/` without replacing an existing model.

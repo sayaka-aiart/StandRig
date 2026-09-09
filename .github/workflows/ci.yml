@@ -23,4 +23,5 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - run: npm run verify
+      - run: npm run docs
+      - run: git diff --exit-code -- docs/api-routes.json docs/openapi.json docs/OPERATIONS.md
