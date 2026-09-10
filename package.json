@@ -17,7 +17,8 @@
     "notices": "node scripts/collect-notices.mjs",
     "release": "node scripts/package-release.mjs",
     "schemas": "node scripts/generate-operation-schemas.mjs",
-    "schemas:check": "node scripts/generate-operation-schemas.mjs --check"
+    "schemas:check": "node scripts/generate-operation-schemas.mjs --check",
+    "generate": "npm run schemas && npm run docs"
   },
   "devDependencies": {
     "@types/node": "24.13.2",

@@ -72,8 +72,8 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const tools=await client.listTools();
     assert.equal(tools.tools.length,12);
     const actionSchema=tools.tools.find(tool=>tool.name==='standrig_modeling_transaction').inputSchema.properties.operations.items.properties.action;
-    assert.equal(actionSchema.anyOf.length,33);
-    assert.ok(actionSchema.anyOf.every(schema=>schema.additionalProperties===false));
+    assert.equal(actionSchema.oneOf.length,33);
+    assert.ok(actionSchema.oneOf.every(schema=>schema.additionalProperties===false));
     const invoke=(name,args={})=>client.callTool({name,arguments:args});
     const beforeDemo=(await call('/api/playback')).data.playback.values;
     const demo = await invoke('standrig_playback_control',{command:'demo-start',mode:'mouse-expression'});
@@ -86,6 +86,20 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     assert.equal(context.summary.counts.assets,4);
     assert.equal((await invoke('standrig_render',{kind:'snapshot'})).isError,true);
     const input={expectedRevision:context.revision,commit:false,operations:[{id:'move',name:'Move demo body',target:{partIds:['body']},action:{type:'transform',property:'x',operator:'add',value:2}}],qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}};
+    let transactionRequests=0;
+    const observeRequest=req=>{if(req.url==='/api/modeling/transaction')transactionRequests++;};
+    service.httpServer.on('request',observeRequest);
+    for(const action of [
+      {type:'warp-create',divisionX:'five'},
+      {type:'artmesh-generate',preset:'face-feature',columns:'five',rows:5},
+      {type:'deformer-origin',deformerId:'missing',x:'five',y:0},
+      {...input.operations[0].action,unexpected:true}
+    ]) {
+      const rejected=await invoke('standrig_modeling_transaction',{...input,commit:true,operations:[{...input.operations[0],action}]});
+      assert.equal(rejected.isError,true,JSON.stringify(rejected));
+    }
+    assert.equal(transactionRequests,0,'MCP must reject invalid actions before HTTP');
+    service.httpServer.off('request',observeRequest);
     const dry=await invoke('standrig_modeling_transaction',input);
     assert.equal(dry.isError,undefined,JSON.stringify(dry));
     assert.equal(dry.structuredContent.committed,false);

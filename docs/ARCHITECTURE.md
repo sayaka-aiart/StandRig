@@ -70,3 +70,9 @@ Legacy writes are off by default; only GET and audited read-only POST handlers p
 - Not implemented: Live2D/Cubism connection, cmo3/moc3 conversion or playback, one-image automatic part separation, cloud hosting, production multi-user service.
 
 The output format is StandRig JSON / `standrig-bundle`. A future Cubism editor bridge, Cubism runtime adapter and model converter would be separate capabilities and must not be presented as equivalent.
+
+## Operation contract generation
+
+`packages/core/src/operationRegistry.ts` is the source of action definitions. Core TypeScript derives its action union from the registry. `scripts/generate-operation-schemas.mjs` emits named TypeScript action aliases and schema declarations plus named strict Zod schemas, an action-schema map and `z.discriminatedUnion("type", ...)`. The operation envelope uses that union. The HTTP service and MCP consume the same generated package; MCP publishes JSON Schema with 33 `oneOf` branches. `scripts/generate-api-docs.mjs` generates OpenAPI from Zod and OPERATIONS.md from the registry. Run both with `npm run generate`.
+
+Referenced model structures remain in core/types.ts and QA definitions in core/qaCheck.ts; they are resolved by the same TypeScript-based generator. The registry describes payloads, while core/modelingOps.ts implements behavior. A registry entry alone does not implement an operation.

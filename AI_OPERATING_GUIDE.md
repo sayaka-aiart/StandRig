@@ -12,7 +12,7 @@ An empty distribution has zero assets; request material import before modeling. 
 
 Next read `GET /api/parts`, `GET /api/deformers`, `GET /api/params`, `GET /api/modeling` and `GET /api/modeling/techniques` as needed. Query an individual `/api/parts/{id}` or `/api/deformers/{id}` for detailed bindings/topology. Prefer compact records; do not repeatedly fetch `/api/rig` or embedded data URLs.
 
-Route inventory: `docs/api-routes.json`. Main API schemas: `docs/openapi.json`. All action variants: `docs/OPERATIONS.md` and `packages/core/src/modelingOps.ts`. Nested Rig* types: `packages/core/src/types.ts`. Do not invent methods or action fields.
+Route inventory: `docs/api-routes.json`. Main API schemas: `docs/openapi.json`. All action variants: `docs/OPERATIONS.md` and `packages/core/src/operationRegistry.ts`. Nested Rig* types: `packages/core/src/types.ts`. Do not invent methods or action fields.
 
 ## Import and project isolation
 

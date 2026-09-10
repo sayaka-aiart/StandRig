@@ -56,3 +56,7 @@ Windows / Node 24.14.0: workspace build, 16 smoke checks and 18 Node tests passe
 Actual built-browser checks used an isolated data directory: sample import succeeded, numeric QA passed, Showcase displayed the bot; a generated two-layer PSD imported through the real file chooser and transaction service, rendered both colored layers, passed QA and stopped the previous demo. No browser console errors were observed. These fixtures do not establish character modeling quality or Model Freeze.
 
 Legacy asset/golden/generation persistence stays disabled by default, including their legacy dry-run POST variants. Explicit compatibility opt-in remains outside transaction guarantees. One service process must own each data directory. Reference-manifest checks and visual acceptance remain operator duties.
+
+## Discriminated action registry — 2026-09-10
+
+The 33 action definitions now live in one typed registry; named TypeScript aliases and Zod schemas are generated, and the envelope uses a type-discriminated union. OpenAPI and MCP expose oneOf branches. All workspace builds, 16 smoke checks and 19 Node tests passed. Tests cover all strict variants and advertised registry keys, direct action.columns error paths, unknown discriminators and real stdio MCP rejection of four malformed payloads before any HTTP transaction request. Generation freshness checks cover both runtime schemas and TypeScript declarations. No renderer, artwork or operation behavior changed in this follow-up; the prior browser check remains the visual evidence.

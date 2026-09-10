@@ -31,12 +31,12 @@ for(const match of serviceSource.matchAll(/route === '(\/api\/[^']+)' && req\.me
 }
 endpoints.push(...serviceRoutes.values());
 await fs.writeFile('docs/api-routes.json',JSON.stringify({format:'standrig-route-inventory-v1',routes:endpoints.map(e=>e.path),endpoints},null,2)+'\n');
-const operationSource=await fs.readFile('packages/core/src/modelingOps.ts','utf8');
-const operationAst=ts.createSourceFile('modelingOps.ts',operationSource,ts.ScriptTarget.Latest,true);
-const action=operationAst.statements.find(node=>ts.isTypeAliasDeclaration(node)&&node.name.text==='ModelingOperationAction');
-const variants=action.type.types.map(node=>node.getText(operationAst));
+const operationSource=await fs.readFile('packages/core/src/operationRegistry.ts','utf8');
+const operationAst=ts.createSourceFile('operationRegistry.ts',operationSource,ts.ScriptTarget.Latest,true);
+const action=operationAst.statements.find(node=>ts.isInterfaceDeclaration(node)&&node.name.text==='ModelingActionRegistry');
+const variants=action.members.map(node=>node.type.getText(operationAst));
 const actionTypes=variants.map(text=>/type: "([^"]+)"/.exec(text)[1]);
-await fs.writeFile('docs/OPERATIONS.md','# Modeling operation actions\n\nGenerated from `packages/core/src/modelingOps.ts`. Read `packages/core/src/types.ts` for referenced Rig*, Binding*, Parameter* and Transform* types.\n\nHTTP and MCP share generated strict schemas in `packages/contracts`; unknown keys in typed objects are rejected. Run `npm run schemas` after changing types.\n\nEach operation requires `id`, `name`, `target`, `action`; `enabled` is optional. Target is `{partIds?: string[], roles?: RigPartRole[], deformerIds?: string[]}`. Confirm IDs from this model. Some actions require matching target and action IDs.\n\n'+variants.map((text,i)=>`## ${actionTypes[i]}\n\n\`\`\`ts\n${text}\n\`\`\`\n`).join('\n'));
+await fs.writeFile('docs/OPERATIONS.md','# Modeling operation actions\n\nGenerated from `packages/core/src/operationRegistry.ts`. Read `packages/core/src/types.ts` for referenced Rig*, Binding*, Parameter* and Transform* types.\n\nTypeScript action types and Zod schemas are derived from the same registry. HTTP and MCP share a `type`-discriminated union in `packages/contracts`; unknown keys in typed objects are rejected. Run `npm run schemas` after changing types.\n\nEach operation requires `id`, `name`, `target`, `action`; `enabled` is optional. Target is `{partIds?: string[], roles?: RigPartRole[], deformerIds?: string[]}`. Confirm IDs from this model. Some actions require matching target and action IDs.\n\n'+variants.map((text,i)=>`## ${actionTypes[i]}\n\n\`\`\`ts\n${text}\n\`\`\`\n`).join('\n'));
 const object={type:'object',additionalProperties:true};
 const jsonResponse={description:'JSON result. Inspect ok, errors and commit/QA fields.',content:{'application/json':{schema:object}}};
 const errorResponse={description:'Request, revision, validation, or server error',content:{'application/json':{schema:object}}};

@@ -8,4 +8,6 @@ Describe the concrete problem, resulting behavior and validation in pull request
 
 When changing endpoints or action types, run `npm run docs` and include the generated changes. Ordinary source edits invalidate `DISTRIBUTION-MANIFEST.json`: `npm run verify` checks a packaged release, not arbitrary development edits. Maintainers regenerate the manifest when preparing a release; build/tests are the development CI gates.
 
-Operation or QA type changes require `npm run schemas` and `npm run docs`. Commit the generated contracts and documentation together; `npm test` checks schema freshness. Keep legacy writes disabled in normal clients.
+Action definitions live in `packages/core/src/operationRegistry.ts`; registry keys must match their `type` literals (the generator rejects mismatches). The core derives its action union from this registry, retaining the existing `modelingOps` type export. Implement the actual operation behavior separately in `modelingOps.ts`.
+
+After registry, referenced model type or QA type changes, run `npm run generate`. This generates named TypeScript action aliases/schema declarations, Zod action schemas and the `type`-discriminated union, then OpenAPI and OPERATIONS.md. MCP advertises the same runtime schema directly. Commit generated outputs together; `npm test` rejects stale JS or declaration files and CI checks regenerated docs. Keep legacy writes disabled in normal clients.

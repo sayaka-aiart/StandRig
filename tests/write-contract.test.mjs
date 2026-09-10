@@ -5,7 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {createHash} from 'node:crypto';
 import * as z from 'zod';
-import {operationSchema,READ_ONLY_BODY_ROUTES} from '@standrig/contracts';
+import {operationSchema,actionSchema,actionSchemas,READ_ONLY_BODY_ROUTES} from '@standrig/contracts';
 import {createLocalService} from '../apps/service/dist/service.js';
 import {fullRigRevision} from '../apps/service/dist/rigApiPlugin.js';
 const sample=JSON.parse(await readFile(new URL('../examples/sample.standrig.json',import.meta.url),'utf8'));
@@ -68,7 +68,7 @@ test('legacy writes need an explicit server-side opt-in',()=>harness(async(call)
 
 test('all 33 operation variants are strict, including nested payloads',()=>{
  const schema=z.toJSONSchema(operationSchema);
- const variants=schema.properties.action.anyOf;
+ const variants=schema.properties.action.oneOf;
  assert.equal(variants.length,33);
  function fixture(s){if(Array.isArray(s.type))return fixture({...s,type:s.type[0]});if('const'in s)return s.const;if(s.anyOf)return fixture(s.anyOf[0]);if(s.type==='string')return 'fixture';if(s.type==='number')return 0;if(s.type==='boolean')return false;if(s.type==='null')return null;if(s.type==='array')return s.prefixItems?s.prefixItems.map(fixture):[];if(s.type==='object')return Object.fromEntries((s.required??[]).map(k=>[k,fixture(s.properties[k])]));return {};}
  function unknowns(s,value){if(value===null||typeof value!=='object')return;if(s.anyOf){unknowns(s.anyOf.find(v=>v.const===value||v.type===typeof value)||s.anyOf[0],value);return;}if(s.type==='object'&&s.additionalProperties===false){value.__unknown=true;}}
@@ -82,4 +82,15 @@ test('all 33 operation variants are strict, including nested payloads',()=>{
   for(const [key,prop]of Object.entries(variant.properties)){if(key==='type')continue;const bad=structuredClone(operation);bad.action[key]=fixture(prop);unknowns(prop,bad.action[key]);if(bad.action[key]&&typeof bad.action[key]==='object'&&bad.action[key].__unknown)assert.equal(operationSchema.safeParse(bad).success,false);}
  }
  assert.equal(operationSchema.safeParse({...move,action:{...move.action,value:Infinity}}).success,false);
+});
+
+
+test('discriminator selects the action and reports its invalid field directly',()=>{
+ assert.ok(actionSchema instanceof z.ZodDiscriminatedUnion);
+ const advertised=z.toJSONSchema(actionSchema).oneOf.map(s=>s.properties.type.const);
+ assert.deepEqual([...advertised].sort(),Object.keys(actionSchemas).sort());
+ const invalid=operationSchema.safeParse({id:'bad',name:'bad',target:{},action:{type:'artmesh-generate',preset:'face-feature',columns:'five',rows:5}});
+ assert.equal(invalid.success,false);
+ assert.deepEqual(invalid.error.issues.map(i=>({code:i.code,path:i.path})),[{code:'invalid_type',path:['action','columns']}]);
+ assert.equal(actionSchema.safeParse({type:'warp-create',divisionX:'five'}).success,false);
 });

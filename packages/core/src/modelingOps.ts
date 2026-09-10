@@ -1,52 +1,19 @@
-import { createAlphaContourArtMesh, createRectArtMesh } from "./artMesh.js";
-import type { ArtMeshAlphaSampler } from "./artMeshAsset.js";
-import { validatePartTint } from "./tint.js";
-import { validateContourShade } from "./contourShade.js";
-import type { RigContourShade } from "./types.js";
 import { validateAlphaReveal } from "./alphaReveal.js";
-import type { RigAlphaReveal } from "./types.js";
+import { createAlphaContourArtMesh,createRectArtMesh } from "./artMesh.js";
+import type { ArtMeshAlphaSampler } from "./artMeshAsset.js";
+import { validateContourShade } from "./contourShade.js";
+import type { ModelingOperationAction } from "./operationRegistry.js";
+import { validatePartTint } from "./tint.js";
+import type { ParameterCurve,ParameterInterpolation,RigArtMeshBinding,RigArtMeshVertexOffset,RigDocument,RigPartRole,RigSymmetryContract,RigSymmetryLink } from "./types.js";
 import { defaultWarpDeformer } from "./warp.js";
-import type { BindingProperty, ParameterCurve, ParameterDefinition, ParameterInterpolation, RigArtMeshBinding, RigArtMeshPreset, RigArtMeshQuality, RigArtMeshTopology, RigArtMeshVertexOffset, RigClip, RigDeformer, RigDocument, RigPartRole, RigBlendMode, RigPartTint, RigRotationDeformerMetadata, RigSymmetryContract, RigSymmetryLink, TransformProperty, WarpPinBindingProperty } from "./types.js";
+export type { ModelingActionRegistry,ModelingOperationAction } from "./operationRegistry.js";
 
 export interface ModelingOperationTarget {
   roles?: RigPartRole[];
   partIds?: string[];
   deformerIds?: string[];
 }
-export type ModelingOperationAction =
-  | { type: "transform"; property: TransformProperty; operator: "add" | "set" | "multiply"; value: number }
-  | { type: "part-visibility"; visible: boolean }
-  | { type: "part-draw-order"; drawOrder: number }
-  | { type: "part-blend-mode"; mode: RigBlendMode }
-  | { type: "part-tint"; tint: RigPartTint | null }
-  | { type: "part-contour-shade"; shade: RigContourShade | null }
-  | { type: "part-alpha-reveal"; reveal: RigAlphaReveal | null }
-  | { type: "part-clip"; clip: RigClip | null }
-  | { type: "role-confirm"; role: RigPartRole }
-  | { type: "role-reclassify"; expectedRole: RigPartRole; role: RigPartRole; reason: string }
-  | { type: "parameter-add"; parameter: ParameterDefinition }
-  | { type: "deformer-create"; deformer: RigDeformer }
-  | { type: "deformer-kind-set"; deformerId: string; kind: "group" | "rotate" | "warp"; warp?: RigDeformer["warp"] }
-  | { type: "deformer-targets-set"; deformerId: string; targetPartIds: string[]; mode?: "replace" | "merge" }
-  | { type: "deformer-parent-set"; deformerId: string; parentId: string | null }
-  | { type: "deformer-origin"; deformerId: string; x: number; y: number }
-  | { type: "deformer-transform"; deformerId: string; property: TransformProperty; operator: "set" | "add" | "multiply"; value: number }
-  | { type: "artmesh-offset"; x: number; y: number; uv?: { minU: number; maxU: number; minV: number; maxV: number } }
-  | { type: "artmesh-binding-key"; parameter: string; input: number; offsets: RigArtMeshVertexOffset[]; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "artmesh-multi-key"; parameters: [string, string]; inputs: Record<string, number>; offsets: RigArtMeshVertexOffset[]; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "artmesh-blend-shape"; id: string; parameter: string; neutralInput: number; targetInput: number; offsets: RigArtMeshVertexOffset[]; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "artmesh-mirror-key"; parameter: string; sourceInput: number; targetInput: number; axisU?: number; tolerance?: number; protectVertexIds?: string[]; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "artmesh-generate"; preset: RigArtMeshPreset; topology?: RigArtMeshTopology; columns: number; rows: number; alphaThreshold?: number; quality?: RigArtMeshQuality }
-  | { type: "artmesh-rebuild"; preset: RigArtMeshPreset; topology?: RigArtMeshTopology; columns: number; rows: number; alphaThreshold?: number; quality?: RigArtMeshQuality; preserveBindings?: boolean }
-  | { type: "artmesh-quality"; quality: RigArtMeshQuality; merge?: boolean }
-  | { type: "binding-key"; parameter: string; property: TransformProperty; input: number; value: number; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "warp-pin-binding-key"; deformerId: string; pinId: string; parameter: string; property: WarpPinBindingProperty; input: number; value: number; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "deformer-binding-key"; deformerId: string; parameter: string; property: BindingProperty; input: number; value: number; additive?: boolean; interpolation?: ParameterInterpolation; curve?: ParameterCurve }
-  | { type: "deformer-binding-remove"; deformerId: string; parameter: string; property: BindingProperty }
-  | { type: "deformer-split"; sourceDeformerId: string; parentDeformerId: string; moveParameterIds: string[]; parentName?: string; expectedParentId?: string; parentTags?: string[]; sourceTags?: string[] }
-  | { type: "deformer-rotation-metadata"; deformerId: string; metadata: RigRotationDeformerMetadata }
-  | { type: "symmetry-contract"; contract: RigSymmetryContract }
-  | { type: "symmetry-artmesh-bindings"; links: RigSymmetryLink[]; overwrite?: boolean };
+
 function executeParameterAdd(rig: RigDocument, operation: ModelingOperation, dryRun: boolean): ModelingOperationResult {
   const action = operation.action;
   if (action.type !== "parameter-add") throw new Error("parameter-add action required");

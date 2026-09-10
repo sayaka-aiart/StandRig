@@ -53,7 +53,7 @@ After saving, reconnect/restart the MCP connection in your client. Confirm that 
 
 動作デモは `{command:"demo-start", mode:"showcase-active"}`（既定）または `{command:"demo-start", mode:"mouse-expression"}`。マウス位置は `{command:"demo-pointer", x:0.5, y:-0.5}` のように -1〜1 の座標を渡します（画面右が+X、下が+Y）。`demo-stop` で開始前の姿勢・再生状態を復元します。通常のパラメータ入力はデモを止め、元の姿勢に入力値を適用します。保存モデルは変更しません。
 
-HTTP and MCP transactions share `@standrig/contracts`: 33 action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Schemas are generated from core TypeScript operation/QA types (`npm run schemas`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
+HTTP and MCP transactions share `@standrig/contracts`: 33 `type`-discriminated action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Named action types and schemas are generated from `packages/core/src/operationRegistry.ts` and QA types (`npm run generate`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
 
 ## Resources and workflow
 
@@ -70,3 +70,5 @@ Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide`. Addit
 Failure rendering reuses the QA result's sampled values and physics settings, including custom `poseSamples`. The diagnostic is rendered at 240px per panel. `snapshot` uses explicit `values`; `reference` uses an available sheet `set`; `poseId` and `region` select a `failure` only. Preparing new reference artwork and saving arbitrary files requires separate tools; the MCP renderer only renders the existing model.
 
 For a reproducible sample round trip, load Sample Bot and run `node examples/mcp-demo.mjs`. It changes only transient playback, after numeric QA. The example uses the SDK client installed as a development dependency.
+
+For example, `{type:"artmesh-generate",preset:"face-feature",columns:"five",rows:5}` is rejected at the MCP boundary with `action.columns` identified as a number-type error, before the local HTTP service is called. Unknown action types and extra fields are also rejected. Schema validity does not establish target existence or valid model geometry; application-level validation and QA remain required.
