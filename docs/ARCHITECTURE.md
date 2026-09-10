@@ -80,6 +80,6 @@ Referenced model structures remain in core/types.ts and QA definitions in core/q
 
 ## Compatibility and production qualification follow-up
 
-The rig schema version currently describes data structure; there is no separate runtime evaluation compatibility version. The corrected negative-target Blend Shape behavior therefore requires visual revalidation of existing affected models, as described in DEFORM.md. A future compatibility contract should distinguish unversioned models from explicitly versioned evaluation semantics, reject unknown future semantics and provide an explicit, tested migration path. Merely tagging old data with the current version would not preserve its prior appearance. This is planned work, not an implemented compatibility mode.
+The compatibility policy is decided in [RUNTIME_COMPATIBILITY.md](RUNTIME_COMPATIBILITY.md): corrected behavior becomes baseline 1, unversioned models require explicit adoption, unsupported semantics are rejected, and application/rig/evaluator versions are separate. Implementation is required before the promoted 0.3.0 release; the current 0.2.0 runtime does not yet enforce this policy.
 
 Production-character E2E is complete, as confirmed by the project owner on 2026-09-10. It was not rerun during the Part-selector/numeric-schema maintenance. The synthetic tests and CI reported for this change are separate evidence; the private production PSD/model was not modified by this maintenance.

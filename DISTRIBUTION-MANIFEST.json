@@ -263,8 +263,8 @@
     {
       "path": "docs/ARCHITECTURE.md",
       "normalization": "lf",
-      "bytes": 8818,
-      "sha256": "7df2b22da9042ba4fbe26739dad39b46eb2b2ba734014fca3990545818292f6b"
+      "bytes": 8590,
+      "sha256": "739ff30a6699c34dd6f97c7a1d97d7dbc203d4f74d7ded05c80068feee4ea26d"
     },
     {
       "path": "docs/DEFORM.md",
@@ -295,6 +295,12 @@
       "normalization": "lf",
       "bytes": 3120,
       "sha256": "8b5224d4d1e3dd8da9cbda801c481ca4518f06363f703cd8ae44259809f39b67"
+    },
+    {
+      "path": "docs/RUNTIME_COMPATIBILITY.md",
+      "normalization": "lf",
+      "bytes": 9618,
+      "sha256": "7683fc7569650a438574eaa0c155f59b5ab27f807cd2f90151a730564ce9e56c"
     },
     {
       "path": "docs/VALIDATION.md",
