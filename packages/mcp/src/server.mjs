@@ -1,11 +1,11 @@
-import { transactionSchema } from '@standrig/contracts';
+import { transactionSchema, motionRequestSchema } from '@standrig/contracts';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod';
 import { readFile } from 'node:fs/promises';
 
 const repository = new URL('../../../', import.meta.url);
 const documents = {
-  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md', deform: 'docs/DEFORM.md',
+  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md', deform: 'docs/DEFORM.md', motion: 'docs/MOTION.md',
   architecture: 'docs/ARCHITECTURE.md', adapters: 'docs/ADAPTERS.md', api: 'docs/API.md'
 };
 const values = z.record(z.string(), z.number().finite());
@@ -102,5 +102,6 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
     input => request('/api/playback/parameters', 'POST', { source, sequence: ++sequence, values: input.values }));
   tool('standrig_playback_control', 'Play, pause, reset or reload. demo-start runs Showcase Fast & Wide or Mouse + Expressions; demo-stop restores the starting pose. demo-pointer supplies normalized mouse x/y. Manual parameter input stops the demo. View in preview or /player.', z.object({ command: z.enum(['play','pause','reset','reload','demo-start','demo-stop','demo-pointer']), mode: z.enum(['showcase-active','mouse-expression']).optional(), x: z.number().min(-1).max(1).optional(), y: z.number().min(-1).max(1).optional() }), false,
     (input) => request(input.command === 'reload' ? '/api/playback/reload' : '/api/playback/control', 'POST', input));
+  tool('standrig_motion', 'Load a standrig-motion v1 clip, play/pause/stop, seek in seconds, configure speed/loop, or clear. Transient only. Live2D motion3 import is not installed. See standrig://docs/motion.', motionRequestSchema, false, input=>request('/api/playback/motion','POST',input));
   return server;
 }

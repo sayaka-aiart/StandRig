@@ -52,3 +52,7 @@ The page uses a transparent HTML background and transparent canvas rendering. No
 - Format conversion: independently specify which meshes, bindings and physics can be converted.
 
 Keep SDK credentials, proprietary runtime binaries, tracker model files and the implementation's licensing inside the corresponding external adapter. Do not add these dependencies to the numerical modeling core.
+
+## Native motion playback
+
+Use GET/POST `/api/playback/motion` or MCP `standrig_motion` to load and control a native clip. Playback supports seek, speed, loop and channel ownership. Embedded `StandRigPlayer` exposes the same transport. See [MOTION.md](MOTION.md) for the strict format, external-input arbitration, physics seek limitations and future Live2D importer contract. Actual motion3 import is not included.

@@ -147,3 +147,7 @@ Checkpoint creation and bundle export return **201**; restore returns **200**. M
 ## Portable bundle import
 
 Read the exported JSON and check `format:"standrig-bundle"`. Extract `bundle.rig` and submit it through the import transaction described above using fresh context revision and explicit QA. Inspect dry-run before committing, then confirm `committed:true`, `rollbackCheckpoint` and actual browser rendering. Never pass the bundle wrapper as the rig. MCP has no bundle-import tool; use an HTTP-capable client. For ordinary resume, start the service with the same data directory; no re-import is necessary.
+
+## Native motion playback
+
+Use GET/POST `/api/playback/motion` or MCP `standrig_motion` to load and control a native clip. Playback supports seek, speed, loop and channel ownership. Embedded `StandRigPlayer` exposes the same transport. See [MOTION.md](MOTION.md) for the strict format, external-input arbitration, physics seek limitations and future Live2D importer contract. Actual motion3 import is not included.

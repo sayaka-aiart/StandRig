@@ -2,3 +2,5 @@
 canvas{position:absolute;inset:0;width:100%;height:100%;min-height:0;min-width:0;display:block}
 .motion-controls{margin-top:14px;padding:10px 12px;background:#11171e;border-radius:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px}.motion-controls select{background:#29323e;color:#edf3f8;border:1px solid #475361;border-radius:5px;padding:7px;max-width:100%}.motion-controls p{flex-basis:100%;margin:0}.motion-controls button[aria-pressed="true"]{background:#a9dac7;color:#12241d}
 @media(min-width:901px){.stage-panel .canvas-wrap{height:clamp(240px,calc(100dvh - 390px),850px)}}
+
+#motion-panel>label{display:block;font-size:12px;margin:12px 0}#motion-file{display:block;width:100%;font-size:11px;margin-top:8px}#motion-time{display:block;width:100%;accent-color:#a9dac7;margin-top:8px}#motion-speed{width:76px;margin-left:8px;background:#29323e;color:#edf3f8;border:1px solid #475361;border-radius:4px;padding:6px}#motion-loop{accent-color:#a9dac7;vertical-align:middle;margin-right:6px}.parameter{min-width:0}.parameter output{font-variant-numeric:tabular-nums}

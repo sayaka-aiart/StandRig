@@ -56,7 +56,7 @@ When you see `StandRig local service: http://127.0.0.1:5180`, open **http://127.
 2. Click **「再生画面を開く」 (Open player)**.
 3. Scroll down in the original page and move sliders such as **Angle Z** (`ParamAngleZ`, head tilt) and **Mouth** (`ParamMouthOpen`, mouth opening). Check that the player page reflects the changes.
 
-The sample is a geometric model. Parameters without bindings will not produce movement. **「再生」 (Play)** advances time and physics; it does not start automatic gestures or camera tracking.
+The sample is a geometric model. Parameters without bindings will not produce movement. **「再生」 (Play)** advances time and physics, and plays the loaded motion when present. It does not start camera tracking.
 
 ### 4. Try a motion demo
 
@@ -164,3 +164,9 @@ Use `npm run verify` to check the distribution's file hashes. Source edits will 
 Original code, documentation text and synthetic samples are licensed under [Apache-2.0](LICENSE). See [NOTICE](NOTICE) and the [third-party notices](THIRD_PARTY_NOTICES.md). This repository's license does not apply to imported PSDs, character artwork, or the character shown in the screenshot. See the [screenshot artwork notice](docs/images/NOTICE.md).
 
 Legacy write APIs are disabled by default. Import, editing and restore use the transaction service, SHA-256 revisions and shared strict HTTP/MCP schemas. See the [API reference](docs/API.md) for migration.
+
+### Play a motion file
+
+Load the sample model, choose `examples/sample.standrig-motion.json` using **「モーションJSONを選択」**, then click **「モーション再生」**. The UI supports pause, stop, seek, speed, loop and JSON export. AI clients use `standrig_motion`.
+
+Only native StandRig motion JSON is supported today. Live2D `.motion3.json` import is **not implemented**. A separate importer interface allows a future converter to use the same playback engine. See [motion format and API](docs/MOTION.md).

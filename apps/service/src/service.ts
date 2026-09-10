@@ -1,3 +1,4 @@
+import { motionRequestSchema } from '@standrig/contracts';
 import { migrateRigDocument } from '@standrig/core/migration';
 import { randomUUID } from 'node:crypto';
 import { constants } from 'node:fs';
@@ -78,6 +79,8 @@ export async function createLocalService(options: { dataDir: string; port?: numb
       await writeFile(file, JSON.stringify(bundle, null, 2), { flag: 'wx' });
       json(res, 201, { ok: true, path: file, format: 'standrig-bundle' }); return;
     }
+    if (route === '/api/playback/motion' && req.method === 'GET') { json(res,200,{ok:true,clip:playback.motionDocument(),playback:playback.snapshot()});return; }
+    if (route === '/api/playback/motion' && req.method === 'POST') { json(res,200,{ok:true,playback:playback.motionCommand(motionRequestSchema.parse(await body(req)))});return; }
     if (route === '/api/playback/events' && req.method === 'GET') { playback.subscribe(res); return; }
     if (route === '/api/playback' && req.method === 'GET') { json(res, 200, { ok: true, playback: playback.snapshot() }); return; }
     if (route === '/api/playback/parameters' && req.method === 'POST') { json(res, 200, { ok: true, playback: playback.input(await body(req)) }); return; }

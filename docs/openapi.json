@@ -3552,6 +3552,735 @@
         }
       }
     },
+    "/api/playback/motion": {
+      "get": {
+        "summary": "Local service /api/playback/motion",
+        "operationId": "get__api_playback_motion",
+        "responses": {
+          "200": {
+            "description": "Motion state; GET also returns the loaded native clip or null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    },
+                    "clip": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/MotionClip"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Local service /api/playback/motion",
+        "operationId": "post__api_playback_motion",
+        "responses": {
+          "200": {
+            "description": "Motion state; GET also returns the loaded native clip or null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "load"
+                      },
+                      "clip": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "const": "standrig-motion"
+                          },
+                          "version": {
+                            "type": "number",
+                            "const": 1
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "number",
+                            "exclusiveMinimum": 0,
+                            "maximum": 3600
+                          },
+                          "tracks": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "parameter": {
+                                  "type": "string"
+                                },
+                                "keys": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "time": {
+                                        "type": "number",
+                                        "minimum": 0
+                                      },
+                                      "value": {
+                                        "type": "number"
+                                      },
+                                      "segment": {
+                                        "anyOf": [
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "string",
+                                                    "const": "linear"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "hold"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "inverse-hold"
+                                                  }
+                                                ]
+                                              }
+                                            },
+                                            "required": [
+                                              "kind"
+                                            ],
+                                            "additionalProperties": false
+                                          },
+                                          {
+                                            "type": "object",
+                                            "properties": {
+                                              "kind": {
+                                                "type": "string",
+                                                "const": "bezier"
+                                              },
+                                              "control1": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "time": {
+                                                    "type": "number"
+                                                  },
+                                                  "value": {
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "time",
+                                                  "value"
+                                                ],
+                                                "additionalProperties": false
+                                              },
+                                              "control2": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "time": {
+                                                    "type": "number"
+                                                  },
+                                                  "value": {
+                                                    "type": "number"
+                                                  }
+                                                },
+                                                "required": [
+                                                  "time",
+                                                  "value"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            },
+                                            "required": [
+                                              "kind",
+                                              "control1",
+                                              "control2"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "time",
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                }
+                              },
+                              "required": [
+                                "parameter",
+                                "keys"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "version",
+                          "name",
+                          "duration",
+                          "tracks"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "clip"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "const": "play"
+                          },
+                          {
+                            "type": "string",
+                            "const": "pause"
+                          },
+                          {
+                            "type": "string",
+                            "const": "stop"
+                          },
+                          {
+                            "type": "string",
+                            "const": "clear"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "seek"
+                      },
+                      "time": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 3600
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "time"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "configure"
+                      },
+                      "speed": {
+                        "type": "number",
+                        "minimum": 0.1,
+                        "maximum": 4
+                      },
+                      "loop": {
+                        "anyOf": [
+                          {
+                            "type": "boolean",
+                            "const": false
+                          },
+                          {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/playback/events": {
       "get": {
         "summary": "Local service /api/playback/events",
@@ -3706,6 +4435,53 @@
                         },
                         "playing": {
                           "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "demo": {
                           "type": "object",
@@ -3901,6 +4677,53 @@
                         },
                         "playing": {
                           "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "demo": {
                           "type": "object",
@@ -4130,6 +4953,53 @@
                         },
                         "playing": {
                           "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "demo": {
                           "type": "object",
@@ -4369,6 +5239,53 @@
                         },
                         "playing": {
                           "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
                         },
                         "demo": {
                           "type": "object",
@@ -5229,11 +6146,11 @@
                               },
                               {
                                 "type": "string",
-                                "const": "smoothstep"
+                                "const": "hold"
                               },
                               {
                                 "type": "string",
-                                "const": "hold"
+                                "const": "smoothstep"
                               },
                               {
                                 "type": "string",
@@ -5399,11 +6316,11 @@
                               },
                               {
                                 "type": "string",
-                                "const": "smoothstep"
+                                "const": "hold"
                               },
                               {
                                 "type": "string",
-                                "const": "hold"
+                                "const": "smoothstep"
                               },
                               {
                                 "type": "string",
@@ -5512,11 +6429,11 @@
                               },
                               {
                                 "type": "string",
-                                "const": "smoothstep"
+                                "const": "hold"
                               },
                               {
                                 "type": "string",
-                                "const": "hold"
+                                "const": "smoothstep"
                               },
                               {
                                 "type": "string",
@@ -5600,11 +6517,11 @@
                               },
                               {
                                 "type": "string",
-                                "const": "smoothstep"
+                                "const": "hold"
                               },
                               {
                                 "type": "string",
-                                "const": "hold"
+                                "const": "smoothstep"
                               },
                               {
                                 "type": "string",
@@ -6007,11 +6924,11 @@
                                       },
                                       {
                                         "type": "string",
-                                        "const": "smoothstep"
+                                        "const": "hold"
                                       },
                                       {
                                         "type": "string",
-                                        "const": "hold"
+                                        "const": "smoothstep"
                                       },
                                       {
                                         "type": "string",
@@ -6904,11 +7821,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -7198,11 +8115,11 @@
                                           },
                                           {
                                             "type": "string",
-                                            "const": "smoothstep"
+                                            "const": "hold"
                                           },
                                           {
                                             "type": "string",
-                                            "const": "hold"
+                                            "const": "smoothstep"
                                           },
                                           {
                                             "type": "string",
@@ -7324,11 +8241,11 @@
                                           },
                                           {
                                             "type": "string",
-                                            "const": "smoothstep"
+                                            "const": "hold"
                                           },
                                           {
                                             "type": "string",
-                                            "const": "hold"
+                                            "const": "smoothstep"
                                           },
                                           {
                                             "type": "string",
@@ -7506,11 +8423,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -7673,11 +8590,11 @@
                                           },
                                           {
                                             "type": "string",
-                                            "const": "smoothstep"
+                                            "const": "hold"
                                           },
                                           {
                                             "type": "string",
-                                            "const": "hold"
+                                            "const": "smoothstep"
                                           },
                                           {
                                             "type": "string",
@@ -7905,11 +8822,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -8244,11 +9161,11 @@
                                       },
                                       {
                                         "type": "string",
-                                        "const": "smoothstep"
+                                        "const": "hold"
                                       },
                                       {
                                         "type": "string",
-                                        "const": "hold"
+                                        "const": "smoothstep"
                                       },
                                       {
                                         "type": "string",
@@ -8370,11 +9287,11 @@
                                       },
                                       {
                                         "type": "string",
-                                        "const": "smoothstep"
+                                        "const": "hold"
                                       },
                                       {
                                         "type": "string",
-                                        "const": "hold"
+                                        "const": "smoothstep"
                                       },
                                       {
                                         "type": "string",
@@ -8710,11 +9627,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -8833,11 +9750,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -8948,11 +9865,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -9051,11 +9968,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -9426,11 +10343,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -9534,11 +10451,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -9673,11 +10590,11 @@
                       },
                       {
                         "type": "string",
-                        "const": "smoothstep"
+                        "const": "hold"
                       },
                       {
                         "type": "string",
-                        "const": "hold"
+                        "const": "smoothstep"
                       },
                       {
                         "type": "string",
@@ -10398,11 +11315,11 @@
                                         },
                                         {
                                           "type": "string",
-                                          "const": "smoothstep"
+                                          "const": "hold"
                                         },
                                         {
                                           "type": "string",
-                                          "const": "hold"
+                                          "const": "smoothstep"
                                         },
                                         {
                                           "type": "string",
@@ -10568,11 +11485,11 @@
                                         },
                                         {
                                           "type": "string",
-                                          "const": "smoothstep"
+                                          "const": "hold"
                                         },
                                         {
                                           "type": "string",
-                                          "const": "hold"
+                                          "const": "smoothstep"
                                         },
                                         {
                                           "type": "string",
@@ -10681,11 +11598,11 @@
                                         },
                                         {
                                           "type": "string",
-                                          "const": "smoothstep"
+                                          "const": "hold"
                                         },
                                         {
                                           "type": "string",
-                                          "const": "hold"
+                                          "const": "smoothstep"
                                         },
                                         {
                                           "type": "string",
@@ -10769,11 +11686,11 @@
                                         },
                                         {
                                           "type": "string",
-                                          "const": "smoothstep"
+                                          "const": "hold"
                                         },
                                         {
                                           "type": "string",
-                                          "const": "hold"
+                                          "const": "smoothstep"
                                         },
                                         {
                                           "type": "string",
@@ -11176,11 +12093,11 @@
                                                 },
                                                 {
                                                   "type": "string",
-                                                  "const": "smoothstep"
+                                                  "const": "hold"
                                                 },
                                                 {
                                                   "type": "string",
-                                                  "const": "hold"
+                                                  "const": "smoothstep"
                                                 },
                                                 {
                                                   "type": "string",
@@ -12073,11 +12990,11 @@
                                           },
                                           {
                                             "type": "string",
-                                            "const": "smoothstep"
+                                            "const": "hold"
                                           },
                                           {
                                             "type": "string",
-                                            "const": "hold"
+                                            "const": "smoothstep"
                                           },
                                           {
                                             "type": "string",
@@ -12367,11 +13284,11 @@
                                                     },
                                                     {
                                                       "type": "string",
-                                                      "const": "smoothstep"
+                                                      "const": "hold"
                                                     },
                                                     {
                                                       "type": "string",
-                                                      "const": "hold"
+                                                      "const": "smoothstep"
                                                     },
                                                     {
                                                       "type": "string",
@@ -12493,11 +13410,11 @@
                                                     },
                                                     {
                                                       "type": "string",
-                                                      "const": "smoothstep"
+                                                      "const": "hold"
                                                     },
                                                     {
                                                       "type": "string",
-                                                      "const": "hold"
+                                                      "const": "smoothstep"
                                                     },
                                                     {
                                                       "type": "string",
@@ -12675,11 +13592,11 @@
                                           },
                                           {
                                             "type": "string",
-                                            "const": "smoothstep"
+                                            "const": "hold"
                                           },
                                           {
                                             "type": "string",
-                                            "const": "hold"
+                                            "const": "smoothstep"
                                           },
                                           {
                                             "type": "string",
@@ -12842,11 +13759,11 @@
                                                     },
                                                     {
                                                       "type": "string",
-                                                      "const": "smoothstep"
+                                                      "const": "hold"
                                                     },
                                                     {
                                                       "type": "string",
-                                                      "const": "hold"
+                                                      "const": "smoothstep"
                                                     },
                                                     {
                                                       "type": "string",
@@ -13074,11 +13991,11 @@
                                           },
                                           {
                                             "type": "string",
-                                            "const": "smoothstep"
+                                            "const": "hold"
                                           },
                                           {
                                             "type": "string",
-                                            "const": "hold"
+                                            "const": "smoothstep"
                                           },
                                           {
                                             "type": "string",
@@ -13413,11 +14330,11 @@
                                                 },
                                                 {
                                                   "type": "string",
-                                                  "const": "smoothstep"
+                                                  "const": "hold"
                                                 },
                                                 {
                                                   "type": "string",
-                                                  "const": "hold"
+                                                  "const": "smoothstep"
                                                 },
                                                 {
                                                   "type": "string",
@@ -13539,11 +14456,11 @@
                                                 },
                                                 {
                                                   "type": "string",
-                                                  "const": "smoothstep"
+                                                  "const": "hold"
                                                 },
                                                 {
                                                   "type": "string",
-                                                  "const": "hold"
+                                                  "const": "smoothstep"
                                                 },
                                                 {
                                                   "type": "string",
@@ -13879,11 +14796,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -14002,11 +14919,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -14117,11 +15034,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -14220,11 +15137,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -14595,11 +15512,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -14703,11 +15620,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -14842,11 +15759,11 @@
                                 },
                                 {
                                   "type": "string",
-                                  "const": "smoothstep"
+                                  "const": "hold"
                                 },
                                 {
                                   "type": "string",
-                                  "const": "hold"
+                                  "const": "smoothstep"
                                 },
                                 {
                                   "type": "string",
@@ -15597,6 +16514,386 @@
                 "format": "uuid"
               }
             }
+          }
+        ]
+      },
+      "MotionClip": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "const": "standrig-motion"
+          },
+          "version": {
+            "type": "number",
+            "const": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 3600
+          },
+          "tracks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "parameter": {
+                  "type": "string"
+                },
+                "keys": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "time": {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "segment": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "const": "linear"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "const": "hold"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "const": "inverse-hold"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "bezier"
+                              },
+                              "control1": {
+                                "type": "object",
+                                "properties": {
+                                  "time": {
+                                    "type": "number"
+                                  },
+                                  "value": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "time",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "control2": {
+                                "type": "object",
+                                "properties": {
+                                  "time": {
+                                    "type": "number"
+                                  },
+                                  "value": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "time",
+                                  "value"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "control1",
+                              "control2"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "time",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "parameter",
+                "keys"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "format",
+          "version",
+          "name",
+          "duration",
+          "tracks"
+        ],
+        "additionalProperties": false
+      },
+      "MotionRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "load"
+              },
+              "clip": {
+                "type": "object",
+                "properties": {
+                  "format": {
+                    "type": "string",
+                    "const": "standrig-motion"
+                  },
+                  "version": {
+                    "type": "number",
+                    "const": 1
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 3600
+                  },
+                  "tracks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "parameter": {
+                          "type": "string"
+                        },
+                        "keys": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "time": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "value": {
+                                "type": "number"
+                              },
+                              "segment": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "const": "linear"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "hold"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "inverse-hold"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "kind"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "bezier"
+                                      },
+                                      "control1": {
+                                        "type": "object",
+                                        "properties": {
+                                          "time": {
+                                            "type": "number"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "time",
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "control2": {
+                                        "type": "object",
+                                        "properties": {
+                                          "time": {
+                                            "type": "number"
+                                          },
+                                          "value": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "time",
+                                          "value"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "control1",
+                                      "control2"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "time",
+                              "value"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "parameter",
+                        "keys"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "format",
+                  "version",
+                  "name",
+                  "duration",
+                  "tracks"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "clip"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "play"
+                  },
+                  {
+                    "type": "string",
+                    "const": "pause"
+                  },
+                  {
+                    "type": "string",
+                    "const": "stop"
+                  },
+                  {
+                    "type": "string",
+                    "const": "clear"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "seek"
+              },
+              "time": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 3600
+              }
+            },
+            "required": [
+              "action",
+              "time"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "configure"
+              },
+              "speed": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 4
+              },
+              "loop": {
+                "anyOf": [
+                  {
+                    "type": "boolean",
+                    "const": false
+                  },
+                  {
+                    "type": "boolean",
+                    "const": true
+                  }
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false
           }
         ]
       }

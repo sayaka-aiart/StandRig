@@ -5,6 +5,7 @@ const canvas = document.querySelector('canvas')!;
 const error = document.querySelector('#error')!;
 let player: StandRigPlayer | undefined;
 let modelVersion = -1;
+let physicsEpoch: number | undefined;
 let sessionId: string | undefined;
 let pending: PlaybackSnapshot | undefined;
 let applying = false;
@@ -21,8 +22,9 @@ async function drain() {
         player = new StandRigPlayer(canvas, rig);
         await player.load();
         modelVersion = state.modelVersion;
-        sessionId = state.sessionId;
+        sessionId = state.sessionId; physicsEpoch = undefined;
       }
+      if (physicsEpoch !== state.physicsEpoch) { player.resetPhysics(); physicsEpoch = state.physicsEpoch; }
       if (!state.playing) player.pause();
       player.setParameters(state.values);
       if (state.playing) player.play();

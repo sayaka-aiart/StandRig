@@ -1,0 +1,10 @@
+{
+  "format": "standrig-motion",
+  "version": 1,
+  "name": "Sample tilt and smile",
+  "duration": 2,
+  "tracks": [
+    {"parameter": "ParamAngleZ", "keys": [{"time": 0, "value": 0}, {"time": 0.5, "value": -20}, {"time": 1.5, "value": 20}, {"time": 2, "value": 0}]},
+    {"parameter": "ParamMouthOpen", "keys": [{"time": 0, "value": 0}, {"time": 1, "value": 1}, {"time": 2, "value": 0}]}
+  ]
+}

@@ -30,7 +30,7 @@ For clients accepting an `mcpServers` JSON configuration, replace the absolute p
 
 Use the equivalent command/args/env fields in other clients. If `node` is not on that client's PATH, use the absolute path to the Node executable. Paths containing spaces remain a single array argument. The MCP process works from any current directory. Use `node .../cli.mjs` directly in client configuration: `npm run mcp` prints npm's own messages and is for terminal inspection, not a clean stdio transport.
 
-After saving, reconnect/restart the MCP connection in your client. Confirm that all 12 `standrig_*` tools are listed, then call `standrig_context`. A successful response contains `context.revision` and model counts. An empty model has zero assets: import your PSD in the browser before asking for modeling. If tools are missing, check the executable/path; if a tool returns `fetch failed`, check the running service and STANDRIG_URL. Tool listing alone does not prove service connectivity.
+After saving, reconnect/restart the MCP connection in your client. Confirm that all 13 `standrig_*` tools are listed, then call `standrig_context`. A successful response contains `context.revision` and model counts. An empty model has zero assets: import your PSD in the browser before asking for modeling. If tools are missing, check the executable/path; if a tool returns `fetch failed`, check the running service and STANDRIG_URL. Tool listing alone does not prove service connectivity.
 
 `STANDRIG_URL` accepts only loopback HTTP origins and does not follow redirects. The process does not start the service, import files, open a browser, buy AI API credits or configure OBS. SDK 2.0.0's `serveStdio` supports the modern protocol and legacy initialization; the installed version is fixed in the lockfile. [Official SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 
@@ -49,6 +49,7 @@ After saving, reconnect/restart the MCP connection in your client. Confirm that 
 | `standrig_export` | Write a self-contained bundle and return its local path |
 | `standrig_playback_state` | Transient parameters, play state and output connections |
 | `standrig_playback_parameters` | Pose/expression input without editing the model |
+| `standrig_motion` | Load native motion JSON; play / pause / stop / clear / seek / configure (speed, loop). See [MOTION.md](MOTION.md) |
 | `standrig_playback_control` | play / pause / reset / reload / demo-start / demo-stop / demo-pointer |
 
 動作デモは `{command:"demo-start", mode:"showcase-active"}`（既定）または `{command:"demo-start", mode:"mouse-expression"}`。マウス位置は `{command:"demo-pointer", x:0.5, y:-0.5}` のように -1〜1 の座標を渡します（画面右が+X、下が+Y）。`demo-stop` で開始前の姿勢・再生状態を復元します。通常のパラメータ入力はデモを止め、元の姿勢に入力値を適用します。保存モデルは変更しません。
@@ -57,7 +58,7 @@ HTTP and MCP transactions share `@standrig/contracts`: 35 `type`-discriminated a
 
 ## Resources and workflow
 
-Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide`. Additional resources: `operations`, `deform`, `architecture`, `adapters`, `api` under the same URI prefix (seven resources total). If your client cannot read MCP resources, give it the corresponding local files; do not skip the contract.
+Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide`. Additional resources: `operations`, `deform`, `architecture`, `adapters`, `api`, `motion` under the same URI prefix (eight resources total). If your client cannot read MCP resources, give it the corresponding local files; do not skip the contract.
 
 1. Read context and confirmed parts. Prepare visual targets under the model's data directory before PSD modeling.
 2. Read poses and the operations resource; dry-run a bounded transaction with `expectedRevision`, `commit:false`, and explicit QA.
