@@ -343,6 +343,7 @@ export interface RigSharedWarpBounds {
 }
 
 export interface RigSharedWarpControlPoint {
+  bindings?: RigWarpPinBinding[];
   id: string;
   column: number;
   row: number;

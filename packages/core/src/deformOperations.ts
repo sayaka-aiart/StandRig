@@ -1,3 +1,4 @@
+import { keyformParameter, sampleWarpKeyform, writeWarpKeyform } from './warpKeyforms.js';
 import { applyDeformBrush, type BrushGraph } from './deformBrush.js';
 import { validateBlendWeight, validateExtendedShape } from './extendedBlendShape.js';
 import type { DeformBrush, DeformerBlendShape, ExtendedBlendShape } from './deformTypes.js';
@@ -132,8 +133,7 @@ function warpBrush(rig: RigDocument, op: ModelingOperation, brush: DeformBrush) 
     if (brush.surface.kind === 'artmesh')
         throw Error('warp surface required');
     const destination = brush.destination;
-    if (destination.kind === 'keyform')
-        throw Error('Warp brush supports base or blend-shape destinations');
+    const parameter = destination.kind === 'keyform' ? keyformParameter(rig,destination.parameter,destination.input) : undefined;
     return selectedDeformers(rig, op).map(d => {
         if (rig.symmetry?.protectedDeformerIds.includes(d.id))
             throw Error('deformer protected by symmetry contract');
@@ -166,7 +166,7 @@ function warpBrush(rig: RigDocument, op: ModelingOperation, brush: DeformBrush) 
                 x = p.u * surface.width;
                 y = p.v * surface.height;
             }
-            const delta = oldOffsets?.find(v => v.id === p.id);
+            const delta = destination.kind === 'keyform' ? sampleWarpKeyform(p,destination.parameter,destination.input) : oldOffsets?.find(v => v.id === p.id);
             graph.points.push({ id: p.id, x: x + p.offsetX + (delta?.x ?? 0), y: y + p.offsetY + (delta?.y ?? 0), referenceX: x + (destination.kind === 'base' ? 0 : p.offsetX), referenceY: y + (destination.kind === 'base' ? 0 : p.offsetY) });
             if (p.enabled === false)
                 graph.locked.add(p.id);
@@ -202,6 +202,13 @@ function warpBrush(rig: RigDocument, op: ModelingOperation, brush: DeformBrush) 
         const deltas = result.points.map((p, i) => ({ id: p.id, x: p.x - graph.points[i].referenceX, y: p.y - graph.points[i].referenceY }));
         if (destination.kind === 'base')
             deltas.forEach((p, i) => { controls[i].offsetX = p.x; controls[i].offsetY = p.y; });
+        else if (destination.kind === 'keyform') {
+            deltas.forEach((delta,i)=>{
+                if(controls[i].enabled===false || graph.locked.has(controls[i].id) || brush.lockedIds?.includes(controls[i].id))return;
+                const previous=sampleWarpKeyform(controls[i],destination.parameter,destination.input);
+                writeWarpKeyform(controls[i],destination.parameter,destination.input,parameter!.default,delta,previous);
+            });
+        }
         else {
             const shape: DeformerBlendShape = { ...old, ...destination.shape, kind: 'deformer', ...(shared ? { sharedPoints: deltas.filter((_, i) => controls[i].enabled !== false) } : { pins: deltas.filter((_, i) => controls[i].enabled !== false) }) };
             validateExtendedShape(shape, rig, d.id);

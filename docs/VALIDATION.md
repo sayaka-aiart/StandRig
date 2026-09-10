@@ -70,4 +70,13 @@ The real stdio MCP test creates a Part shape and ArtMesh Brush shape in a QA-gat
 
 An isolated geometric Sample Bot fixture passed numeric QA at weights 0, 0.5 and 1 before browser inspection. In the built independent player, weight 0 showed the starting body; weight 1 visibly combined ArtMesh bend with Part rotation and scale. Saved screenshots and QA records are under gitignored reports/deform-visual/. Fine mesh triangle-edge raster lines were visible in the sample at both poses; this check establishes parameter-driven geometry, not finished rendering quality or character Model Freeze. The normal PSD/model was not edited.
 
-Warp Brush keyform output and irregular Warp Pin contour-follow are explicitly rejected. There is no Brush mouse UI, posed-screen inverse sculpting or shape-delete action. Existing negative-target ArtMesh shapes require appearance review because their reversed weight behavior was corrected. Production-character appearance, combined extremes and adapter compatibility remain separate acceptance work.
+In the initial Brush implementation, Warp keyform output and irregular Warp Pin contour-follow were rejected. Warp keyform support was subsequently added below. There is no Brush mouse UI, posed-screen inverse sculpting or shape-delete action. Existing negative-target ArtMesh shapes require appearance review because their reversed weight behavior was corrected. Production-character appearance, combined extremes and adapter compatibility remain separate acceptance work.
+
+
+## Warp Brush keyform output — 2026-09-10
+
+Both Warp pins and shared-grid control points now accept the Brush keyform destination. Windows / Node 24.14.0: workspace build, 16 smoke checks and 38 Node tests passed. Regressions verify existing/default key preservation, interpolated insertion, repeated edits, negative keys, locked points, invalid/ambiguous/nonadditive channels, atomic multi-owner rejection, shared-field normalization and safe rejection of grid resize with keys. Pin normalization now retains custom interpolation curves; a numerical regression checks the curve's sampled value.
+
+The integration test imports a synthetic Warp fixture through HTTP, dry-runs both destinations, commits through a real stdio MCP client with neutral/intermediate/key QA, verifies persisted pin and shared-point bindings, then restores the original revision through HTTP. Generated schema checks include the shared-field point bindings.
+
+In a separate isolated Sample Bot fixture, numeric QA passed at parameter values 0, 15 and 30 before images. The built browser player visibly changed the body at 30 using both Warp destinations; the 0 pose retained its starting shape. QA and screenshots are saved under gitignored reports/warp-keyform-visual/. This is synthetic runtime evidence, not production character pose acceptance; fine raster triangle-edge lines remain visible as in the preceding fixture.

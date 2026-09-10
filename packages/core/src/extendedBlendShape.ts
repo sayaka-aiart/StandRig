@@ -1,5 +1,5 @@
 import { sampleArtMeshBlendShapeWeight } from './artMeshBlendShape.js';
-import { isParameterInterpolation } from './bindings.js';
+import { isParameterInterpolation, sampleBinding } from './bindings.js';
 import type { BlendWeight, DeformerBlendShape, ExtendedBlendShape, TransformDelta } from './deformTypes.js';
 import type { ParameterValues, RigDocument, RigSharedWarpField, Transform2D } from './types.js';
 export const blendWeight = (shape: BlendWeight, values: ParameterValues) => sampleArtMeshBlendShapeWeight(shape, values[shape.parameter] ?? shape.neutralInput);
@@ -18,10 +18,14 @@ export function applyTransformShapes(pose: Transform2D, shapes: Array<BlendWeigh
     }
 }
 export function resolveSharedShape(field: RigSharedWarpField | undefined, shapes: DeformerBlendShape[] | undefined, values: ParameterValues) {
-    if (!field || !shapes?.some(s => s.sharedPoints?.length))
+    if (!field || (!shapes?.some(s => s.sharedPoints?.length) && !field.controlPoints.some(p=>p.bindings?.length)))
         return field;
     const result = structuredClone(field);
-    for (const shape of shapes)
+    for (const point of result.controlPoints) for(const binding of (point.bindings??[]).slice(0,16)) {
+        const value=sampleBinding(binding,values[binding.parameter]??0);
+        point[binding.property]=binding.additive===false?value:point[binding.property]+value;
+    }
+    for (const shape of shapes ?? [])
         for (const delta of shape.sharedPoints ?? []) {
             const point = result.controlPoints.find(p => p.id === delta.id);
             if (point) {

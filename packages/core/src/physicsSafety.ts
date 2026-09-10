@@ -132,7 +132,7 @@ export function auditPhysicsSafety(rig: RigDocument, options: PhysicsSafetyOptio
         if ((deformer.blendShapes??[]).some(s=>s.parameter===parameter) || (deformer.bindings ?? []).some((binding) => binding.parameter === parameter) || (deformer.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))) {
           for (const part of partsForDeformer(deformer, parts)) targets.push(makeTarget(part, "parameter", deformer.id, parameter, structuralIds));
         }
-        for (const pin of deformer.warp?.pins ?? []) {
+        for (const pin of [...deformer.warp?.pins ?? [], ...deformer.sharedWarp?.controlPoints ?? []]) {
           if (!(pin.bindings ?? []).some((binding) => binding.parameter === parameter)) continue;
           for (const part of partsForDeformer(deformer, parts)) targets.push(makeTarget(part, "parameter", deformer.id, parameter, structuralIds));
         }

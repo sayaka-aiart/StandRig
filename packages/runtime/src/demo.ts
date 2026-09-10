@@ -14,7 +14,7 @@ export function demoParameters(rig: RigDocument): ParameterDefinition[] {
     if (typeof record.parameter === 'string') ids.add(record.parameter);
     if (Array.isArray(record.parameters)) for (const id of record.parameters) if (typeof id === 'string') ids.add(id);
     for (const key of ['yawParameter', 'pitchParameter']) if (typeof record[key] === 'string') ids.add(record[key] as string);
-    for (const key of ['bindings', 'multiBindings', 'blendShapes', 'warp', 'pins', 'artMesh', 'artPaths', 'points', 'alphaReveal', 'contourShade']) visit(record[key]);
+    for (const key of ['bindings', 'multiBindings', 'blendShapes', 'warp', 'sharedWarp', 'controlPoints', 'pins', 'artMesh', 'artPaths', 'points', 'alphaReveal', 'contourShade']) visit(record[key]);
   }
   visit(rig.parts); visit(rig.deformers); visit((rig.glue??[]).filter(g=>g.status==="active"));
   return parameterDefinitionsForRig(rig).filter(p => ids.has(p.id) && choreographed.has(p.id) && p.max > p.min);

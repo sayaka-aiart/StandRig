@@ -138,7 +138,8 @@ export function normalizeWarpPinBinding(binding: Partial<RigWarpPinBinding> | un
     property,
     keys: keys.length ? keys : [{ input: 0, value: 0 }],
     additive: binding?.additive !== false,
-    interpolation: normalizeParameterInterpolation(binding?.interpolation)
+    interpolation: normalizeParameterInterpolation(binding?.interpolation),
+    curve: binding?.curve ? structuredClone(binding.curve) : undefined
   };
 }
 

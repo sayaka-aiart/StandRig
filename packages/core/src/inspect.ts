@@ -215,6 +215,7 @@ export function validateRig(rig: RigDocument): RigValidationResult {
   validateParameters(parameters, addIssue);
   validateParts(parts, assetIds, parameterIds, deformerIds, addIssue);
   validateDeformers(deformers, partIds, parameterIds, addIssue);
+  for(const d of deformers)for(const p of d.sharedWarp?.controlPoints??[])if(p.bindings!==undefined)validateWarpPinBindings(p.bindings,`deformers.${d.id}.sharedWarp.${p.id}`,d.id,parameterIds,addIssue);
   validateParentGraph(parts, partIds, addIssue);
   validateDeformerParentGraph(deformers, deformerIds, addIssue);
   validateGlueCandidates(glueCandidates, partIds, addIssue);

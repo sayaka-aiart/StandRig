@@ -6,6 +6,7 @@ export interface SharedWarpBounds {
 }
 
 export interface SharedWarpControlPoint {
+  bindings?: import("./types.js").RigWarpPinBinding[];
   id: string;
   column: number;
   row: number;
@@ -37,6 +38,7 @@ export function normalizeSharedWarpField(value: Partial<SharedWarpField> | undef
     const row = integer(point?.row, 0, rows, 0);
     points.set(`${column}|${row}`, {
       id: typeof point?.id === "string" && point.id ? point.id : `p-${column}-${row}`,
+      bindings: point.bindings ? structuredClone(point.bindings) : undefined,
       column, row, offsetX: number(point?.offsetX, 0), offsetY: number(point?.offsetY, 0), enabled: point?.enabled !== false
     });
   }
@@ -75,6 +77,10 @@ export function resizeSharedWarpField(field: SharedWarpField, columns: number, r
   const source = normalizeSharedWarpField(field);
   const nextColumns = integer(columns, 1, 16, source.grid.columns);
   const nextRows = integer(rows, 1, 16, source.grid.rows);
+  if(source.controlPoints.some(p=>p.bindings?.length)){
+    if(nextColumns===source.grid.columns&&nextRows===source.grid.rows)return source;
+    throw Error('Cannot resize a keyframed shared Warp grid without remapping its keys');
+  }
   const controlPoints: SharedWarpControlPoint[] = [];
   for (let row = 0; row <= nextRows; row += 1) {
     for (let column = 0; column <= nextColumns; column += 1) {

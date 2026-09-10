@@ -920,6 +920,221 @@
             "items": {
               "$ref": "#/$defs/deformerBlendShape"
             }
+          },
+          "sharedWarp": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "number",
+                "const": 1
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "bounds": {
+                "type": "object",
+                "properties": {
+                  "left": {
+                    "type": "number"
+                  },
+                  "top": {
+                    "type": "number"
+                  },
+                  "width": {
+                    "type": "number"
+                  },
+                  "height": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "left",
+                  "top",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false
+              },
+              "grid": {
+                "type": "object",
+                "properties": {
+                  "columns": {
+                    "type": "number"
+                  },
+                  "rows": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "columns",
+                  "rows"
+                ],
+                "additionalProperties": false
+              },
+              "controlPoints": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "bindings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "parameter": {
+                            "type": "string"
+                          },
+                          "property": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "offsetX"
+                              },
+                              {
+                                "type": "string",
+                                "const": "offsetY"
+                              }
+                            ]
+                          },
+                          "keys": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "input": {
+                                  "type": "number"
+                                },
+                                "value": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "input",
+                                "value"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "additive": {
+                            "anyOf": [
+                              {
+                                "type": "boolean",
+                                "const": false
+                              },
+                              {
+                                "type": "boolean",
+                                "const": true
+                              }
+                            ]
+                          },
+                          "interpolation": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "linear"
+                              },
+                              {
+                                "type": "string",
+                                "const": "smoothstep"
+                              },
+                              {
+                                "type": "string",
+                                "const": "hold"
+                              },
+                              {
+                                "type": "string",
+                                "const": "arc"
+                              },
+                              {
+                                "type": "string",
+                                "const": "curve"
+                              }
+                            ]
+                          },
+                          "curve": {
+                            "type": "object",
+                            "properties": {
+                              "controlPoints": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "t": {
+                                      "type": "number"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "t",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "controlPoints"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "parameter",
+                          "property",
+                          "keys"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "column": {
+                      "type": "number"
+                    },
+                    "row": {
+                      "type": "number"
+                    },
+                    "offsetX": {
+                      "type": "number"
+                    },
+                    "offsetY": {
+                      "type": "number"
+                    },
+                    "enabled": {
+                      "anyOf": [
+                        {
+                          "type": "boolean",
+                          "const": false
+                        },
+                        {
+                          "type": "boolean",
+                          "const": true
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "column",
+                    "row",
+                    "offsetX",
+                    "offsetY"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "version",
+              "enabled",
+              "bounds",
+              "grid",
+              "controlPoints"
+            ],
+            "additionalProperties": false
           }
         }
       }

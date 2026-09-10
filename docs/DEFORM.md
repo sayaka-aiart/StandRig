@@ -20,10 +20,10 @@ Every request also requires `center`, positive `radius`, `iterations` (integer 1
 | Surface | Coordinates and target | Destinations |
 | --- | --- | --- |
 | `{kind:"artmesh",space:"mesh-local"}` | Source asset local pixels; explicit Part IDs or confirmed roles | `base`, `blend-shape`, additive `keyform` |
-| `{kind:"warp-pins",space:"warp-local",width,height}` | Pin UV multiplied by the supplied positive dimensions, plus pixel offsets; explicit Deformer IDs | `base`, `blend-shape` |
-| `{kind:"shared-warp",space:"stage"}` | Shared field bounds in stage coordinates, plus offsets; explicit Deformer IDs | `base`, `blend-shape` |
+| `{kind:"warp-pins",space:"warp-local",width,height}` | Pin UV multiplied by the supplied positive dimensions, plus pixel offsets; explicit Deformer IDs | `base`, `blend-shape`, additive `keyform` |
+| `{kind:"shared-warp",space:"stage"}` | Shared field bounds in stage coordinates, plus offsets; explicit Deformer IDs | `base`, `blend-shape`, additive `keyform` |
 
-Warp Pin smooth/relax requires explicit `edges:[[pinId,pinId],...]`. Adjacency for meshes and complete shared grids is derived automatically; do not supply `edges` for these surfaces. Irregular Warp Pins do not support contour-follow, because their boundary is not defined. Warp keyform output is currently unsupported and rejected. The Brush does not sculpt ArtPath or Glue geometry; their Blend Shape channels are authored through `blend-shape-set`.
+Warp Pin smooth/relax requires explicit `edges:[[pinId,pinId],...]`. Adjacency for meshes and complete shared grids is derived automatically; do not supply `edges` for these surfaces. Irregular Warp Pins do not support contour-follow, because their boundary is not defined. The Brush does not sculpt ArtPath or Glue geometry; their Blend Shape channels are authored through `blend-shape-set`.
 
 Brush calculations use base geometry plus the selected destination's existing deltas. They do not invert a currently posed/skinned screen-space mesh. For base ArtMesh smoothing the reference is UV multiplied by asset size; for shape/keyform smoothing it is the base mesh. Brush output preserves vertex IDs, UVs and topology. Existing locked/pinned/protected vertices and explicit `lockedIds` stay fixed. Protected Parts/Deformers are rejected. A final triangle inversion or degenerate triangle rejects the entire operation; irregular pin fields lack triangles and still require deformation QA. Combined shapes and intermediate animation poses also require QA and visual checks.
 
@@ -99,3 +99,14 @@ A negative target previously sampled ArtMesh weight backwards. Weight now uses `
 HTTP and MCP use generated strict action schemas. Wrong field types and unknown keys are rejected at the boundary. Numeric ranges, existing owner/point references, locks and geometric constraints are checked by the core; passing JSON Schema alone does not authorize a valid deformation. The generated document-schema Blend Shape definitions are also checked by `npm test`. Older runtimes do not evaluate these new channels; use the matching core/runtime build.
 
 Use explicit QA `poseSamples` at neutral, intermediate and target weights, plus combinations of expressions. Automated synthetic checks and a Sample Bot browser check are recorded in [VALIDATION.md](VALIDATION.md); they do not qualify a production character or Model Freeze.
+
+
+## Warp keyform output
+
+For either Warp surface, use `destination:{"kind":"keyform","parameter":"ParamAngleX","input":15}`. Target explicit Deformer IDs. The Brush saves additive `offsetX` / `offsetY` keys in each point's `bindings` (Warp pins or shared-grid control points), leaving base offsets and Blend Shapes intact. Playback evaluates these bindings before Blend Shapes.
+
+Editing a new key starts from the selected parameter's interpolated offsets at that input, not zero. Editing an existing key starts from its saved offsets. Other stored keys, other parameter channels and interpolation/curve metadata remain intact. If the parameter default has no explicit key, its previous sampled value is inserted to retain that default pose, except when editing the default itself. New channels start with a zero default key. Inserting or changing a key changes interpolation in adjacent intervals; it cannot preserve every intermediate pose. Existing key values are preserved, but values between them require review.
+
+Only changed, unlocked, enabled point channels are written. Per-operation displacement limits apply relative to the sampled key. A point supports at most 16 bindings. Duplicate channels/duplicate key inputs, nonadditive channels, and overlapping two-parameter bindings are rejected rather than silently choosing a binding. Other parameter poses, skinning and Blend Shapes are excluded from the Brush working geometry; use combined-pose QA afterwards. Resizing a shared grid with keys is rejected until explicit key remapping is available.
+
+The operation is still `deform-brush`; no new MCP tool or action discriminator is needed. Both HTTP and MCP support trial, QA-gated commit and checkpoint restore. Older runtimes do not evaluate shared-grid control-point bindings; update core and runtime together.

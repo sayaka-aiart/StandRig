@@ -269,8 +269,8 @@
     {
       "path": "docs/DEFORM.md",
       "normalization": "lf",
-      "bytes": 8820,
-      "sha256": "60dc7bc5906477fda0c7325ac1680239a396e557e3755664f5b69931b4382a85"
+      "bytes": 10624,
+      "sha256": "4802c514a7473287bb89720dcdda23447ac1a41831dcc88303defd881700193f"
     },
     {
       "path": "docs/MCP.md",
@@ -299,8 +299,8 @@
     {
       "path": "docs/VALIDATION.md",
       "normalization": "lf",
-      "bytes": 10930,
-      "sha256": "14d92c0cdc404226b24a3e359f7cfac1ac28b415d6cdfaad503cb3787c2b07b3"
+      "bytes": 12404,
+      "sha256": "49f48a1ef45b24cc4606e4d0990aef0447cbc83183bd385c16c9fb71bf3da3cf"
     },
     {
       "path": "docs/api-routes.json",
@@ -323,8 +323,8 @@
     {
       "path": "docs/openapi.json",
       "normalization": "lf",
-      "bytes": 581078,
-      "sha256": "425f0dea683fc8e767dd35150b45e2853554eb782d6bf8d0448e78eac820c8c5"
+      "bytes": 593892,
+      "sha256": "0e1600f47c93450451094d6ec1459f3b4ddf8a0346c1f02392a91001b94f752c"
     },
     {
       "path": "examples/agent-client.mjs",
@@ -599,8 +599,8 @@
     {
       "path": "packages/contracts/src/operations.mjs",
       "normalization": "lf",
-      "bytes": 34539,
-      "sha256": "03129a67453827b29145fd3eb5fb962969a1997828c37dc82626e38c0197cc9b"
+      "bytes": 35143,
+      "sha256": "df3c4cea551ca60d990fb638ef85a9bc879be32602928b39372ee1842ebc2b50"
     },
     {
       "path": "packages/core/package.json",
@@ -725,8 +725,8 @@
     {
       "path": "packages/core/src/deformOperations.ts",
       "normalization": "lf",
-      "bytes": 13609,
-      "sha256": "e0229933d990d29c6c736e0097f7c05e3bc1dc5948c3efda6bd6ec9c8225964e"
+      "bytes": 14286,
+      "sha256": "cb96ba2036360a7a40bb028e6cbeb95c724eb7f27b9ea1de5740ad21fccd5831"
     },
     {
       "path": "packages/core/src/deformTypes.ts",
@@ -761,8 +761,8 @@
     {
       "path": "packages/core/src/extendedBlendShape.ts",
       "normalization": "lf",
-      "bytes": 7958,
-      "sha256": "099993937d1d4e6bdb20eceaf9e8c04cb9a86b551a34d3a78693a76ca6ec24f2"
+      "bytes": 8309,
+      "sha256": "a32326b66526154196c83ec368207f5e2d1ca0092d7bdfd83a5a0493c18114df"
     },
     {
       "path": "packages/core/src/generationRequests.ts",
@@ -845,8 +845,8 @@
     {
       "path": "packages/core/src/inspect.ts",
       "normalization": "lf",
-      "bytes": 56830,
-      "sha256": "b490395aea0997318d075654a94a31e2352086c194412d6e2e25279d71df7a45"
+      "bytes": 57033,
+      "sha256": "6d4fc78c28493cdb7d70cc553b892ed771722435e51673c535475bb344a16c01"
     },
     {
       "path": "packages/core/src/io.ts",
@@ -977,8 +977,8 @@
     {
       "path": "packages/core/src/physicsSafety.ts",
       "normalization": "lf",
-      "bytes": 9752,
-      "sha256": "d650fc7eb72278916ee6caf51c0293b84b4ed330e0edc0d937747f656eeeb532"
+      "bytes": 9802,
+      "sha256": "d4ad9041fc305d540b28a1b6fd5706e00afacf601dd508fe68538097e44c509b"
     },
     {
       "path": "packages/core/src/physicsSettlingQa.ts",
@@ -1043,8 +1043,8 @@
     {
       "path": "packages/core/src/sharedWarp.ts",
       "normalization": "lf",
-      "bytes": 4667,
-      "sha256": "7e7f4552c715e85738bd775aec4b043b757ada91d65cd6adb73e7835d62c514e"
+      "bytes": 5035,
+      "sha256": "63fcb9fe773b16ecc1c2d0e338241415fee6203554eeaef8ef9bfc95522028a1"
     },
     {
       "path": "packages/core/src/sharedWarpProjection.ts",
@@ -1109,14 +1109,20 @@
     {
       "path": "packages/core/src/types.ts",
       "normalization": "lf",
-      "bytes": 20425,
-      "sha256": "d8f4b1a0ec6f72e5ed2811f59e7e8546a69015c00a7cdfaca990d8bcd09af905"
+      "bytes": 20459,
+      "sha256": "b5698bfdaf0b67ff6d6f738ea2977b0b696e7fc5a25ae45d5e6c61070e2440a8"
     },
     {
       "path": "packages/core/src/warp.ts",
       "normalization": "lf",
-      "bytes": 14335,
-      "sha256": "67371e9af8abcf9be85257945d504896796d991b7c09f038e92e26c1bfa929c6"
+      "bytes": 14407,
+      "sha256": "16ff2b663cb9340b05f13db5205896241e04c02ec7b7661e85b705018886b021"
+    },
+    {
+      "path": "packages/core/src/warpKeyforms.ts",
+      "normalization": "lf",
+      "bytes": 2711,
+      "sha256": "1f9732d867f196ffc5d0c3d72218b6d416103cc75bd4452c71e7d1a271de5d3e"
     },
     {
       "path": "packages/core/src/warpPinLinks.ts",
@@ -1157,8 +1163,8 @@
     {
       "path": "packages/runtime/src/demo.ts",
       "normalization": "lf",
-      "bytes": 2246,
-      "sha256": "5b9ae0de5c6d3db923f96d41a89e74caa9721f5ed2cb471a7272b4316b09426d"
+      "bytes": 2277,
+      "sha256": "994ddd3e529a4c001d15c18d9887b2306574964ca8e6de0be7d6ce707485e45d"
     },
     {
       "path": "packages/runtime/src/index.ts",
@@ -1217,8 +1223,8 @@
     {
       "path": "scripts/generate-operation-schemas.mjs",
       "normalization": "lf",
-      "bytes": 7043,
-      "sha256": "a472615c5749f0cca70657b53ef34898d7286663b746aecf1406f26b8144343e"
+      "bytes": 7200,
+      "sha256": "7ad6ee2113185f1874b223ef8346e6cb55a5e205518f12ce8566c3d064d73e5b"
     },
     {
       "path": "scripts/init-empty.mjs",
@@ -1277,8 +1283,8 @@
     {
       "path": "templates/rig.schema.json",
       "normalization": "lf",
-      "bytes": 42485,
-      "sha256": "92294e1c85c3fcf144c7c4c99f0cd133eae6917416c8b07e8e5fd09ea89217f8"
+      "bytes": 49930,
+      "sha256": "706305d8ee10bdfbb4ae17235b7753bb1004122a6b7c6e78089406a9f32c0816"
     },
     {
       "path": "tests/architecture.test.mjs",
@@ -1315,6 +1321,12 @@
       "normalization": "lf",
       "bytes": 1599,
       "sha256": "2eda47b0116cf7bde8590ba345210d9c80347d4a1dbb78d14146ff897714ab90"
+    },
+    {
+      "path": "tests/warp-keyform.test.mjs",
+      "normalization": "lf",
+      "bytes": 8941,
+      "sha256": "05cf998a98e5dfe258d73cd5e6341e555aa41e86d42e4971d96ba0c8978d54d3"
     },
     {
       "path": "tests/write-contract.test.mjs",

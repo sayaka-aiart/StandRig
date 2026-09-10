@@ -59,7 +59,7 @@ for(const [file,text]of [['operations.mjs',output],['index.d.ts',declarations]])
 console.log('Strict operation and QA schemas '+(process.argv.includes('--check')?'verified':'generated'));
 
 // Keep the document schema's new owner-local Blend Shape definitions in sync too.
-const {blendShapeSetSchema}=await import('../packages/contracts/src/operations.mjs');
+const {blendShapeSetSchema,deformerCreateSchema}=await import('../packages/contracts/src/operations.mjs');
 const {toJSONSchema}=await import('zod');
 const variants=toJSONSchema(blendShapeSetSchema).properties.shape.anyOf;
 const templatePath='templates/rig.schema.json';
@@ -78,6 +78,7 @@ for(const variant of variants){
     template.properties.deformers.items.properties.blendShapes=list;
   }
 }
+template.properties.deformers.items.properties.sharedWarp=toJSONSchema(deformerCreateSchema).properties.deformer.properties.sharedWarp;
 const templateText=JSON.stringify(template,null,2)+'\n';
 if(process.argv.includes('--check')){if(original.replaceAll('\r\n','\n')!==templateText)throw Error('Document Blend Shape schemas are stale');}
 else await writeFile(templatePath,templateText);
