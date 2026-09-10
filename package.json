@@ -11,11 +11,13 @@
     "start": "node apps/service/dist/cli.js",
     "mcp": "node packages/mcp/src/cli.mjs",
     "dev": "npm run dev --workspace=@standrig/preview",
-    "test": "node scripts/smoke.mjs && node --test tests/*.test.mjs",
+    "test": "npm run schemas:check && node scripts/smoke.mjs && node --test tests/*.test.mjs",
     "verify": "node scripts/verify-package.mjs",
     "docs": "node scripts/generate-api-docs.mjs",
     "notices": "node scripts/collect-notices.mjs",
-    "release": "node scripts/package-release.mjs"
+    "release": "node scripts/package-release.mjs",
+    "schemas": "node scripts/generate-operation-schemas.mjs",
+    "schemas:check": "node scripts/generate-operation-schemas.mjs --check"
   },
   "devDependencies": {
     "@types/node": "24.13.2",

@@ -2,6 +2,8 @@
 
 Generated from `packages/core/src/modelingOps.ts`. Read `packages/core/src/types.ts` for referenced Rig*, Binding*, Parameter* and Transform* types.
 
+HTTP and MCP share generated strict schemas in `packages/contracts`; unknown keys in typed objects are rejected. Run `npm run schemas` after changing types.
+
 Each operation requires `id`, `name`, `target`, `action`; `enabled` is optional. Target is `{partIds?: string[], roles?: RigPartRole[], deformerIds?: string[]}`. Confirm IDs from this model. Some actions require matching target and action IDs.
 
 ## transform

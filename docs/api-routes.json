@@ -1,35 +1,28 @@
 {
   "format": "standrig-route-inventory-v1",
   "routes": [
-    "/api/health",
-    "/api/schema",
-    "/api/assets/externalize",
-    "/api/assets/alpha-bleed",
-    "/api/assets/shadow-separation",
     "/api/qa/exposure",
     "/api/qa/check",
     "/api/qa/symmetry-angle-x",
     "/api/qa/symmetry-artmesh-bindings",
+    "/api/qa/joins",
+    "/api/qa/failure-image",
+    "/api/readiness/calibration",
+    "/api/readiness/l2-qa",
+    "/api/readiness/promotion",
+    "/api/readiness",
+    "/api/qa/golden",
+    "/api/qa/art-paths",
+    "/api/assets/externalize",
+    "/api/assets/alpha-bleed",
+    "/api/assets/shadow-separation",
     "/api/generation/requests/from-exposure",
     "/api/generation/requests",
     "/api/generation/accept",
     "/api/generation/assets",
     "/api/generation/regenerate",
     "/api/generation/delete",
-    "/api/qa/joins",
-    "/api/qa/failure-image",
-    "/api/changes",
-    "/api/geometry/export",
-    "/api/context",
-    "/api/readiness/calibration",
-    "/api/readiness/l2-qa",
-    "/api/readiness/promotion",
-    "/api/readiness",
-    "/api/rig/summary",
-    "/api/rig/validate",
-    "/api/rig/inspect",
     "/api/modeling/audit",
-    "/api/audit/modeling",
     "/api/modeling/symmetry-artmesh-candidates",
     "/api/modeling/symmetry-artmesh-transaction-dry-run",
     "/api/modeling/head-proxy/calibrate",
@@ -39,17 +32,23 @@
     "/api/modeling/skinning-approval",
     "/api/modeling/head-proxy",
     "/api/modeling/symmetry",
-    "/api/qa/golden",
     "/api/modeling/join-transaction",
-    "/api/qa/art-paths",
     "/api/modeling/art-path-transaction",
-    "/api/modeling/transaction",
     "/api/modeling/role-suggestions",
     "/api/modeling/artmesh-presets",
     "/api/modeling/part-key",
     "/api/modeling/warp-pin-mirror",
     "/api/modeling/techniques",
     "/api/modeling",
+    "/api/health",
+    "/api/schema",
+    "/api/changes",
+    "/api/geometry/export",
+    "/api/context",
+    "/api/rig/summary",
+    "/api/rig/validate",
+    "/api/rig/inspect",
+    "/api/audit/modeling",
     "/api/reference/sheet",
     "/api/reference",
     "/api/phonemes",
@@ -62,6 +61,7 @@
     "/api/bundle",
     "/api/params",
     "/api/rig",
+    "/api/modeling/transaction",
     "/api/sample",
     "/api/exports/bundle",
     "/api/playback/events",
@@ -74,22 +74,161 @@
   ],
   "endpoints": [
     {
-      "path": "/api/health",
+      "path": "/api/qa/exposure",
       "methods": [
-        "GET"
+        "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 650,
-      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 18,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
-      "path": "/api/schema",
+      "path": "/api/qa/check",
+      "methods": [
+        "POST"
+      ],
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 33,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/qa/symmetry-angle-x",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 663,
-      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 48,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/qa/symmetry-artmesh-bindings",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 70,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/qa/joins",
+      "methods": [
+        "POST"
+      ],
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 84,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/qa/failure-image",
+      "methods": [
+        "POST"
+      ],
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 99,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/readiness/calibration",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 116,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/readiness/l2-qa",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 140,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/readiness/promotion",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 154,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/readiness",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 177,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/qa/golden",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 197,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/qa/art-paths",
+      "methods": [
+        "POST"
+      ],
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/analysisRoutes.ts",
+      "line": 294,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/assets/externalize",
@@ -98,72 +237,46 @@
         "POST",
         "PUT"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 673,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 15,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/assets/alpha-bleed",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 705,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 57,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/assets/shadow-separation",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 758,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/exposure",
-      "methods": [
-        "POST"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 828,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/check",
-      "methods": [
-        "POST"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 836,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/symmetry-angle-x",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 845,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/symmetry-artmesh-bindings",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 861,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 125,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/generation/requests/from-exposure",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 869,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 209,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/generation/requests",
@@ -171,36 +284,48 @@
         "GET",
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 900,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 252,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/generation/accept",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 921,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 282,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/generation/assets",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 932,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 304,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/generation/regenerate",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 940,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 318,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/generation/delete",
@@ -208,175 +333,76 @@
         "POST",
         "DELETE"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 950,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/joins",
-      "methods": [
-        "POST"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 961,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/failure-image",
-      "methods": [
-        "POST"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 969,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/changes",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 977,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/geometry/export",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 990,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/context",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1036,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/readiness/calibration",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1043,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/readiness/l2-qa",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1067,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/readiness/promotion",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1081,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/readiness",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1104,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/rig/summary",
-      "methods": [
-        "GET"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1124,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/rig/validate",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1136,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/rig/inspect",
-      "methods": [
-        "GET",
-        "POST",
-        "PUT"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1149,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/assetRoutes.ts",
+      "line": 345,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/audit",
       "methods": [
-        "GET"
+        "GET",
+        "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1174,
-      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
-    },
-    {
-      "path": "/api/audit/modeling",
-      "methods": [
-        "GET"
+      "defaultMethods": [
+        "GET",
+        "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1175,
-      "methodNotes": "GET is the documented use; inherited handler has no explicit method check."
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 49,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/symmetry-artmesh-candidates",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1176,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 50,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/symmetry-artmesh-transaction-dry-run",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1196,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 76,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/head-proxy/calibrate",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1240,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 129,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/correspondence",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1266,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 164,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/physics-safety",
@@ -384,109 +410,111 @@
         "GET",
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1317,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 230,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/skinning-candidates",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1366,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 308,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/skinning-approval",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1469,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 470,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/head-proxy",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1572,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 634,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/symmetry",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1605,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/golden",
-      "methods": [
-        "GET",
-        "POST"
+      "defaultMethods": [
+        "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1617,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 677,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/join-transaction",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1665,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/qa/art-paths",
-      "methods": [
-        "POST"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1701,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 695,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/art-path-transaction",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1710,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
-    },
-    {
-      "path": "/api/modeling/transaction",
-      "methods": [
-        "POST"
-      ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1761,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 747,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/role-suggestions",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1811,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 814,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/artmesh-presets",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1834,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 844,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/part-key",
@@ -495,9 +523,13 @@
         "POST",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1871,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 890,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/warp-pin-mirror",
@@ -505,18 +537,24 @@
         "POST",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 1954,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 962,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling/techniques",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2020,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 1024,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/modeling",
@@ -524,54 +562,203 @@
         "GET",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2032,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/modelingRoutes.ts",
+      "line": 1037,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/health",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 33,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/schema",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 43,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/changes",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 53,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/geometry/export",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 96,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/context",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 157,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/rig/summary",
+      "methods": [
+        "GET"
+      ],
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 170,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/rig/validate",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "defaultMethods": [
+        "GET",
+        "POST"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 182,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/rig/inspect",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT"
+      ],
+      "defaultMethods": [
+        "GET",
+        "POST"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 195,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/audit/modeling",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "defaultMethods": [
+        "GET",
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 207,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/reference/sheet",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2077,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 208,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/reference",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2128,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 258,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/phonemes",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2152,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 282,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/screenshot",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2166,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 296,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/glue/vertex-pairs",
       "methods": [
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2220,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 348,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/glue-candidates",
@@ -579,9 +766,13 @@
         "GET",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2263,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 392,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/glue",
@@ -590,9 +781,13 @@
         "PATCH",
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2327,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 451,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/parts",
@@ -600,9 +795,13 @@
         "GET",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2433,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 554,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/deformers",
@@ -610,18 +809,26 @@
         "GET",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2478,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 593,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/bundle",
       "methods": [
         "GET"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2542,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 633,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/params",
@@ -629,9 +836,13 @@
         "GET",
         "PATCH"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2558,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 646,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/rig",
@@ -640,9 +851,26 @@
         "PUT",
         "POST"
       ],
-      "source": "apps/service/src/rigApiPlugin.ts",
-      "line": 2583,
-      "methodNotes": "Methods mentioned in handler; subpaths may have narrower rules."
+      "defaultMethods": [
+        "GET"
+      ],
+      "legacyWriteOptIn": true,
+      "source": "apps/service/src/routes/rigRoutes.ts",
+      "line": 669,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
+    },
+    {
+      "path": "/api/modeling/transaction",
+      "methods": [
+        "POST"
+      ],
+      "defaultMethods": [
+        "POST"
+      ],
+      "legacyWriteOptIn": false,
+      "source": "apps/service/src/routes/transactionRoutes.ts",
+      "line": 5,
+      "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
       "path": "/api/sample",
@@ -650,7 +878,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 74,
+      "line": 70,
       "methodNotes": "Exact local service route."
     },
     {
@@ -659,7 +887,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 77,
+      "line": 73,
       "methodNotes": "Exact local service route."
     },
     {
@@ -668,7 +896,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 85,
+      "line": 81,
       "methodNotes": "Exact local service route."
     },
     {
@@ -677,7 +905,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 86,
+      "line": 82,
       "methodNotes": "Exact local service route."
     },
     {
@@ -686,7 +914,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 87,
+      "line": 83,
       "methodNotes": "Exact local service route."
     },
     {
@@ -695,7 +923,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 88,
+      "line": 84,
       "methodNotes": "Exact local service route."
     },
     {
@@ -704,7 +932,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 89,
+      "line": 85,
       "methodNotes": "Exact local service route."
     },
     {
@@ -714,7 +942,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 92,
+      "line": 88,
       "methodNotes": "Exact local service route."
     },
     {
@@ -723,7 +951,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 101,
+      "line": 97,
       "methodNotes": "Exact local service route."
     }
   ]

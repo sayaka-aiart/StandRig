@@ -1,15 +1,16 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { readFile, mkdir, writeFile, readdir, rename, realpath, copyFile } from 'node:fs/promises';
-import { constants } from 'node:fs';
+import { migrateRigDocument } from '@standrig/core/migration';
 import { randomUUID } from 'node:crypto';
+import { constants } from 'node:fs';
+import { copyFile,mkdir,readdir,readFile,realpath,writeFile } from 'node:fs/promises';
+import { createServer,type IncomingMessage,type ServerResponse } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { migrateRigDocument } from '@standrig/core/migration';
-import { validateRig } from '@standrig/core/inspect';
-import { registerModelingApi, fullRigRevision } from './rigApiPlugin.js';
-import { portableBundle } from './portableBundle.js';
-import { PlaybackSession } from './playback.js';
+import { ApplicationError,ModelingService } from './application/modelingService.js';
 import type { ApiHandler } from './host.js';
+import { PlaybackSession } from './playback.js';
+import { portableBundle } from './portableBundle.js';
+import { registerModelingApi } from './rigApiPlugin.js';
+import { transactionRoutes } from './routes/transactionRoutes.js';
 
 const json = (res: ServerResponse, status: number, data: unknown) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
@@ -27,7 +28,7 @@ async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
 }
 
 /** One local service owns one data directory. Vite is used only to build/develop the optional UI. */
-export async function createLocalService(options: { dataDir: string; port?: number; previewDir?: string }) {
+export async function createLocalService(options: { dataDir: string; port?: number; previewDir?: string; allowLegacyWrites?: boolean }) {
   const dataDir = path.resolve(options.dataDir);
   const publicDir = path.join(dataDir, 'public');
   const rigPath = path.join(publicDir, 'rig.json');
@@ -41,22 +42,17 @@ export async function createLocalService(options: { dataDir: string; port?: numb
   const playback = new PlaybackSession(await readRig());
   const handlers: { prefix: string; handler: ApiHandler }[] = [];
   let changed = false;
-  registerModelingApi(dataDir, {
-    middlewares: { use(prefix, handler) { handlers.push({ prefix, handler }); } },
+  const apiHost = {
+    middlewares: { use(prefix: string, handler: ApiHandler) { handlers.push({ prefix, handler }); } },
     ws: { send() { changed = true; } }
-  });
+  };
+  const context = registerModelingApi(dataDir, apiHost, {allowLegacyWrites:options.allowLegacyWrites});
+  const application = new ModelingService(context, () => { changed = true; });
+  transactionRoutes(application, apiHost);
   // Exact route boundaries avoid accidental dispatch into a parent route.
   handlers.sort((a, b) => b.prefix.length - a.prefix.length);
   const checkpointDir = path.join(dataDir, 'checkpoints');
-  async function checkpoint() {
-    await mkdir(checkpointDir, { recursive: true });
-    const id = randomUUID();
-    const rig = await readRig();
-    const bundle = await portableBundle(rig, publicDir);
-    const record = { id, createdAt: new Date().toISOString(), revision: fullRigRevision(rig), bundle };
-    await writeFile(path.join(checkpointDir, `${id}.json`), JSON.stringify(record), { flag: 'wx' });
-    return { id, createdAt: record.createdAt, revision: record.revision };
-  }
+  const checkpoint = () => application.checkpoint();
   async function staticFile(res: ServerResponse, base: string, relative: string) {
     const resolvedBase = await realpath(base);
     const candidate = path.resolve(resolvedBase, relative);
@@ -101,17 +97,9 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     if (route === '/api/checkpoints/restore' && req.method === 'POST') {
       const input = await body(req);
       if (typeof input.id !== 'string' || !/^[a-f0-9-]{36}$/.test(input.id)) throw new Error('invalid checkpoint id');
-      const current = await readRig();
-      if (input.expectedRevision !== fullRigRevision(current)) { json(res, 409, { ok: false, error: 'revision-mismatch' }); return; }
-      const record = JSON.parse(await readFile(path.join(checkpointDir, `${input.id}.json`), 'utf8'));
-      const restored = migrateRigDocument(record.bundle.rig);
-      if (!validateRig(restored).ok) throw new Error('checkpoint rig failed validation');
-      const rollback = await checkpoint();
-      const temporary = rigPath + '.' + randomUUID() + '.tmp';
-      await writeFile(temporary, JSON.stringify(restored, null, 2) + '\n');
-      await rename(temporary, rigPath);
-      playback.reload(restored);
-      json(res, 200, { ok: true, restored: input.id, revision: fullRigRevision(restored), rollback }); return;
+      const result = await application.execute({kind:'restore',checkpointId:input.id,expectedRevision:input.expectedRevision,commit:true});
+      playback.reload(await readRig());
+      json(res,200,{...result,restored:input.id,revision:result.revisionAfter,rollback:result.rollbackCheckpoint}); return;
     }
     if (route.startsWith('/api/playback') || route.startsWith('/api/checkpoints')) { json(res, 405, { ok: false, error: 'method_or_route_not_supported' }); return; }
     const match = handlers.find(h => route === h.prefix || route.startsWith(h.prefix + '/'));
@@ -146,7 +134,7 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     if (Number(req.headers['content-length'] ?? 0) > 64 * 1024 * 1024) { json(res, 413, { ok: false, error: 'body_too_large' }); return; }
     const run = async () => {
       try { await dispatch(req, res); }
-      catch (error) { if (!res.headersSent) json(res, 400, { ok: false, error: String(error) }); }
+      catch (error) { if (!res.headersSent) json(res, error instanceof ApplicationError ? error.status : 400, { ok: false, error: String(error), ...(error instanceof ApplicationError ? error.details : {}) }); }
     };
     if ((req.url ?? '').startsWith('/api/playback')) { void run(); }
     else { queue = queue.then(run, run); }

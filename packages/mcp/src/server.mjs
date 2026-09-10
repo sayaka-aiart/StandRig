@@ -1,3 +1,4 @@
+import { transactionSchema } from '@standrig/contracts';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod';
 import { readFile } from 'node:fs/promises';
@@ -61,24 +62,8 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
     if (id && !['parts','deformers'].includes(kind)) throw new Error('id is valid only for parts/deformers');
     return request(routes[kind] + (id ? '/' + encodeURIComponent(id) : ''));
   });
-  tool('standrig_modeling_transaction', 'Dry-run by default. Commit requires current revision and numeric QA; creates a rollback checkpoint first. Follow the visual-reference contract in the guide; numerical success is not visual acceptance.', z.object({
-    expectedRevision: z.string().min(1), commit: z.boolean().default(false),
-    operations: z.array(z.object({ id: z.string().min(1), name: z.string().min(1), enabled: z.boolean().optional(),
-      target: z.object({ partIds: z.array(z.string()).optional(), roles: z.array(z.string()).optional(), deformerIds: z.array(z.string()).optional() }),
-      action: z.looseObject({ type: z.string().min(1) }).describe('Action-specific fields: read standrig://docs/operations.')
-    })).min(1).max(100), qa
-  }), false, async input => {
-    let checkpoint;
-    if (input.commit) {
-      const saved = await request('/api/checkpoints', 'POST', {});
-      if (saved.isError) return saved;
-      checkpoint = saved.structuredContent.checkpoint;
-    }
+  tool('standrig_modeling_transaction', 'Dry-run by default. Commit requires current revision and numeric QA; the service creates a rollback checkpoint after validation. Follow the visual-reference contract in the guide; numerical success is not visual acceptance.', transactionSchema, false, async input => {
     const result = await request('/api/modeling/transaction', 'POST', input);
-    if (checkpoint) {
-      result.structuredContent.rollbackCheckpoint = checkpoint;
-      result.content = [{ type: 'text', text: JSON.stringify(result.structuredContent) }];
-    }
     if (input.commit) qaEvidence = undefined;
     return result;
   });

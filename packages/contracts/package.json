@@ -1,0 +1,17 @@
+{
+  "name": "@standrig/contracts",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/operations.mjs"
+    }
+  },
+  "dependencies": {
+    "zod": "4.4.3",
+    "@standrig/core": "0.2.0"
+  },
+  "license": "Apache-2.0"
+}

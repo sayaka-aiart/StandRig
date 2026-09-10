@@ -393,7 +393,8 @@
     "New AI guide, core OpenAPI, action reference, isolated smoke tests and release checks",
     "Core/runtime/service/preview/MCP workspaces; independent Node HTTP service",
     "Parts-separated PSD-only importer; removed PNG import and composite fallback",
-    "Transient playback input, SSE player, checkpoints and Apache-2.0 licensing by owner selection"
+    "Transient playback input, SSE player, checkpoints and Apache-2.0 licensing by owner selection",
+    "Default-off legacy writes; shared strict operation schemas; SHA-256 revisions; route/application separation with transactional import/edit/restore and server rollback checkpoints"
   ],
   "restructuredVersion": "0.2.0",
   "historicalPathNote": "Original extraction file paths/hashes are historical. Current files have moved to npm workspaces; see DISTRIBUTION-MANIFEST.json for current hashes."

@@ -113,6 +113,12 @@ function reload() {
   });
   return reloadQueue;
 }
+async function importModel(document: RigDocument) {
+  const response = await fetch('/api/context');
+  const {context} = await response.json();
+  if (!response.ok || !context?.revision) throw new Error('Could not read the current model revision');
+  return post('/api/modeling/transaction', {kind:'import',rig:document,expectedRevision:context.revision,commit:true,qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}});
+}
 function busy(value: boolean) { importing = value; importButton.disabled = value || !filesInput.files?.length; sampleButton.disabled = value; }
 filesInput.onchange = () => { document.querySelector('#selection')!.textContent = filesInput.files?.[0]?.name ?? 'ファイル未選択'; busy(importing); };
 importButton.onclick = async () => {
@@ -122,13 +128,13 @@ importButton.onclick = async () => {
   try {
     if (files.length !== 1 || !/\.psd$/i.test(files[0].name)) throw new Error('パーツ分け済みPSDを1ファイル選択してください。');
     const imported = await createRigFromPsdFile(files[0]);
-    await post('/api/checkpoints', {}); await post('/api/rig', imported); await reload();
+    await importModel(imported); await reload();
   } catch (error) { report(error); } finally { busy(false); }
 };
 sampleButton.onclick = async () => {
   if (importing) return;
   busy(true);
-  try { const sample = await fetch('/api/sample').then(r => r.json()); await post('/api/checkpoints', {}); await post('/api/rig', sample); await reload(); }
+  try { const sample = await fetch('/api/sample').then(r => r.json()); await importModel(sample); await reload(); }
   catch (error) { report(error); } finally { busy(false); }
 };
 for (const command of ['play','pause','reset']) document.querySelector<HTMLButtonElement>('#' + command)!.onclick = () => { void post('/api/playback/control', { command }).catch(report); };

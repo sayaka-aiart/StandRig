@@ -17,10 +17,8 @@ Route inventory: `docs/api-routes.json`. Main API schemas: `docs/openapi.json`. 
 ## Import and project isolation
 
 PSD parsing is browser-side through the supplied import screen; there is no HTTP multipart PSD endpoint or MCP PSD-import tool. Import preserves initial layer placement, not a finished rig or automatic motion bindings. See docs/PSD.md for preparation and Photoshop feature limitations.
-An AI with an existing compatible RigDocument can use `PUT /api/rig?includeAssets=1` with the whole document. This replaces the active model and is an import/restore operation, not a modeling transaction. Obtain a backup first.
-External textures belong under the selected data directory's `public/`: by default `/assets/a.png` resolves to `workspace/public/assets/a.png`, not the repository's `public/`. Embedded PNG textures work before externalization; this is an internal representation, not PNG source import. `POST /api/assets/externalize` requires `{rig: FULL_RIG, dryRun:true}`; set `dryRun:false` only to persist files and the rewritten rig. This endpoint returns full rig data and must be used deliberately.
-
-To restore a portable `standrig-bundle`, read `bundle.rig` and import that RigDocument after making a checkpoint; never submit the bundle wrapper as the rig. No model JSON/bundle picker is included in the PSD UI. See docs/API.md for the round trip.
+An AI with an existing compatible RigDocument uses `/api/modeling/transaction` with `kind:"import"`, the complete `rig`, current `expectedRevision`, explicit `qa` and `commit:false`. Inspect the result before committing. The PSD/sample UI uses the same path. See docs/API.md.
+External textures must already exist under the selected data directory's `public/`; embedded PNG assets are portable without externalization. Legacy asset persistence is disabled by default. For a portable `standrig-bundle`, import `bundle.rig`, never the wrapper. No bundle picker is included in the PSD UI.
 
 ## Required visual reference gate
 
@@ -28,7 +26,7 @@ Before the first modeling write for a PSD, create the three required project-loc
 Save source revision/hash, panel order, intended parameter extremes, prompts and acceptance checks beside them. Use `examples/reference-manifest.template.json`; placeholder entries are not evidence. All actual images must exist and be visually inspected. Do not treat snapshots of the current faulty model as accepted target artwork.
 
 The MCP server has no image-generation or arbitrary-file-writing tool. Use separately available file/image tools or owner-provided targets to prepare these materials in the selected data directory. Explain missing capabilities if unavailable; never claim these resources were created merely by calling standrig_render.
-This is an operator requirement from AGENTS.md: the inherited transaction endpoint does not automatically inspect the manifest or judge the images. Enforce it yourself; the endpoint's HTTP success is not evidence that the visual gate passed.
+This is an operator requirement from AGENTS.md: the transaction endpoint does not automatically inspect the manifest or judge the images. Enforce it yourself; the endpoint's HTTP success is not evidence that the visual gate passed.
 When source coverage is missing, extend the missing artwork before deformation according to the owner's method. RGB alpha bleed fills invisible RGB, not visible alpha coverage.
 
 ## One regional change cycle
@@ -38,9 +36,9 @@ When source coverage is missing, extend the missing artwork before deformation a
 3. Write a bounded transaction JSON. Always include `expectedRevision`, `commit:false`, nonempty `operations` and explicit `qa`. Use known pose IDs from `/api/modeling`; include neutral, intended extremes, intermediate and diagonal poses appropriate to the change. `poseSamples` can define exact parameter values.
 4. POST it to `/api/modeling/transaction`. Check HTTP status, `ok`, `committed`, `validation.ok`, `physicsSafety.pass`, `operationGateIssues`, `operationResults[].skipped`, `qa.ok` and `qa.failed`. `revisionAfter` in a dry-run describes the candidate; it is not the stored revision. Do not use it as the next expectedRevision.
 5. Confirm the stored revision is unchanged. If QA fails, request only `qa.failureRegions[].imageRequest` via `/api/qa/failure-image`; the default is a 240px before/after/diff crop. This endpoint uses the stored rig, not the discarded dry-run candidate. Candidate imagery requires a separately cloned tool/project folder containing that candidate; never claim the live screenshot shows an uncommitted candidate.
-6. Create a checkpoint through `standrig_checkpoint` (or POST `/api/checkpoints`). MCP creates one automatically before a commit attempt and returns its ID; use `standrig_restore` to recover. Checkpoints include referenced PNGs, but also preserve the source PSD, visual evidence and transaction request separately. The default data directory is `workspace/`, not the source repository root. Server transaction history is not persistent undo.
+6. Create a checkpoint through `standrig_checkpoint` (or POST `/api/checkpoints`). The service automatically creates a rollback checkpoint after gates pass and before saving, for both HTTP and MCP; use `standrig_restore` to recover. Checkpoints include referenced PNGs, but also preserve the source PSD, visual evidence and transaction request separately. The default data directory is `workspace/`, not the source repository root. Server transaction history is not persistent undo.
 7. After numeric checks pass and the change is authorized, send the identical body with `commit:true` and the current expectedRevision. Check `committed:true`. Do not silently remove failing QA or increase tolerances to force acceptance.
-8. Run `/api/qa/check` and relevant golden checks again. Render actual maximum poses using `/api/screenshot` or `/api/reference/sheet`, compare against the target images and save a visual review. Required target/max-pose sheets are exceptions to the small diagnostic-image policy. Reject holes, disconnected joints/features, perspective errors and flat translation substituting for rotation. Continue to another region only after this change is accepted.
+8. Run `/api/qa/check` again and compare relevant saved golden evidence. Golden POST actions are disabled by default. Render actual maximum poses using `/api/screenshot` or `/api/reference/sheet`, compare against the target images and save a visual review. Required target/max-pose sheets are exceptions to the small diagnostic-image policy. Reject holes, disconnected joints/features, perspective errors and flat translation substituting for rotation. Continue to another region only after this change is accepted.
 
 Golden checks require real prior baseline data. `GET /api/qa/golden` lists the available goldens; an empty list is not a passed regression test. Do not register the changed output as its own proof of correctness.
 
@@ -60,7 +58,7 @@ Order: face/eyes/mouth/fringe/roots → neck/shoulder/clothing/body pitch → ph
 - 500: inspect the local server's error and required input files. Preserve current model data before attempting repair.
 - HTTP 200 with `ok:false` is failure; HTTP 200 with `committed:false` is not a saved edit.
 
-Raw PUT/PATCH endpoints exist for compatibility and do not provide all transaction guards. `qa` and `expectedRevision` are optional in the inherited server implementation; they are mandatory in this operator workflow. The local service serializes model requests within one process. Run only one service process per data directory.
+Legacy writes are disabled by default (403). Do not enable `--allow-legacy-writes` to bypass failed checks. Operations/import require `qa` and `expectedRevision` at the server boundary. Revision uses SHA-256; fetch fresh context after upgrading. The local service serializes model requests within one process. Run only one service process per data directory.
 Numeric/static/build success alone cannot establish visual quality or Model Freeze. Report actual saved visual evidence and unresolved limitations separately. The included automated tests use synthetic shapes, not the owner's character.
 
 ## Minimal client

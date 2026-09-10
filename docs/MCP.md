@@ -53,7 +53,7 @@ After saving, reconnect/restart the MCP connection in your client. Confirm that 
 
 動作デモは `{command:"demo-start", mode:"showcase-active"}`（既定）または `{command:"demo-start", mode:"mouse-expression"}`。マウス位置は `{command:"demo-pointer", x:0.5, y:-0.5}` のように -1〜1 の座標を渡します（画面右が+X、下が+Y）。`demo-stop` で開始前の姿勢・再生状態を復元します。通常のパラメータ入力はデモを止め、元の姿勢に入力値を適用します。保存モデルは変更しません。
 
-All tools have input schemas. The transaction envelope is validated by Zod; the 33 action-specific variants are documented in the operations resource and evaluated by the core. Do not assume the loose action object is a complete discriminated JSON Schema. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`.
+HTTP and MCP transactions share `@standrig/contracts`: 33 action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Schemas are generated from core TypeScript operation/QA types (`npm run schemas`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
 
 ## Resources and workflow
 

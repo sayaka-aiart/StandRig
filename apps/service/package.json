@@ -5,7 +5,8 @@
   "type": "module",
   "dependencies": {
     "@standrig/core": "0.2.0",
-    "@standrig/runtime": "0.2.0"
+    "@standrig/runtime": "0.2.0",
+    "@standrig/contracts": "0.2.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json"

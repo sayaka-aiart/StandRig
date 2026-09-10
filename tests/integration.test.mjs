@@ -43,7 +43,7 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const health=(await call('/api/health')).data;
     assert.ok(health.endpoints.includes('/api/checkpoints/restore'));
     assert.ok(health.endpoints.includes('/api/playback/parameters'));
-    assert.equal((await call('/api/rig','POST',sample)).status,200);
+    assert.equal((await call('/api/modeling/transaction','POST',{kind:'import',rig:sample,expectedRevision:(await call('/api/context')).data.context.revision,commit:true,qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}})).status,200);
     const stored = await readFile(path.join(dir,'public/rig.json'),'utf8');
     assert.equal((await fetch(service.url+'/api/context',{headers:{origin:'https://untrusted.example'}})).status,403);
     const foreignHost = await new Promise((resolve, reject) => {
@@ -71,6 +71,9 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     await client.connect(transport);
     const tools=await client.listTools();
     assert.equal(tools.tools.length,12);
+    const actionSchema=tools.tools.find(tool=>tool.name==='standrig_modeling_transaction').inputSchema.properties.operations.items.properties.action;
+    assert.equal(actionSchema.anyOf.length,33);
+    assert.ok(actionSchema.anyOf.every(schema=>schema.additionalProperties===false));
     const invoke=(name,args={})=>client.callTool({name,arguments:args});
     const beforeDemo=(await call('/api/playback')).data.playback.values;
     const demo = await invoke('standrig_playback_control',{command:'demo-start',mode:'mouse-expression'});

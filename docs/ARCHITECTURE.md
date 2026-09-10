@@ -22,6 +22,7 @@ flowchart TD
 | Module | Responsibility | Imports |
 | --- | --- | --- |
 | `packages/core` | Model types, mesh/deformer operations, shared evaluator, validation, numeric QA and file-format utilities | pako for PNG; ag-psd only for the optional browser PSD importer |
+| `packages/contracts` | Generated strict operation/QA schemas shared by HTTP and MCP; audited legacy method policy | Zod; core declaration types |
 | `packages/runtime` | Canvas/WebGL renderer, `StandRigPlayer`, playback and adapter contracts | core; no MCP, Vite, camera or OBS dependency |
 | `apps/service` | Model storage, HTTP API, serialized model requests, checkpoints, transient playback state, static preview serving | core, runtime; Node built-ins |
 | `packages/mcp` | Validated tools and documentation resources over stdio | Official MCP SDK and Zod; communicates with the local service by HTTP |
@@ -57,7 +58,9 @@ workspace/
   references/              operator-created target sheets and manifest
 ```
 
-One service process owns one data directory. Model API handlers run in order within that service. Do not start two processes against the same directory. MCP commits require `expectedRevision` and `qa`, and create a checkpoint before attempting the commit. Legacy direct write APIs remain lower-level compatibility surfaces and do not all enforce these safeguards. Visual target preparation/review is an operator contract in AGENTS.md, not automatically verified by the service.
+One service process owns one data directory. Do not start two processes against the same directory. `rigApiPlugin.ts` registers guarded route groups. `routes/transactionRoutes.ts` handles HTTP transport; `application/modelingService.ts` owns operations/import/restore, validation, QA, SHA-256 revision comparison, rollback checkpoints and atomic replacement. `application/context.ts` owns paths and the per-service memory journal. `modelingSupport.ts` contains shared model/file helpers. Legacy handlers are grouped by assets, analysis, modeling and rig reads/compatibility.
+
+Legacy writes are off by default; only GET and audited read-only POST handlers pass the guard. `--allow-legacy-writes` explicitly enables compatibility bypasses outside the new guarantees. Append-only checkpoint/export creation is separate from active-model editing. Successful commits create a checkpoint after gates pass and before saving; malformed requests, dry-runs and failed gates do not. `/api/checkpoints/restore` delegates to the same application service. Visual target preparation/review remains an operator contract in AGENTS.md.
 
 ## Extension status
 

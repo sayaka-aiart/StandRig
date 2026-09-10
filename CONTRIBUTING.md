@@ -7,3 +7,5 @@ Run `npm ci`, `npm run build` and `npm test`. Add focused regressions for reprod
 Describe the concrete problem, resulting behavior and validation in pull requests. Do not attach user PSDs, licensed artwork, API keys, camera recordings or private model files without rights to redistribute them. Contributions are under the project's Apache-2.0 license unless an explicit separate agreement applies.
 
 When changing endpoints or action types, run `npm run docs` and include the generated changes. Ordinary source edits invalidate `DISTRIBUTION-MANIFEST.json`: `npm run verify` checks a packaged release, not arbitrary development edits. Maintainers regenerate the manifest when preparing a release; build/tests are the development CI gates.
+
+Operation or QA type changes require `npm run schemas` and `npm run docs`. Commit the generated contracts and documentation together; `npm test` checks schema freshness. Keep legacy writes disabled in normal clients.

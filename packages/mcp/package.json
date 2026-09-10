@@ -5,7 +5,8 @@
   "type": "module",
   "dependencies": {
     "@modelcontextprotocol/server": "2.0.0",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@standrig/contracts": "0.2.0"
   },
   "license": "Apache-2.0"
 }

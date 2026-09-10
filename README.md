@@ -108,7 +108,7 @@ MCPだけでは参照画像の新規作画や任意ファイルの保存はで�
 
 - 読み込みと確定した編集はサーバー側へ保存されます。スライダー操作や再生状態は一時的で、モデルの編集にはなりません。
 - 既定の保存先は **`workspace/`**。モデルは `workspace/public/rig.json`、復元点は `workspace/checkpoints/`、bundle出力は `workspace/exports/` に入ります。
-- PSD/サンプルの読み込み前とMCPでの確定前にチェックポイントを作ります。復元は `standrig_checkpoint` で一覧を取得し、現在のrevisionとIDを使って `standrig_restore` を呼びます。
+- PSD/サンプルの読み込み・HTTP/MCPでの編集・復元では、検証に合格してから保存直前にチェックポイントを自動作成します。復元は `standrig_checkpoint` で一覧を取得し、現在のrevisionとIDを使って `standrig_restore` を呼びます。
 - 「モデルJSONを書き出す」はJSON単体です。画像込みで渡すには `standrig_export` で **bundle** を作ります。受け取り側の読込方法は[APIガイド](docs/API.md#bundleの再読み込み)を参照してください。
 - 元PSD・参照画像も別途バックアップしてください。`workspace/` はGit・配布ZIP対象外なので、pushしても作業データのバックアップにはなりません。
 
@@ -159,3 +159,5 @@ UI開発はサービスを5180番で起動したまま、別ターミナルで `
 ## License
 
 独自コード・ドキュメント本文・合成サンプルは [Apache-2.0](LICENSE)。[NOTICE](NOTICE)、[第三者ライブラリの表記](THIRD_PARTY_NOTICES.md)も参照してください。持ち込むPSD・キャラクター画像、およびスクリーンショット内のキャラクターには、このリポジトリのライセンスを適用しません。[掲載画像の扱い](docs/images/NOTICE.md)を参照してください。
+
+旧write APIは既定で無効です。読み込み・編集・復元はtransactionへ集約し、revisionはSHA-256、操作schemaはHTTP/MCP共通の厳密な定義を使います。移行方法は [APIリファレンス](docs/API.md) を参照してください。

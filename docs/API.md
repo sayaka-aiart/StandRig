@@ -28,9 +28,9 @@ The API runs with `npm start` after `npm run build`. `npm run dev` starts only t
 | POST | `/api/qa/failure-image` | Returned failure imageRequest → PNG comparison |
 | POST | `/api/qa/exposure` | Source coverage/exposure diagnosis; `packages/core/src/exposureQa.ts` |
 | POST | `/api/qa/joins` | Connection QA; `packages/core/src/joinQa.ts` |
-| GET, POST | `/api/modeling/physics-safety` | Structural/temporal safety; `packages/core/src/physicsSafety.ts` |
+| GET | `/api/modeling/physics-safety` | Structural/temporal safety; `packages/core/src/physicsSafety.ts` |
 | GET | `/api/qa/golden` | List existing golden sets |
-| POST | `/api/qa/golden` | Check/propose/register golden via action; see implementation and visual workflow first |
+| POST | `/api/qa/golden` | Legacy POST actions disabled by default (403), including check/propose |
 | GET | `/api/reference` | Available sheet IDs, detail IDs, URLs |
 | GET | `/api/reference/sheet?set=ID` | Actual-model reference contact sheet PNG |
 | GET | `/api/screenshot` | Actual stored model PNG; query below |
@@ -39,13 +39,13 @@ The API runs with `npm start` after `npm run build`. `npm run dev` starts only t
 | GET | `/api/schema` | Rig JSON Schema |
 | GET | `/api/rig` | Whole rig, embedded asset payloads replaced with asset:// IDs |
 | GET | `/api/rig?includeAssets=1` | Whole rig with actual asset sources; explicit opt-in |
-| PUT, POST | `/api/rig?includeAssets=1` | Import/restore a full RigDocument, replacing current model |
+| PUT, POST | `/api/rig?includeAssets=1` | Legacy replacement disabled by default (403); use import transaction |
 | GET | `/api/assets/externalize` | Asset manifest diagnostics |
-| POST, PUT | `/api/assets/externalize` | `{rig:FULL_RIG,dryRun:true}`; false persists assets and rig |
+| POST, PUT | `/api/assets/externalize` | Legacy persistence disabled by default (403), including dry-run |
 
-The modeling route inventory and new service routes are in `api-routes.json`, generated from `apps/service/src/rigApiPlugin.ts` with source line numbers. GET endpoints occasionally describe further actions. For advanced skinning, symmetry, glue, generation request/asset acceptance and art paths, follow the listed source handler and its imported request types. The generation endpoints manage requests and provided artwork; this package does not include an image-generation service.
+The modeling route inventory and new service routes are in `api-routes.json`, generated from `apps/service/src/routes/*.ts` with source line numbers. GET endpoints occasionally describe further actions. For advanced skinning, symmetry, glue, generation request/asset acceptance and art paths, follow the listed source handler and its imported request types. The generation endpoints manage requests and provided artwork; this package does not include an image-generation service.
 
-The inventory also reads exact service routes from `apps/service/src/service.ts`. Inventory method lists summarize a handler; not every method applies to every subpath. `openapi.json` covers the principal workflows, not every inherited action-specific schema. See `docs/OPERATIONS.md` and the referenced TypeScript types for those bodies.
+The inventory also reads exact service routes from `apps/service/src/service.ts`. `defaultMethods` lists methods enabled by default; `methods` includes legacy opt-in methods. Inventory method lists summarize a handler; not every method applies to every subpath. `openapi.json` covers the principal workflows, not every inherited action-specific schema. See `docs/OPERATIONS.md` and the referenced TypeScript types for those bodies.
 
 ## Modeling transaction
 
@@ -65,7 +65,7 @@ The inventory also reads exact service routes from `apps/service/src/service.ts`
 
 This is a syntax example, not a completed motion test. Replace IDs and choose model-specific max/intermediate poses before use. `target.roles` matches only parts with confirmed roles. Where an action takes a deformerId, also include it in target.deformerIds as required by the action. Actions are discriminated by `action.type`; see OPERATIONS.md for every supported field.
 
-The server clones the current rig, applies operations to the clone, runs validation/physics safety and optional `qa`. Only `commit:true` writes. Important response fields:
+The server clones the current rig, applies operations to the clone, runs validation/physics safety and required `qa`. Only `commit:true` writes. Important response fields:
 
 | Field | Meaning |
 | --- | --- |
@@ -76,11 +76,25 @@ The server clones the current rig, applies operations to the clone, runs validat
 | `operationResults` | Matched parts, exact changes, skipped reasons |
 | `operationGateIssues` | Operation-level refusal reasons |
 | `validation` / `physicsSafety` | Structural and physical checks |
-| `qa` | Numeric candidate QA if supplied |
+| `qa` | Numeric candidate QA for operations/import |
 | `artMeshSampler` | Alpha-contour asset loading results |
 | `transactionResult` / `noWrite` | Normalized mutation evidence |
 
-`expectedRevision` and `qa` are optional server fields, but the AI workflow requires both. There is no automatic persistent undo, visual judgment or reference-manifest enforcement in this handler. Preserve a file backup and visual evidence yourself. Raw rig/part/deformer PATCH endpoints can bypass these checks and should not replace this workflow.
+`expectedRevision` and `qa` are required for operations/import, including dry-run. Typed operation objects reject unknown keys. Successful commit gates create a persistent `rollbackCheckpoint` immediately before atomic model replacement. Visual judgment and reference-manifest enforcement remain operator obligations.
+
+Revisions are opaque `rig-sha256-` plus 64 hexadecimal characters: SHA-256 of the JSON-serialized complete migrated rig, including assets. Fetch fresh context after upgrading from FNV revisions; do not calculate revisions in clients. `semanticHash` remains a non-security compact hint and cannot be used for concurrency checks.
+
+Legacy write methods return **403 `legacy_write_api_disabled`** before their handlers execute. This includes raw rig/part/deformer edits, asset persistence, golden POST actions and specialized legacy transactions. Audited read-only POST methods are listed in `packages/contracts/src/legacyPolicy.mjs`. Append-only checkpoint/export creation remains available separately. For temporary compatibility only, `npm start -- --allow-legacy-writes` explicitly re-enables old bypasses; these do not have the new transaction guarantees. Keep this flag off for AI operation.
+
+## Import and restore transactions
+
+After browser PSD parsing, or extracting `rig` from a portable bundle, send:
+
+```json
+{"kind":"import","expectedRevision":"CURRENT_REVISION","commit":false,"rig":{},"qa":{"poses":["neutral"],"regions":["full"],"width":240,"height":240,"physics":false}}
+```
+
+Replace `{}` with the complete compatible RigDocument. Inspect the dry-run before sending the same request with `commit:true`. Restore uses `{"kind":"restore","checkpointId":"CHECKPOINT_UUID","expectedRevision":"CURRENT_REVISION","commit":true}` at the same endpoint. Restore validates structure but can return to an empty checkpoint without QA. `/api/checkpoints/restore` delegates to this same application service. All three kinds share revision checks, serialization, rollback checkpoints and atomic persistence.
 
 ## Numeric QA and screenshots
 
@@ -103,7 +117,7 @@ Pass the returned `imageRequest` intact: it includes sampled `values`, `beforeVa
 
 ## Errors and persistence
 
-400 invalid input; 404 absent/excluded target; 405 method; 409 revision conflict; 422 failed commit gate; 500 internal/file error. Read the JSON error rather than inferring success from a connection. A failed dry-run can return HTTP 200 with `ok:false`. Stale updates must be rebuilt from fresh context.
+400 invalid input; 403 disabled legacy write or foreign origin; 404 absent/excluded target; 405 method; 409 revision conflict; 422 failed commit gate; 500 internal/file error. Read the JSON error rather than inferring success from a connection. A failed dry-run can return HTTP 200 with `ok:false`. Stale updates must be rebuilt from fresh context.
 
 Data lives under the selected data directory (default `workspace/`): `public/rig.json`, `public/assets`, `public/assets-manifest.json`, `public/goldens`, and generation evidence directories as created by the relevant handlers. Restart clears the in-memory transaction journal. Model changes notify the preview/player; save external evidence before committing.
 
@@ -130,15 +144,6 @@ New playback inputs are atomically rejected with 400 on invalid values or stale 
 
 Checkpoint creation and bundle export return **201**; restore returns **200**. Model imports and legacy handlers allow up to 64 MiB request bodies; playback/checkpoint control bodies have a 1 MiB limit. Errors must be inspected even when HTTP status is 200. The checkpoint/export files stay on the service host; returned paths are not download URLs.
 
-## Bundleの再読み込み
+## Portable bundle import
 
-別環境へ移す場合は `standrig_export`（HTTP: `POST /api/exports/bundle`）で作成されたファイルを渡します。このJSONは `{format:"standrig-bundle", rig: ...}` という包みになっており、画像は `rig.assets` に埋め込まれています。
-
-受け取り側で新しいデータフォルダを指定してサービスを起動し、次の順に操作します。
-
-1. `POST /api/checkpoints` に `{}` を送り、現在のモデルのバックアップ成功を確認する。
-2. 受け取ったJSONの `format` が `standrig-bundle` であることを確認し、`rig` フィールドを取り出す。
-3. `PUT /api/rig?includeAssets=1` に **rigオブジェクトそのもの**をJSONで送る。bundle全体を送らない。
-4. `GET /api/context` と `GET /api/rig/validate` を確認し、ブラウザの「再読み込み」で表示を確認する。
-
-この全体置換APIには `expectedRevision` による競合保護がありません。同時編集を止めてから使ってください。MCPにはbundle読み込みツールはなく、HTTPを利用できるクライアントが必要です。「モデルJSONを書き出す」のJSONは最初からrig本体ですが、外部画像を参照している場合は単体では移動できません。通常の作業再開には再インポートは不要で、同じデータフォルダで起動します。
+Read the exported JSON and check `format:"standrig-bundle"`. Extract `bundle.rig` and submit it through the import transaction described above using fresh context revision and explicit QA. Inspect dry-run before committing, then confirm `committed:true`, `rollbackCheckpoint` and actual browser rendering. Never pass the bundle wrapper as the rig. MCP has no bundle-import tool; use an HTTP-capable client. For ordinary resume, start the service with the same data directory; no re-import is necessary.

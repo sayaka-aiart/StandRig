@@ -110,7 +110,7 @@ MCP alone cannot paint new reference images or save arbitrary files. Use the AI 
 
 - Imports and committed edits are saved on the server. Slider values and playback state are transient and do not edit the model.
 - The default data directory is **`workspace/`**: the model is stored in `workspace/public/rig.json`, recovery checkpoints in `workspace/checkpoints/`, and exported bundles in `workspace/exports/`.
-- A checkpoint is created before PSD/sample imports and before MCP commits. List checkpoints with `standrig_checkpoint`, then call `standrig_restore` with the checkpoint ID and current revision.
+- The service creates a checkpoint after validation passes and immediately before saving PSD/sample imports, HTTP/MCP edits and restores. List checkpoints with `standrig_checkpoint`, then call `standrig_restore` with the checkpoint ID and current revision.
 - **「モデルJSONを書き出す」 (Export model JSON)** exports JSON alone. To include images, use `standrig_export` with the **bundle** format. See the [API guide's bundle reimport instructions](docs/API.md#bundleの再読み込み).
 - Back up the original PSD and reference images separately. `workspace/` is excluded from Git and distribution ZIPs, so pushing the repository does not back up your model data.
 
@@ -161,3 +161,5 @@ Use `npm run verify` to check the distribution's file hashes. Source edits will 
 ## License
 
 Original code, documentation text and synthetic samples are licensed under [Apache-2.0](LICENSE). See [NOTICE](NOTICE) and the [third-party notices](THIRD_PARTY_NOTICES.md). This repository's license does not apply to imported PSDs, character artwork, or the character shown in the screenshot. See the [screenshot artwork notice](docs/images/NOTICE.md).
+
+Legacy write APIs are disabled by default. Import, editing and restore use the transaction service, SHA-256 revisions and shared strict HTTP/MCP schemas. See the [API reference](docs/API.md) for migration.

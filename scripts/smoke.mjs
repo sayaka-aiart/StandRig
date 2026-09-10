@@ -40,7 +40,7 @@ try {
   rig.name='Synthetic QA fixture'; rig.stage={width:128,height:128,background:'transparent'};
   rig.assets=[{id:'test-asset',name:'Generated square',type:'image',src:'data:image/png;base64,'+Buffer.from(encodePng(image)).toString('base64'),width:32,height:32}];
   rig.parts.push({id:'test-part',name:'Generated square',kind:'image',parentId:'root',assetId:'test-asset',visible:true,drawOrder:10,transform:{...DEFAULT_TRANSFORM,x:64,y:64}});
-  assert.equal((await api('/api/rig?includeAssets=1','PUT',rig)).status,200); checks.push('isolated-rig-import');
+  assert.equal((await api('/api/modeling/transaction','POST',{kind:'import',rig,expectedRevision:blank.data.context.revision,commit:true,qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}})).status,200); checks.push('isolated-rig-import');
   assert.equal((await api('/api/parts/test-part')).data.part.id,'test-part');
   assert.equal((await api('/api/rig/validate')).data.validation.ok,true); checks.push('parts-and-validation');
   const qa = {poses:['neutral'],regions:['full'],width:240,height:240,physics:false};
@@ -65,8 +65,12 @@ try {
   assert.equal((await api('/api/parts/test-part')).data.part.transform.x,66); checks.push('qa-gated-commit');
   const change = await api('/api/changes?since='+context.revision);
   assert.equal(change.data.changed,true); assert.equal(change.data.resyncRequired,false); checks.push('revision-journal');
-  const external = await api('/api/assets/externalize','POST',{rig: (await api('/api/rig?includeAssets=1')).data,dryRun:false});
-  assert.equal(external.data.ok,true); assert.ok(external.data.rig.assets[0].src.startsWith('/assets/')); checks.push('asset-externalization');
+  const externalRig = await api('/api/rig?includeAssets=1');
+  await mkdir(path.join(temporary,'public/assets'),{recursive:true});
+  await writeFile(path.join(temporary,'public/assets/synthetic.png'),encodePng(image));
+  externalRig.data.assets[0].src='/assets/synthetic.png';
+  const external = await api('/api/modeling/transaction','POST',{kind:'import',rig:externalRig.data,expectedRevision:(await api('/api/context')).data.context.revision,commit:true,qa});
+  assert.equal(external.data.ok,true); checks.push('external-assets-import');
   assert.equal((await api('/api/qa/check','POST',qa)).data.ok,true); checks.push('externalized-render-qa');
   const bundle = await api('/api/bundle');
   assert.equal(bundle.status,200);
