@@ -76,3 +76,7 @@ For example, `{type:"artmesh-generate",preset:"face-feature",columns:"five",rows
 
 Brush and extended Blend Shape semantics, units and examples: [DEFORM.md](DEFORM.md).
 MCP clients can read this guide directly at `standrig://docs/deform`.
+
+## Optional Cubism connection
+
+See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for the separate HTTP adapter, connection status, read queries and transient pose tools.

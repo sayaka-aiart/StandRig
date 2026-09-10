@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.d.ts",
       "default": "./src/operations.mjs"
+    },
+    "./bridge": {
+      "types": "./src/bridge.d.ts",
+      "default": "./src/bridge.mjs"
     }
   },
   "dependencies": {

@@ -71,3 +71,7 @@ node examples/agent-client.mjs examples/transaction.json
 The client prints context or sends a dry-run. It deliberately refuses `commit:true`; the owning AI must construct and verify its own explicit commit request after the above gates.
 
 For numeric Brush operations and owner-local Part/Deformer/ArtPath/Glue Blend Shapes, read [docs/DEFORM.md](docs/DEFORM.md). The operation schema alone does not describe coordinate units or supported destination combinations.
+
+## Optional Cubism connection
+
+See [docs/CUBISM-BRIDGE.md](docs/CUBISM-BRIDGE.md) for the separate HTTP adapter, connection status, read queries and transient pose tools.

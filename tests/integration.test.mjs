@@ -76,11 +76,13 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     client=new Client({name:'standrig-integration',version:'1.0.0'});
     await client.connect(transport);
     const tools=await client.listTools();
-    assert.equal(tools.tools.length,13);
+    assert.equal(tools.tools.length,16);
     const actionSchema=tools.tools.find(tool=>tool.name==='standrig_modeling_transaction').inputSchema.properties.operations.items.properties.action;
     assert.equal(actionSchema.oneOf.length,35);
     assert.ok(actionSchema.oneOf.every(schema=>schema.additionalProperties===false));
     const invoke=(name,args={})=>client.callTool({name,arguments:args});
+    assert.equal((await invoke('standrig_bridge_status')).structuredContent.result.configured,false);
+    assert.equal((await invoke('standrig_bridge_pose',{method:'SetParameterValues',data:{ModelUID:'a',Parameters:[{Id:'x',Value:'five'}]}})).isError,true);
     const motionClip=JSON.parse(await readFile(path.join(root,'examples/sample.standrig-motion.json'),'utf8'));
     let motionRequests=0;
     const observeMotion=req=>{if(req.url==='/api/playback/motion')motionRequests++;};

@@ -43,9 +43,9 @@ The independent transparent page is `http://127.0.0.1:5180/player`. An external 
 
 The page uses a transparent HTML background and transparent canvas rendering. Normal browser screenshots may composite transparency over white; actual transparency/capture in the user's OBS configuration is a separate check. OBS integration has not been device-tested for this release.
 
-## Future Live2D bridge
+## Live2D bridge
 
-`BridgeAdapter` reserves an adapter ID, capability discovery and disconnect. No bridge is loaded or advertised as implemented. Add a separate package when a concrete target exists:
+`BridgeAdapter` reserves an adapter ID, capability discovery and disconnect. The optional service-side Cubism HTTP adapter is implemented; see [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md). The runtime interface remains reserved. The external targets remain separate capabilities:
 
 - Cubism Editor command bridge: expose editor operations with its own authorization and version checks.
 - Cubism playback adapter: implement playback against the applicable runtime SDK.

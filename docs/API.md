@@ -151,3 +151,15 @@ Read the exported JSON and check `format:"standrig-bundle"`. Extract `bundle.rig
 ## Native motion playback
 
 Use GET/POST `/api/playback/motion` or MCP `standrig_motion` to load and control a native clip. Playback supports seek, speed, loop and channel ownership. Embedded `StandRigPlayer` exposes the same transport. See [MOTION.md](MOTION.md) for the strict format, external-input arbitration, physics seek limitations and future Live2D importer contract. Actual motion3 import is not included.
+
+## Optional Cubism connection
+
+See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for the separate HTTP adapter, connection status, read queries and transient pose tools.
+
+## Optional Cubism connection
+
+See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.
+
+## Optional Cubism connection
+
+See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.

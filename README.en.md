@@ -20,7 +20,7 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 | Playback | Transparent player page, numeric parameter input and an embeddable browser runtime |
 | Tracking | Receive numeric values from external tracking tools; camera inference is not bundled |
 | OBS | Use the player page as a Browser Source in an external OBS installation; OBS control is not bundled |
-| Live2D / Cubism | A bridge is a future extension. Creating, converting or playing cmo3/moc3 files is currently unsupported |
+| Live2D / Cubism | Read Editor information and set transient parameters through an external bridge. Creating, converting or playing cmo3/moc3 files is unsupported |
 
 **Importing a PSD does not automatically create a finished rig or its movements.** Ask your AI client to create the required settings, then inspect the actual result. Automatic part separation, AI models and image generation services are not provided.
 
@@ -170,3 +170,24 @@ Legacy write APIs are disabled by default. Import, editing and restore use the t
 Load the sample model, choose `examples/sample.standrig-motion.json` using **「モーションJSONを選択」**, then click **「モーション再生」**. The UI supports pause, stop, seek, speed, loop and JSON export. AI clients use `standrig_motion`.
 
 Only native StandRig motion JSON is supported today. Live2D `.motion3.json` import is **not implemented**. A separate importer interface allows a future converter to use the same playback engine. See [motion format and API](docs/MOTION.md).
+
+## Connect to Cubism API Bridge
+
+The separate [Cubism API Bridge](https://github.com/sayaka-aiart/cubism-api-bridge) lets StandRig MCP read Cubism Editor information and set transient poses/expressions. The Bridge runs as a separate process; no Cubism SDK is added to the StandRig core.
+
+1. Build the Bridge and permit its connection in Cubism, following its README.
+2. Start HTTP from the Bridge directory:
+
+```powershell
+npm run http -- --port 22035 --session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
+```
+
+3. In another terminal, start the built StandRig from its own directory:
+
+```powershell
+npm start -- --bridge-session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
+```
+
+Use the UI's **Cubism Bridge** button to check status, or MCP tools `standrig_bridge_status`, `standrig_bridge_read`, and `standrig_bridge_pose`. Credentials stay in the service; never share or commit the session file. Restart StandRig after restarting the Bridge to reload its new credentials.
+
+The connection requires an idle Bridge with API 1.1.0. Persistent Cubism editing through StandRig, automatic synchronization, model conversion and motion import are not implemented. See the [connection guide and API examples](docs/CUBISM-BRIDGE.md).

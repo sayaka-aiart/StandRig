@@ -1,3 +1,4 @@
+import { CubismBridge } from './application/cubismBridge.js';
 import { motionRequestSchema } from '@standrig/contracts';
 import { migrateRigDocument } from '@standrig/core/migration';
 import { randomUUID } from 'node:crypto';
@@ -29,7 +30,8 @@ async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
 }
 
 /** One local service owns one data directory. Vite is used only to build/develop the optional UI. */
-export async function createLocalService(options: { dataDir: string; port?: number; previewDir?: string; allowLegacyWrites?: boolean }) {
+export async function createLocalService(options: { dataDir: string; port?: number; previewDir?: string; allowLegacyWrites?: boolean; bridgeSessionFile?: string }) {
+  const bridge = await CubismBridge.fromSessionFile(options.bridgeSessionFile);
   const dataDir = path.resolve(options.dataDir);
   const publicDir = path.join(dataDir, 'public');
   const rigPath = path.join(publicDir, 'rig.json');
@@ -68,6 +70,8 @@ export async function createLocalService(options: { dataDir: string; port?: numb
   async function dispatch(req: IncomingMessage, res: ServerResponse) {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     const route = url.pathname;
+    if (route === '/api/bridge/status' && req.method === 'GET') { json(res,200,{ok:true,result:await bridge.status()}); return; }
+    if (['/api/bridge/read','/api/bridge/pose'].includes(route) && req.method === 'POST') { json(res,200,{ok:true,result:await bridge.call(await body(req),route.endsWith('/pose'))}); return; }
     if (route === '/api/sample' && req.method === 'GET') {
       json(res, 200, JSON.parse(await readFile(new URL('../../../examples/sample.standrig.json', import.meta.url), 'utf8'))); return;
     }

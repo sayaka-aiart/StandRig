@@ -20,7 +20,7 @@
 | 再生 | 透過再生ページ、数値パラメータ入力、モーションJSON再生、ブラウザへのランタイム組み込み |
 | トラッキング | 外部ツールで追跡して数値を入力。カメラ推論は同梱しない |
 | OBS | 外部OBSのブラウザソースに再生ページを指定。OBS制御は同梱しない |
-| Live2D / Cubism | Bridgeは将来拡張。現在はcmo3/moc3の作成・変換・再生には非対応 |
+| Live2D / Cubism | 外部Bridge経由の情報取得・一時パラメータ操作に対応。cmo3/moc3の作成・変換・再生は非対応 |
 
 **PSDを読み込むだけでは、完成した動きは付きません。** AIへ指示して必要な設定を作り、実際の表示を確認します。自動パーツ分け、AIモデル、画像生成サービスは提供しません。
 
@@ -168,3 +168,24 @@ UI開発はサービスを5180番で起動したまま、別ターミナルで `
 サンプルを読み込み、画面の「モーションJSONを選択」で `examples/sample.standrig-motion.json` を選び、「モーション再生」を押してください。一時停止・停止・再生位置・速度・ループ・JSON書き出しを操作できます。AIからは `standrig_motion` を使います。
 
 現在対応するのは独自のStandRigモーションJSONです。Live2Dの `.motion3.json` はまだ読み込めません。将来の変換器を接続するため、ファイル変換と共通の再生処理を分離しています。形式とAPIは [モーション仕様](docs/MOTION.md) を参照してください。
+
+## Cubism API Bridgeと接続する
+
+別リポジトリの[Cubism API Bridge](https://github.com/sayaka-aiart/cubism-api-bridge)を使うと、StandRigのMCPからCubism Editorの情報取得と一時的な姿勢・表情の操作ができます。Bridgeは別プロセスで起動し、StandRig本体にCubism SDKは追加しません。
+
+1. BridgeのREADMEに従ってビルドし、Cubismで接続を許可します。
+2. BridgeのフォルダでHTTPサーバーを起動します。
+
+```powershell
+npm run http -- --port 22035 --session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
+```
+
+3. 別のターミナルで、ビルド済みStandRigのフォルダから起動します。
+
+```powershell
+npm start -- --bridge-session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
+```
+
+UIの「Cubism Bridge」で接続状態を確認できます。MCPには `standrig_bridge_status`、`standrig_bridge_read`、`standrig_bridge_pose` を追加しています。認証情報はサーバー内で扱い、セッションファイルは共有・コミットしないでください。Bridge再起動後はStandRigサービスも再起動してください。
+
+この接続はAPI 1.1.0のBridgeが待機中の場合に利用できます。StandRigからのCubism永続編集、自動同期、モデル変換、モーション読込は未対応です。[対応範囲とAPI例](docs/CUBISM-BRIDGE.md)を参照してください。

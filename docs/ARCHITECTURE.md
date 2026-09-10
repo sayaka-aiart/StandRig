@@ -67,9 +67,9 @@ Legacy writes are off by default; only GET and audited read-only POST handlers p
 - Implemented: model core, runtime, local service, stdio MCP, minimal UI, numeric input and transparent player.
 - External: face inference, camera access, smoothing/calibration, OBS configuration/control. No tracking model or OBS plugin is shipped.
 - Reserved: `TrackingAdapter` and `BridgeAdapter` contracts. The bridge interface is a discovery/disconnection skeleton only.
-- Not implemented: Live2D/Cubism connection, cmo3/moc3 conversion or playback, one-image automatic part separation, cloud hosting, production multi-user service.
+- Not implemented: cmo3/moc3 conversion or playback, one-image automatic part separation, cloud hosting, production multi-user service.
 
-The output format is StandRig JSON / `standrig-bundle`. A future Cubism editor bridge, Cubism runtime adapter and model converter would be separate capabilities and must not be presented as equivalent.
+The output format is StandRig JSON / `standrig-bundle`. The optional [Cubism Editor HTTP connection](CUBISM-BRIDGE.md), Cubism runtime adapter and model converter would be separate capabilities and must not be presented as equivalent.
 
 ## Operation contract generation
 

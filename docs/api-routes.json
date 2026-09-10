@@ -62,6 +62,7 @@
     "/api/params",
     "/api/rig",
     "/api/modeling/transaction",
+    "/api/bridge/status",
     "/api/sample",
     "/api/exports/bundle",
     "/api/playback/motion",
@@ -874,12 +875,21 @@
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
+      "path": "/api/bridge/status",
+      "methods": [
+        "GET"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 73,
+      "methodNotes": "Exact local service route."
+    },
+    {
       "path": "/api/sample",
       "methods": [
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 71,
+      "line": 75,
       "methodNotes": "Exact local service route."
     },
     {
@@ -888,7 +898,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 74,
+      "line": 78,
       "methodNotes": "Exact local service route."
     },
     {
@@ -898,7 +908,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 82,
+      "line": 86,
       "methodNotes": "Exact local service route."
     },
     {
@@ -907,7 +917,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 84,
+      "line": 88,
       "methodNotes": "Exact local service route."
     },
     {
@@ -916,7 +926,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 85,
+      "line": 89,
       "methodNotes": "Exact local service route."
     },
     {
@@ -925,7 +935,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 86,
+      "line": 90,
       "methodNotes": "Exact local service route."
     },
     {
@@ -934,7 +944,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 87,
+      "line": 91,
       "methodNotes": "Exact local service route."
     },
     {
@@ -943,7 +953,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 88,
+      "line": 92,
       "methodNotes": "Exact local service route."
     },
     {
@@ -953,7 +963,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 91,
+      "line": 95,
       "methodNotes": "Exact local service route."
     },
     {
@@ -962,7 +972,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 100,
+      "line": 104,
       "methodNotes": "Exact local service route."
     }
   ]

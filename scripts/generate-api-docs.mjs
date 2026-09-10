@@ -1,3 +1,5 @@
+import { bridgeReadSchema, bridgePoseSchema } from '../packages/contracts/src/bridge.mjs';
+import { toJSONSchema } from 'zod';
 import * as z from 'zod';
 import { operationSchema, transactionSchema, qaSchema, motionClipSchema, motionRequestSchema, READ_ONLY_BODY_ROUTES } from '@standrig/contracts';
 import fs from 'node:fs/promises';
@@ -86,5 +88,8 @@ const strictTransaction=z.toJSONSchema(transactionSchema);
 spec.components.schemas.ModelingOperation=operation;
 spec.components.schemas.TransactionRequest={oneOf:[strictTransaction,{type:'object',additionalProperties:false,required:['kind','expectedRevision','rig','qa'],properties:{kind:{const:'import'},expectedRevision:{type:'string',minLength:1},commit:{type:'boolean',default:false},rig:object,qa:{$ref:'#/components/schemas/QaCheckRequest'}}},{type:'object',additionalProperties:false,required:['kind','expectedRevision','checkpointId'],properties:{kind:{const:'restore'},expectedRevision:{type:'string',minLength:1},commit:{type:'boolean',default:false},checkpointId:{type:'string',format:'uuid'}}}]};
 for(const endpoint of endpoints)if(endpoint.legacyWriteOptIn)for(const method of endpoint.methods)if(!endpoint.defaultMethods.includes(method)&&paths[endpoint.path]?.[method.toLowerCase()])Object.assign(paths[endpoint.path][method.toLowerCase()],{deprecated:true,description:'Disabled by default (403 legacy_write_api_disabled). Prefer /api/modeling/transaction. Explicit --allow-legacy-writes enables the legacy bypass.'});
+for (const [route,schema] of [['/api/bridge/read',bridgeReadSchema],['/api/bridge/pose',bridgePoseSchema]]) paths[route]={post:{summary:'Optional Cubism Bridge; requires idle API 1.1.0 server',requestBody:{required:true,content:{'application/json':{schema:toJSONSchema(schema)}}},responses:{200:{description:'Bridge result'},400:{description:'Invalid request or Bridge unavailable'}}}};
+paths['/api/bridge/status']={get:{summary:'Optional Bridge connection status',responses:{200:{description:'Configured, connected, state and API compatibility; no credentials'}}}};
+await fs.appendFile('docs/API.md','\n## Optional Cubism connection\n\nSee [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.\n');
 await fs.writeFile('docs/openapi.json',JSON.stringify(spec,null,2)+'\n');
 console.log(JSON.stringify({routes:endpoints.length,actions:actionTypes.length,coreOpenApiPaths:Object.keys(paths).length}));

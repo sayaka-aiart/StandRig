@@ -22,7 +22,7 @@ test('revisions use SHA-256 across the full model document',()=>{
 test('every legacy write route is denied by default without filesystem changes',()=>harness(async(call,dir)=>{
  const before=await files(dir);
  const inventory=JSON.parse(await readFile(new URL('../docs/api-routes.json',import.meta.url),'utf8'));
- for(const route of inventory.routes.filter(r=>!['/api/modeling/transaction'].includes(r)&&!r.startsWith('/api/playback')&&!r.startsWith('/api/checkpoints')&&!r.startsWith('/api/exports')&&r!=='/api/sample')){
+ for(const route of inventory.routes.filter(r=>!['/api/modeling/transaction'].includes(r)&&!r.startsWith('/api/bridge/')&&!r.startsWith('/api/playback')&&!r.startsWith('/api/checkpoints')&&!r.startsWith('/api/exports')&&r!=='/api/sample')){
   for(const method of ['POST','PUT','PATCH','DELETE']){
    if(method==='POST'&&READ_ONLY_BODY_ROUTES.has(route))continue;
    const result=await call(route,method,{...sample,commit:true,dryRun:false,action:'register',name:'probe',values:{ParamAngleX:10}});
