@@ -163,3 +163,7 @@ See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/rea
 ## Optional Cubism connection
 
 See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.
+
+## Optional Cubism connection
+
+See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.

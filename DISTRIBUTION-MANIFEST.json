@@ -245,8 +245,8 @@
     {
       "path": "apps/service/src/service.ts",
       "normalization": "lf",
-      "bytes": 10575,
-      "sha256": "3310110f6b55c045868ed1b46fc5072f91ab3ed6fafb60f2a45487c9c52e47c0"
+      "bytes": 10677,
+      "sha256": "ccf7d956e7c5f87703a646b2f18aa1a1cb1a6260842cdb5d3b342da86e2e4775"
     },
     {
       "path": "apps/service/tsconfig.json",
@@ -263,8 +263,8 @@
     {
       "path": "docs/API.md",
       "normalization": "lf",
-      "bytes": 13947,
-      "sha256": "687e46c107db8b6cc0263328217346b8ace1cbc9f940073f97a44e56211f5736"
+      "bytes": 14219,
+      "sha256": "d22e1227ab1543039a472e289a1846ba5420d575111b2a6a089c1bfa31e6d4fa"
     },
     {
       "path": "docs/ARCHITECTURE.md",
@@ -329,8 +329,8 @@
     {
       "path": "docs/api-routes.json",
       "normalization": "lf",
-      "bytes": 27968,
-      "sha256": "cf8e0902433bc9d392a74cb8957e163ac9fb5043c37926af8192eb3de9c51eb6"
+      "bytes": 28426,
+      "sha256": "69df722ebca1671a2f17bb47c0f4242170e178cce51aa1126169440f5b98b5b2"
     },
     {
       "path": "docs/images/NOTICE.md",
@@ -348,7 +348,7 @@
       "path": "docs/openapi.json",
       "normalization": "lf",
       "bytes": 660891,
-      "sha256": "c39636a70bcb98ce6cd0da649894758b67c1dd4c94370887c8d01cc492612e6e"
+      "sha256": "60597241eb656560b0dcfb0d25e740a40fadc02db7a4765f8b7a37bc49cc046f"
     },
     {
       "path": "examples/agent-client.mjs",

@@ -3337,6 +3337,451 @@
         }
       }
     },
+    "/api/bridge/read": {
+      "post": {
+        "summary": "Optional Cubism Bridge; requires idle API 1.1.0 server",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetDocuments"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetCurrentDocumentUID"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetCurrentModelUID"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetCurrentEditMode"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {},
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetDocument"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "DocumentUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "DocumentUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetParameters"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetParameterGroups"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetPartStructure"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetDeformerStructure"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetPhysicsInfo"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetParameterValues"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "Ids": {
+                            "maxItems": 1000,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1024
+                            }
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "GetObject"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "Id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID",
+                          "Id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bridge result"
+          },
+          "400": {
+            "description": "Invalid request or Bridge unavailable"
+          }
+        }
+      }
+    },
+    "/api/bridge/pose": {
+      "post": {
+        "summary": "Optional Cubism Bridge; requires idle API 1.1.0 server",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "SetParameterValues"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "Parameters": {
+                            "minItems": 1,
+                            "maxItems": 1000,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "Id": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1024
+                                },
+                                "Value": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "Id",
+                                "Value"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "ModelUID",
+                          "Parameters"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "const": "ClearParameterValues"
+                      },
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "ModelUID": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          }
+                        },
+                        "required": [
+                          "ModelUID"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "data"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bridge result"
+          },
+          "400": {
+            "description": "Invalid request or Bridge unavailable"
+          }
+        }
+      }
+    },
     "/api/sample": {
       "get": {
         "summary": "Local service /api/sample",
@@ -5830,451 +6275,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/bridge/read": {
-      "post": {
-        "summary": "Optional Cubism Bridge; requires idle API 1.1.0 server",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetDocuments"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {},
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetCurrentDocumentUID"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {},
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetCurrentModelUID"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {},
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetCurrentEditMode"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {},
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetDocument"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "DocumentUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "DocumentUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetParameters"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetParameterGroups"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetPartStructure"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetDeformerStructure"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetPhysicsInfo"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetParameterValues"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          },
-                          "Ids": {
-                            "maxItems": 1000,
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 1024
-                            }
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "GetObject"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          },
-                          "Id": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID",
-                          "Id"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Bridge result"
-          },
-          "400": {
-            "description": "Invalid request or Bridge unavailable"
-          }
-        }
-      }
-    },
-    "/api/bridge/pose": {
-      "post": {
-        "summary": "Optional Cubism Bridge; requires idle API 1.1.0 server",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "oneOf": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "SetParameterValues"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          },
-                          "Parameters": {
-                            "minItems": 1,
-                            "maxItems": 1000,
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "Id": {
-                                  "type": "string",
-                                  "minLength": 1,
-                                  "maxLength": 1024
-                                },
-                                "Value": {
-                                  "type": "number"
-                                }
-                              },
-                              "required": [
-                                "Id",
-                                "Value"
-                              ],
-                              "additionalProperties": false
-                            }
-                          }
-                        },
-                        "required": [
-                          "ModelUID",
-                          "Parameters"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "const": "ClearParameterValues"
-                      },
-                      "data": {
-                        "type": "object",
-                        "properties": {
-                          "ModelUID": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1024
-                          }
-                        },
-                        "required": [
-                          "ModelUID"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "method",
-                      "data"
-                    ],
-                    "additionalProperties": false
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Bridge result"
-          },
-          "400": {
-            "description": "Invalid request or Bridge unavailable"
           }
         }
       }

@@ -71,7 +71,8 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     const route = url.pathname;
     if (route === '/api/bridge/status' && req.method === 'GET') { json(res,200,{ok:true,result:await bridge.status()}); return; }
-    if (['/api/bridge/read','/api/bridge/pose'].includes(route) && req.method === 'POST') { json(res,200,{ok:true,result:await bridge.call(await body(req),route.endsWith('/pose'))}); return; }
+    if (route === '/api/bridge/read' && req.method === 'POST') { json(res,200,{ok:true,result:await bridge.call(await body(req),false)}); return; }
+    if (route === '/api/bridge/pose' && req.method === 'POST') { json(res,200,{ok:true,result:await bridge.call(await body(req),true)}); return; }
     if (route === '/api/sample' && req.method === 'GET') {
       json(res, 200, JSON.parse(await readFile(new URL('../../../examples/sample.standrig.json', import.meta.url), 'utf8'))); return;
     }
