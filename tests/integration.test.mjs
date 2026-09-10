@@ -90,6 +90,7 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const observeRequest=req=>{if(req.url==='/api/modeling/transaction')transactionRequests++;};
     service.httpServer.on('request',observeRequest);
     for(const action of [
+      ...[0,51,1.5].map(iterations=>({type:'deform-brush',brush:{surface:{kind:'artmesh',space:'mesh-local'},center:[0,0],radius:10,effect:{mode:'inflate',distance:1},iterations,maxDisplacement:1,falloff:'linear',destination:{kind:'base'}}})),
       {type:'warp-create',divisionX:'five'},
       {type:'artmesh-generate',preset:'face-feature',columns:'five',rows:5},
       {type:'deformer-origin',deformerId:'missing',x:'five',y:0},

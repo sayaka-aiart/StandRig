@@ -80,3 +80,10 @@ Both Warp pins and shared-grid control points now accept the Brush keyform desti
 The integration test imports a synthetic Warp fixture through HTTP, dry-runs both destinations, commits through a real stdio MCP client with neutral/intermediate/key QA, verifies persisted pin and shared-point bindings, then restores the original revision through HTTP. Generated schema checks include the shared-field point bindings.
 
 In a separate isolated Sample Bot fixture, numeric QA passed at parameter values 0, 15 and 30 before images. The built browser player visibly changed the body at 30 using both Warp destinations; the 0 pose retained its starting shape. QA and screenshots are saved under gitignored reports/warp-keyform-visual/. This is synthetic runtime evidence, not production character pose acceptance; fine raster triangle-edge lines remain visible as in the preceding fixture.
+
+
+## Shared Part selector and numeric schema constraints — 2026-09-10
+
+Workspace build, 16 smoke checks and 40 Node tests passed on Windows / Node 24.14. Part selection now shares one predicate across legacy modeling and new deformation operations. Regression cases exercise ID/role intersection, roles alone, IDs alone, empty arrays, unconfirmed roles, duplicate IDs, no matches and unchanged excluded Parts for both Brush and extended shapes. Missing-reference/locked-target failure policies remain specific to the new atomic operations.
+
+Brush numeric constraints are generated from property metadata. Tests inspect integer/minimum/maximum/exclusiveMinimum JSON Schema, compare boundary values with core validation and reject invalid dimensions/effect ranges. The real stdio MCP test rejects iterations 0, 51 and 1.5 before sending any HTTP transaction request. No rendering algorithm changed in this follow-up; previous synthetic visual evidence remains limited as documented above. Separate runtime compatibility versioning and production-character E2E remain outstanding.

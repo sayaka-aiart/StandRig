@@ -76,3 +76,10 @@ The output format is StandRig JSON / `standrig-bundle`. A future Cubism editor b
 `packages/core/src/operationRegistry.ts` is the source of action definitions. Core TypeScript derives its action union from the registry. `scripts/generate-operation-schemas.mjs` emits named TypeScript action aliases and schema declarations plus named strict Zod schemas, an action-schema map and `z.discriminatedUnion("type", ...)`. The operation envelope uses that union. The HTTP service and MCP consume the same generated package; MCP publishes JSON Schema with 35 `oneOf` branches. `scripts/generate-api-docs.mjs` generates OpenAPI from Zod and OPERATIONS.md from the registry. Run both with `npm run generate`.
 
 Referenced model structures remain in core/types.ts and QA definitions in core/qaCheck.ts; they are resolved by the same TypeScript-based generator. The registry describes payloads, while core/modelingOps.ts implements behavior. A registry entry alone does not implement an operation.
+
+
+## Compatibility and production qualification follow-up
+
+The rig schema version currently describes data structure; there is no separate runtime evaluation compatibility version. The corrected negative-target Blend Shape behavior therefore requires visual revalidation of existing affected models, as described in DEFORM.md. A future compatibility contract should distinguish unversioned models from explicitly versioned evaluation semantics, reject unknown future semantics and provide an explicit, tested migration path. Merely tagging old data with the current version would not preserve its prior appearance. This is planned work, not an implemented compatibility mode.
+
+Production-character E2E remains unqualified: a pinned source/reference manifest, neutral and intermediate/maximum Angle XY combinations, expressions, hair motion, physics-off/on comparisons and saved visual acceptance are still required. Sample Bot, synthetic fixtures, transaction tests and CI do not substitute for this gate. Work in the public distribution does not implicitly modify or qualify the private production PSD/model.

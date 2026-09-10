@@ -1,3 +1,4 @@
+import { matchesPartTarget } from "./modelingTarget.js";
 import { keyformParameter, sampleWarpKeyform, writeWarpKeyform } from './warpKeyforms.js';
 import { applyDeformBrush, type BrushGraph } from './deformBrush.js';
 import { validateBlendWeight, validateExtendedShape } from './extendedBlendShape.js';
@@ -14,10 +15,10 @@ function upsert<T extends {
 else
     list[index] = structuredClone(shape); }
 function selectedParts(rig: RigDocument, operation: ModelingOperation) {
-    const parts = rig.parts.filter(p => operation.target.partIds?.includes(p.id) || (p.roleStatus === 'confirmed' && p.role && operation.target.roles?.includes(p.role)));
-    if (operation.target.partIds?.some(id => !parts.some(p => p.id === id)))
+    const parts = rig.parts.filter(p => matchesPartTarget(p, operation.target).matched);
+    if (operation.target.partIds?.some(id => !rig.parts.some(p => p.id === id)))
         throw Error('target part not found');
-    if (operation.target.roles?.some(role => !parts.some(p => p.role === role)))
+    if (operation.target.roles?.some(role => !rig.parts.some(p => p.role === role && p.roleStatus === 'confirmed')))
         throw Error('confirmed role not found');
     if (parts.some(p => p.locked))
         throw Error('target part locked');

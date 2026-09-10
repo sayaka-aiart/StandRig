@@ -14,14 +14,28 @@ const actions=checker.getPropertiesOfType(registryType).map(property=>{
   const name=property.name.split('-').map(word=>word==='artmesh'?'ArtMesh':word[0].toUpperCase()+word.slice(1)).join('');
   return {key:property.name,type,name,schemaName:name[0].toLowerCase()+name.slice(1)+'Schema'};
 });
-function schema(type,stack=new Set()) {
+function constraintsFor(property) {
+  const supported=new Set(['integer','minimum','maximum','exclusiveMinimum','exclusiveMaximum']);
+  const constraints={};
+  for(const tag of property.getJsDocTags(checker))if(supported.has(tag.name)){
+    if(tag.name==='integer')constraints.integer=true;
+    else {const raw=(tag.text??[]).map(t=>t.text).join('').trim();const value=Number(raw);if(!raw||!Number.isFinite(value))throw Error('Invalid constraint on '+property.name);constraints[tag.name]=value;}
+  }
+  return constraints;
+}
+function schema(type,stack=new Set(),constraints={}) {
   if(type===actionType)return 'actionSchema';
   const f=type.flags;
   if(f & ts.TypeFlags.StringLiteral)return `z.literal(${JSON.stringify(type.value)})`;
   if(f & ts.TypeFlags.NumberLiteral)return `z.literal(${type.value})`;
   if(f & ts.TypeFlags.BooleanLiteral)return `z.literal(${type.intrinsicName})`;
   if(f & ts.TypeFlags.String)return 'z.string()';
-  if(f & ts.TypeFlags.Number)return 'z.number().finite()';
+  if(f & ts.TypeFlags.Number){
+    let result='z.number().finite()';
+    if(constraints.integer)result+='.int()';
+    for(const [name,method]of [['minimum','min'],['maximum','max'],['exclusiveMinimum','gt'],['exclusiveMaximum','lt']])if(constraints[name]!==undefined)result+=`.${method}(${constraints[name]})`;
+    return result;
+  }
   if(f & ts.TypeFlags.Boolean)return 'z.boolean()';
   if(f & ts.TypeFlags.Null)return 'z.null()';
   if(f & ts.TypeFlags.Undefined)return 'z.undefined()';
@@ -29,7 +43,7 @@ function schema(type,stack=new Set()) {
   if(f & ts.TypeFlags.Any)throw Error('Unresolved any: '+checker.typeToString(type));
   if(type.isUnion()) {
     const variants=type.types.filter(t=>!(t.flags & ts.TypeFlags.Undefined));
-    const result=variants.length===1?schema(variants[0],stack):`z.union([${variants.map(t=>schema(t,stack)).join(',')}])`;
+    const result=variants.length===1?schema(variants[0],stack,constraints):`z.union([${variants.map(t=>schema(t,stack,constraints)).join(',')}])`;
     return variants.length!==type.types.length?result+'.optional()':result;
   }
   if(checker.isTupleType(type))return `z.tuple([${checker.getTypeArguments(type).map(t=>schema(t,stack)).join(',')}])`;
@@ -41,7 +55,7 @@ function schema(type,stack=new Set()) {
   if(!(f & ts.TypeFlags.Object))throw Error('Unsupported type: '+checker.typeToString(type));
   return `z.strictObject({${checker.getPropertiesOfType(type).map(p=>{
     const t=checker.getTypeOfSymbolAtLocation(p,p.valueDeclaration??p.declarations[0]);
-    let expr=schema(t,next);
+    let expr=schema(t,next,constraintsFor(p));
     if(p.flags & ts.SymbolFlags.Optional)expr+='.optional()';
     return JSON.stringify(p.name)+':'+expr;
   }).join(',')}})`;

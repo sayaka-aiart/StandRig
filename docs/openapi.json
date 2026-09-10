@@ -5707,10 +5707,12 @@
                                 "const": "warp-local"
                               },
                               "width": {
-                                "type": "number"
+                                "type": "number",
+                                "exclusiveMinimum": 0
                               },
                               "height": {
-                                "type": "number"
+                                "type": "number",
+                                "exclusiveMinimum": 0
                               }
                             },
                             "required": [
@@ -5753,7 +5755,8 @@
                         ]
                       },
                       "radius": {
-                        "type": "number"
+                        "type": "number",
+                        "exclusiveMinimum": 0
                       },
                       "effect": {
                         "anyOf": [
@@ -5765,7 +5768,9 @@
                                 "const": "smooth"
                               },
                               "strength": {
-                                "type": "number"
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
                               }
                             },
                             "required": [
@@ -5782,7 +5787,9 @@
                                 "const": "relax"
                               },
                               "strength": {
-                                "type": "number"
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
                               }
                             },
                             "required": [
@@ -5799,7 +5806,8 @@
                                 "const": "inflate"
                               },
                               "distance": {
-                                "type": "number"
+                                "type": "number",
+                                "minimum": 0
                               }
                             },
                             "required": [
@@ -5816,7 +5824,9 @@
                                 "const": "pinch"
                               },
                               "strength": {
-                                "type": "number"
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
                               },
                               "axis": {
                                 "type": "array",
@@ -5845,7 +5855,9 @@
                                 "const": "bend"
                               },
                               "angle": {
-                                "type": "number"
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
                               },
                               "axis": {
                                 "type": "array",
@@ -5874,7 +5886,9 @@
                                 "const": "contour-follow"
                               },
                               "strength": {
-                                "type": "number"
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
                               },
                               "guide": {
                                 "type": "array",
@@ -5908,10 +5922,13 @@
                         ]
                       },
                       "iterations": {
-                        "type": "number"
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50
                       },
                       "maxDisplacement": {
-                        "type": "number"
+                        "type": "number",
+                        "exclusiveMinimum": 0
                       },
                       "falloff": {
                         "anyOf": [
@@ -10859,10 +10876,12 @@
                                           "const": "warp-local"
                                         },
                                         "width": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "exclusiveMinimum": 0
                                         },
                                         "height": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "exclusiveMinimum": 0
                                         }
                                       },
                                       "required": [
@@ -10905,7 +10924,8 @@
                                   ]
                                 },
                                 "radius": {
-                                  "type": "number"
+                                  "type": "number",
+                                  "exclusiveMinimum": 0
                                 },
                                 "effect": {
                                   "anyOf": [
@@ -10917,7 +10937,9 @@
                                           "const": "smooth"
                                         },
                                         "strength": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1
                                         }
                                       },
                                       "required": [
@@ -10934,7 +10956,9 @@
                                           "const": "relax"
                                         },
                                         "strength": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1
                                         }
                                       },
                                       "required": [
@@ -10951,7 +10975,8 @@
                                           "const": "inflate"
                                         },
                                         "distance": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "minimum": 0
                                         }
                                       },
                                       "required": [
@@ -10968,7 +10993,9 @@
                                           "const": "pinch"
                                         },
                                         "strength": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1
                                         },
                                         "axis": {
                                           "type": "array",
@@ -10997,7 +11024,9 @@
                                           "const": "bend"
                                         },
                                         "angle": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "minimum": -180,
+                                          "maximum": 180
                                         },
                                         "axis": {
                                           "type": "array",
@@ -11026,7 +11055,9 @@
                                           "const": "contour-follow"
                                         },
                                         "strength": {
-                                          "type": "number"
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 1
                                         },
                                         "guide": {
                                           "type": "array",
@@ -11060,10 +11091,13 @@
                                   ]
                                 },
                                 "iterations": {
-                                  "type": "number"
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 50
                                 },
                                 "maxDisplacement": {
-                                  "type": "number"
+                                  "type": "number",
+                                  "exclusiveMinimum": 0
                                 },
                                 "falloff": {
                                   "anyOf": [

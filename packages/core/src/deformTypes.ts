@@ -53,15 +53,22 @@ export interface GlueBlendShape extends BlendWeight {
 export type ExtendedBlendShape = PartBlendShape | DeformerBlendShape | ArtPathBlendShape | GlueBlendShape;
 export type BrushEffect = {
     mode: 'smooth';
+    /** @minimum 0
+     * @maximum 1 */
     strength: number;
 } | {
     mode: 'relax';
+    /** @minimum 0
+     * @maximum 1 */
     strength: number;
 } | {
     mode: 'inflate';
+    /** @minimum 0 */
     distance: number;
 } | {
     mode: 'pinch';
+    /** @minimum 0
+     * @maximum 1 */
     strength: number;
     axis: [
         number,
@@ -69,6 +76,8 @@ export type BrushEffect = {
     ];
 } | {
     mode: 'bend';
+    /** @minimum -180
+     * @maximum 180 */
     angle: number;
     axis: [
         number,
@@ -76,6 +85,8 @@ export type BrushEffect = {
     ];
 } | {
     mode: 'contour-follow';
+    /** @minimum 0
+     * @maximum 1 */
     strength: number;
     guide: Array<[
         number,
@@ -89,7 +100,9 @@ export type BrushSurface = {
 } | {
     kind: 'warp-pins';
     space: 'warp-local';
+    /** @exclusiveMinimum 0 */
     width: number;
+    /** @exclusiveMinimum 0 */
     height: number;
 } | {
     kind: 'shared-warp';
@@ -111,9 +124,14 @@ export interface DeformBrush {
         number,
         number
     ];
+    /** @exclusiveMinimum 0 */
     radius: number;
     effect: BrushEffect;
+    /** @integer
+     * @minimum 1
+     * @maximum 50 */
     iterations: number;
+    /** @exclusiveMinimum 0 */
     maxDisplacement: number;
     falloff: 'linear' | 'smooth';
     lockedIds?: string[];

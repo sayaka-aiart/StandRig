@@ -1,3 +1,5 @@
+import { matchesPartTarget as matchesTarget, type ModelingOperationTarget } from "./modelingTarget.js";
+export type { ModelingOperationTarget } from "./modelingTarget.js";
 import { executeDeformOperation } from './deformOperations.js';
 import { validateAlphaReveal } from "./alphaReveal.js";
 import { createAlphaContourArtMesh,createRectArtMesh } from "./artMesh.js";
@@ -9,11 +11,7 @@ import type { ParameterCurve,ParameterInterpolation,RigArtMeshBinding,RigArtMesh
 import { defaultWarpDeformer } from "./warp.js";
 export type { ModelingActionRegistry,ModelingOperationAction } from "./operationRegistry.js";
 
-export interface ModelingOperationTarget {
-  roles?: RigPartRole[];
-  partIds?: string[];
-  deformerIds?: string[];
-}
+
 
 function executeParameterAdd(rig: RigDocument, operation: ModelingOperation, dryRun: boolean): ModelingOperationResult {
   const action = operation.action;
@@ -838,16 +836,7 @@ function preserveArtMeshBindings(next: ReturnType<typeof createRectArtMesh>, pre
   }
   return next;
 }
-function matchesTarget(part: RigDocument["parts"][number], target: ModelingOperationTarget): { matched: boolean; reason?: string } {
-  const hasRoles = Boolean(target.roles?.length); const hasIds = Boolean(target.partIds?.length);
-  if (!hasRoles && !hasIds) return { matched: false };
-  if (hasIds && !target.partIds!.includes(part.id)) return { matched: false };
-  if (hasRoles) {
-    if (part.roleStatus !== "confirmed") return { matched: false, reason: part.role ? "role-not-confirmed" : "role-unassigned" };
-    if (!part.role || !target.roles!.includes(part.role)) return { matched: false };
-  }
-  return { matched: true };
-}
+
 function validateInterpolationOptions(interpolation: ParameterInterpolation | undefined, curve: ParameterCurve | undefined, label: string) {
   const allowed = ["linear", "smoothstep", "hold", "arc", "curve"];
   if (interpolation !== undefined && !allowed.includes(interpolation)) throw new Error(label + " interpolation is invalid");
