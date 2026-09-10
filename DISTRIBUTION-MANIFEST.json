@@ -263,8 +263,8 @@
     {
       "path": "docs/ARCHITECTURE.md",
       "normalization": "lf",
-      "bytes": 8948,
-      "sha256": "c3d0f62e9e05cc83363035dca93b894303597ee7511acf87b0d9d660811b1dc4"
+      "bytes": 8818,
+      "sha256": "7df2b22da9042ba4fbe26739dad39b46eb2b2ba734014fca3990545818292f6b"
     },
     {
       "path": "docs/DEFORM.md",
@@ -299,8 +299,8 @@
     {
       "path": "docs/VALIDATION.md",
       "normalization": "lf",
-      "bytes": 13484,
-      "sha256": "d9183a6f30f1512952aec553f9c3a3b94dde903d347e83e9d1869d768c70fee6"
+      "bytes": 13804,
+      "sha256": "641becaf622593871d721055b8c60196342d0076b5a05a923605f465063dde3c"
     },
     {
       "path": "docs/api-routes.json",
