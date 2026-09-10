@@ -240,6 +240,7 @@ export class RigRuntime {
     // so Canvas, WebGL and the server renderer close a seam by the identical amount.
     const glueStitch = hasGlueStitches(this.rig)
       ? resolveGlueStitchOffsets(this.rig, {
+          values: frame.values,
           restScale: glueStitchRestScale(view.pixelBaseMatrix),
           projectVertex: (partId, vertexId) => this.projectGlueVertex(partId, vertexId, computed, effectiveParams, view.pixelBaseMatrix, skinningTransforms)
         }).offsets

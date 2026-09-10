@@ -6,6 +6,18 @@ TypeScript action types and Zod schemas are derived from the same registry. HTTP
 
 Each operation requires `id`, `name`, `target`, `action`; `enabled` is optional. Target is `{partIds?: string[], roles?: RigPartRole[], deformerIds?: string[]}`. Confirm IDs from this model. Some actions require matching target and action IDs.
 
+## blend-shape-set
+
+```ts
+{ type: "blend-shape-set"; shape: ExtendedBlendShape }
+```
+
+## deform-brush
+
+```ts
+{ type: "deform-brush"; brush: DeformBrush }
+```
+
 ## transform
 
 ```ts

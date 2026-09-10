@@ -1,3 +1,4 @@
+import { extendedBlendIssues } from './extendedBlendShape.js';
 import {
   PARAMETER_IDS,
   RIG_SCHEMA_VERSION,
@@ -157,6 +158,7 @@ export function summarizeRig(rig: RigDocument): RigSummary {
 export function validateRig(rig: RigDocument): RigValidationResult {
   const issues: RigValidationIssue[] = [];
   const addIssue = (issue: RigValidationIssue) => issues.push(issue);
+  for(const message of extendedBlendIssues(rig))addIssue({severity:"error",code:"invalid-blend-shape",message,path:"blendShapes"});
 
   if (rig.schemaVersion !== RIG_SCHEMA_VERSION) {
     addIssue({

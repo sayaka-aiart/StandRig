@@ -53,11 +53,11 @@ After saving, reconnect/restart the MCP connection in your client. Confirm that 
 
 動作デモは `{command:"demo-start", mode:"showcase-active"}`（既定）または `{command:"demo-start", mode:"mouse-expression"}`。マウス位置は `{command:"demo-pointer", x:0.5, y:-0.5}` のように -1〜1 の座標を渡します（画面右が+X、下が+Y）。`demo-stop` で開始前の姿勢・再生状態を復元します。通常のパラメータ入力はデモを止め、元の姿勢に入力値を適用します。保存モデルは変更しません。
 
-HTTP and MCP transactions share `@standrig/contracts`: 33 `type`-discriminated action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Named action types and schemas are generated from `packages/core/src/operationRegistry.ts` and QA types (`npm run generate`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
+HTTP and MCP transactions share `@standrig/contracts`: 35 `type`-discriminated action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Named action types and schemas are generated from `packages/core/src/operationRegistry.ts` and QA types (`npm run generate`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
 
 ## Resources and workflow
 
-Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide`. Additional resources: `operations`, `architecture`, `adapters`, `api` under the same URI prefix (six resources total). If your client cannot read MCP resources, give it the corresponding local files; do not skip the contract.
+Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide`. Additional resources: `operations`, `deform`, `architecture`, `adapters`, `api` under the same URI prefix (seven resources total). If your client cannot read MCP resources, give it the corresponding local files; do not skip the contract.
 
 1. Read context and confirmed parts. Prepare visual targets under the model's data directory before PSD modeling.
 2. Read poses and the operations resource; dry-run a bounded transaction with `expectedRevision`, `commit:false`, and explicit QA.
@@ -72,3 +72,6 @@ Failure rendering reuses the QA result's sampled values and physics settings, in
 For a reproducible sample round trip, load Sample Bot and run `node examples/mcp-demo.mjs`. It changes only transient playback, after numeric QA. The example uses the SDK client installed as a development dependency.
 
 For example, `{type:"artmesh-generate",preset:"face-feature",columns:"five",rows:5}` is rejected at the MCP boundary with `action.columns` identified as a number-type error, before the local HTTP service is called. Unknown action types and extra fields are also rejected. Schema validity does not establish target existence or valid model geometry; application-level validation and QA remain required.
+
+Brush and extended Blend Shape semantics, units and examples: [DEFORM.md](DEFORM.md).
+MCP clients can read this guide directly at `standrig://docs/deform`.

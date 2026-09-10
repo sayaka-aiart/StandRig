@@ -1,3 +1,4 @@
+import { executeDeformOperation } from './deformOperations.js';
 import { validateAlphaReveal } from "./alphaReveal.js";
 import { createAlphaContourArtMesh,createRectArtMesh } from "./artMesh.js";
 import type { ArtMeshAlphaSampler } from "./artMeshAsset.js";
@@ -174,7 +175,7 @@ function executeDeformerOrigin(rig: RigDocument, operation: ModelingOperation, d
 
 export interface ModelingOperation { id: string; name: string; enabled?: boolean; target: ModelingOperationTarget; action: ModelingOperationAction }
 export interface ModelingOperationChange { partId: string; path: string; before: unknown; after: unknown }
-export interface ModelingOperationResult { operationId: string; dryRun: boolean; matchedPartIds: string[]; changes: ModelingOperationChange[]; skipped: Array<{ partId: string; reason: string }> }
+export interface ModelingOperationResult { deformReports?: Array<Record<string, number|string|null>>; operationId: string; dryRun: boolean; matchedPartIds: string[]; changes: ModelingOperationChange[]; skipped: Array<{ partId: string; reason: string }> }
 
 type InterpolationOptions = { interpolation?: ParameterInterpolation; curve?: ParameterCurve };
 function applyInterpolationOptions(binding: InterpolationOptions, options: InterpolationOptions) {
@@ -189,8 +190,10 @@ function applyInterpolationOptions(binding: InterpolationOptions, options: Inter
 export function executeModelingOperation(rig: RigDocument, operation: ModelingOperation, options: { dryRun?: boolean; assetAlphaSamplers?: ReadonlyMap<string, ArtMeshAlphaSampler> } = {}): ModelingOperationResult {
   validateOperation(operation);
   const dryRun = options.dryRun === true;
+
   const result: ModelingOperationResult = { operationId: operation.id, dryRun, matchedPartIds: [], changes: [], skipped: [] };
   if (operation.enabled === false) return result;
+  if(operation.action.type==="blend-shape-set"||operation.action.type==="deform-brush")return executeDeformOperation(rig,operation,dryRun);
   if (operation.action.type === "warp-pin-binding-key") return executeWarpPinBindingKey(rig, operation, dryRun);
   if (operation.action.type === "deformer-create") return executeDeformerCreate(rig, operation, dryRun);
   if (operation.action.type === "deformer-kind-set") return executeDeformerKindSet(rig, operation, dryRun);
@@ -504,12 +507,11 @@ function executeArtMeshBlendShape(part: RigDocument["parts"][number], action: Ex
   if (!offsets) return;
   mesh.blendShapes ??= [];
   const existing = mesh.blendShapes.find((shape) => shape.id === action.id);
-  const beforeCount = existing?.offsets?.length ?? 0;
-  if (!existing || JSON.stringify(existing.offsets) !== JSON.stringify(offsets) || existing.neutralInput !== action.neutralInput || existing.targetInput !== action.targetInput) {
-    result.changes.push({ partId: part.id, path: "artMesh.blendShapes." + action.id, before: beforeCount, after: offsets.length });
+  const next = { id: action.id, parameter: action.parameter, neutralInput: action.neutralInput, targetInput: action.targetInput, offsets, additive: action.additive, interpolation: action.interpolation, curve: action.curve };
+  if (JSON.stringify(existing) !== JSON.stringify(next)) {
+    result.changes.push({ partId: part.id, path: "artMesh.blendShapes." + action.id, before: existing ? JSON.stringify(existing) : undefined, after: JSON.stringify(next) });
   }
   if (!dryRun) {
-    const next = { id: action.id, parameter: action.parameter, neutralInput: action.neutralInput, targetInput: action.targetInput, offsets, additive: action.additive, interpolation: action.interpolation, curve: action.curve };
     if (existing) Object.assign(existing, next); else mesh.blendShapes.push(next);
   }
 }
@@ -890,6 +892,7 @@ function validateSymmetryContract(contract: RigSymmetryContract) {
   if (!operation.target?.roles?.length && !operation.target?.partIds?.length && !operation.target?.deformerIds?.length) throw new Error("Modeling operation requires a role, partId, or deformerId target");
   const action = operation.action;
   if (!action) throw new Error("Modeling operation requires an action");
+  if(action.type==="blend-shape-set"||action.type==="deform-brush")return;
   if (action.type === "part-draw-order") {
     if (typeof action.drawOrder !== "number" || !Number.isFinite(action.drawOrder)) throw new Error("part-draw-order drawOrder must be finite");
     return;

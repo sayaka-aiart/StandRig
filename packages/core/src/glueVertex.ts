@@ -1,3 +1,4 @@
+import { glueBlendStrength } from './extendedBlendShape.js';
 import { readRigGlue } from "./glue.js";
 import { projectSharedWarpPoint } from "./sharedWarpProjection.js";
 import type { Matrix2D } from "./evaluator.js";
@@ -37,6 +38,7 @@ export interface GlueVertexOffset {
 export type GlueVertexOffsets = Map<string, Map<string, GlueVertexOffset>>;
 
 export interface GlueStitchPair {
+  strength: number;
   glueId: string;
   partAId: string;
   partBId: string;
@@ -50,6 +52,7 @@ export interface GlueStitchPair {
 }
 
 export interface GlueStitchInput {
+  values?: import("./types.js").ParameterValues;
   /** Projected screen position of a vertex, or undefined when the part or vertex is not renderable. */
   projectVertex: (partId: string, vertexId: string) => GlueVertexPoint | undefined;
   /**
@@ -106,7 +109,7 @@ export function isStitchGlue(glue: RigGlue): boolean {
   return glue.enabled && glue.status === "active" && glue.mode === "stitch" && Boolean(glue.vertexPairs?.length);
 }
 
-export function collectGlueStitchPairs(rig: RigDocument): GlueStitchPair[] {
+export function collectGlueStitchPairs(rig: RigDocument, values: import("./types.js").ParameterValues = {}): GlueStitchPair[] {
   const pairs: GlueStitchPair[] = [];
   const glues = readRigGlue(rig)
     .filter(isStitchGlue)
@@ -115,6 +118,7 @@ export function collectGlueStitchPairs(rig: RigDocument): GlueStitchPair[] {
     for (const pair of glue.vertexPairs ?? []) {
       pairs.push({
         glueId: glue.id,
+        strength: glueBlendStrength(glue,values),
         partAId: glue.partAId,
         partBId: glue.partBId,
         aVertexId: pair.a,
@@ -141,7 +145,7 @@ export function hasGlueStitches(rig: RigDocument): boolean {
  * whichever seam happened to be solved last silently winning.
  */
 export function resolveGlueStitchOffsets(rig: RigDocument, input: GlueStitchInput): GlueStitchResult {
-  const pairs = collectGlueStitchPairs(rig);
+  const pairs = collectGlueStitchPairs(rig,input.values).filter(p=>p.strength>0);
   const offsets: GlueVertexOffsets = new Map();
   let resolvedPairs = 0;
   let skippedPairs = 0;
@@ -209,8 +213,8 @@ export function resolveGlueStitchOffsets(rig: RigDocument, input: GlueStitchInpu
       const currentB = corrected(pair.partBId, pair.bVertexId, pair.baseB);
       // Error against the rest offset, not against zero: the seam is held at the shape it had at
       // neutral, so the neutral pose is untouched and only pose-driven drift is corrected.
-      const errorX = currentB.x - currentA.x - pair.restDx * restScale;
-      const errorY = currentB.y - currentA.y - pair.restDy * restScale;
+      const errorX = currentB.x - currentA.x - (pair.restDx * restScale * pair.strength + (pair.baseB.x-pair.baseA.x)*(1-pair.strength));
+      const errorY = currentB.y - currentA.y - (pair.restDy * restScale * pair.strength + (pair.baseB.y-pair.baseA.y)*(1-pair.strength));
       const drift = Math.hypot(errorX, errorY);
       if (pass === 0 && drift > maxClosedDistance) {
         maxClosedDistance = drift;

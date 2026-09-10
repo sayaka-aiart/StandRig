@@ -33,7 +33,7 @@ The PSD parser tests use a small pixel-only canvas adapter; the actual browser f
 
 ## Limits
 
-The character PSD import and static view below were tested; production character deformation, maximum-pose visual freeze, webcam mapping, OBS capture, Cubism SDK/Editor bridge and Linux execution remain untested in this distribution. GitHub CI configuration is included but has not run remotely. The transparent player is prepared as an external output; successful OBS capture is not inferred from a browser screenshot or SSE connection.
+The character PSD import and static view below were tested; production character deformation, maximum-pose visual freeze, webcam mapping, OBS capture, Cubism SDK/Editor bridge remain outside the local visual checks. Linux/Windows build and test execution subsequently passed in GitHub CI for the published write-boundary and registry commits. The transparent player is prepared as an external output; successful OBS capture is not inferred from a browser screenshot or SSE connection.
 
 The source release must be extracted into a fresh directory and validated before publication. A local verification record is kept beside the source ZIP under `releases/`; personal workspace data and diagnostic screenshots are excluded. The authorized README screenshot is included under the artwork notice in `docs/images/NOTICE.md`; the editable PSD/model and its textures are excluded.
 
@@ -60,3 +60,14 @@ Legacy asset/golden/generation persistence stays disabled by default, including 
 ## Discriminated action registry — 2026-09-10
 
 The 33 action definitions now live in one typed registry; named TypeScript aliases and Zod schemas are generated, and the envelope uses a type-discriminated union. OpenAPI and MCP expose oneOf branches. All workspace builds, 16 smoke checks and 19 Node tests passed. Tests cover all strict variants and advertised registry keys, direct action.columns error paths, unknown discriminators and real stdio MCP rejection of four malformed payloads before any HTTP transaction request. Generation freshness checks cover both runtime schemas and TypeScript declarations. No renderer, artwork or operation behavior changed in this follow-up; the prior browser check remains the visual evidence.
+
+
+## AI Brush and extended Blend Shapes — 2026-09-10
+
+Windows / Node 24.14.0: all workspace builds, 16 smoke checks and 33 Node tests passed. New regressions cover negative weights, transform composition, Warp pins/shared fields, ArtPath style/points, fractional Glue stitches, six Brush effects, fixed boundaries and protected points, deterministic displacement caps, triangle inversion rejection, additive shape/keyform output, invalid owner references, atomic multi-target failure, duplicate selectors and disabled pins. Strict action and document Blend Shape schemas are generated from core types. MCP now advertises 35 action variants and seven documentation resources.
+
+The real stdio MCP test creates a Part shape and ArtMesh Brush shape in a QA-gated transaction, checks dry-run isolation, persists and exports both shapes, then restores the original revision. It samples neutral, half and full parameter values. Unit tests cover the other extended shape channels; they do not constitute a visual check of every channel.
+
+An isolated geometric Sample Bot fixture passed numeric QA at weights 0, 0.5 and 1 before browser inspection. In the built independent player, weight 0 showed the starting body; weight 1 visibly combined ArtMesh bend with Part rotation and scale. Saved screenshots and QA records are under gitignored reports/deform-visual/. Fine mesh triangle-edge raster lines were visible in the sample at both poses; this check establishes parameter-driven geometry, not finished rendering quality or character Model Freeze. The normal PSD/model was not edited.
+
+Warp Brush keyform output and irregular Warp Pin contour-follow are explicitly rejected. There is no Brush mouse UI, posed-screen inverse sculpting or shape-delete action. Existing negative-target ArtMesh shapes require appearance review because their reversed weight behavior was corrected. Production-character appearance, combined extremes and adapter compatibility remain separate acceptance work.

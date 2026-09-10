@@ -41,8 +41,8 @@
     {
       "path": "AI_OPERATING_GUIDE.md",
       "normalization": "lf",
-      "bytes": 9216,
-      "sha256": "f4b3f91e7c53528d8e73bfc3a41b1cc6a6d1edb2caa2fcb3dd83188c41c34653"
+      "bytes": 9443,
+      "sha256": "4bd7018aabffbdde9a739556170c193c652b5bc33caa830a5a402c790b75c0f2"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -65,14 +65,14 @@
     {
       "path": "README.en.md",
       "normalization": "lf",
-      "bytes": 11278,
-      "sha256": "ab26fc59140269b759df6af58dabf327b9c31924e1e4f602d9f7007e69d38c4a"
+      "bytes": 11398,
+      "sha256": "d4be7ec4f219bfadea6ecdb70950d48b81e7731ca7b418d063034d439bbcc722"
     },
     {
       "path": "README.md",
       "normalization": "lf",
-      "bytes": 12392,
-      "sha256": "a79f6ce573fa8412c03a0525af8ff545d90837568a803834be1842d73dead3c5"
+      "bytes": 12545,
+      "sha256": "bc01ac6b4ec20a85326b87a084f3bb1f715ce84a1d97f8c86ddc360eb7a31c40"
     },
     {
       "path": "SECURITY.md",
@@ -264,19 +264,25 @@
       "path": "docs/ARCHITECTURE.md",
       "normalization": "lf",
       "bytes": 7838,
-      "sha256": "c016789f9ffa4440c7795e290749917e5dfaeec0ac10b4e35a20ebd8b4ec94aa"
+      "sha256": "b99aecfa8314e68f9fe9453fc32135a02b3e9d6f1c2411697109063681e5e958"
+    },
+    {
+      "path": "docs/DEFORM.md",
+      "normalization": "lf",
+      "bytes": 8820,
+      "sha256": "60dc7bc5906477fda0c7325ac1680239a396e557e3755664f5b69931b4382a85"
     },
     {
       "path": "docs/MCP.md",
       "normalization": "lf",
-      "bytes": 6994,
-      "sha256": "e766cf0ddb34829efd891fa37ecebb786397800a9020ae22c534a7333155e494"
+      "bytes": 7163,
+      "sha256": "82b091d4f32ab42c81316b58b7e18ecc5cb5891d6af7830e200986edbc16309d"
     },
     {
       "path": "docs/OPERATIONS.md",
       "normalization": "lf",
-      "bytes": 5537,
-      "sha256": "50a7d1c8c3f557b3d5b79ee4f910053a5529bf4cba66810763a6bc27ba72e5b3"
+      "bytes": 5696,
+      "sha256": "4287648093864655400db7af77d702ca261e34dc0fddcb278562958fdced4427"
     },
     {
       "path": "docs/PSD.md",
@@ -293,8 +299,8 @@
     {
       "path": "docs/VALIDATION.md",
       "normalization": "lf",
-      "bytes": 8899,
-      "sha256": "2d2baac767671055d6eea4c8c542d4216b4f8d874fd3d144d4248da4e4ee1c99"
+      "bytes": 10930,
+      "sha256": "14d92c0cdc404226b24a3e359f7cfac1ac28b415d6cdfaad503cb3787c2b07b3"
     },
     {
       "path": "docs/api-routes.json",
@@ -317,8 +323,8 @@
     {
       "path": "docs/openapi.json",
       "normalization": "lf",
-      "bytes": 481410,
-      "sha256": "6ba519cfa65683256b8194cc80c5a34c810868e049d099ffe17913163faf6790"
+      "bytes": 581078,
+      "sha256": "425f0dea683fc8e767dd35150b45e2853554eb782d6bf8d0448e78eac820c8c5"
     },
     {
       "path": "examples/agent-client.mjs",
@@ -581,8 +587,8 @@
     {
       "path": "packages/contracts/src/index.d.ts",
       "normalization": "lf",
-      "bytes": 5758,
-      "sha256": "b32aba5732f0e67d5ac9206cb11b1d66a6b10124bee6414bb39dbb7f00b1c7d8"
+      "bytes": 6031,
+      "sha256": "f8b369913a85ea3d067c98a9565849767ea49f4a485670be9857eb6522c19f72"
     },
     {
       "path": "packages/contracts/src/legacyPolicy.mjs",
@@ -593,8 +599,8 @@
     {
       "path": "packages/contracts/src/operations.mjs",
       "normalization": "lf",
-      "bytes": 27635,
-      "sha256": "198d63fe36f5412f2de6a1fb95df6d2caca9087e63c20a6b20395213be59e9c9"
+      "bytes": 34539,
+      "sha256": "03129a67453827b29145fd3eb5fb962969a1997828c37dc82626e38c0197cc9b"
     },
     {
       "path": "packages/core/package.json",
@@ -629,8 +635,8 @@
     {
       "path": "packages/core/src/artMeshBlendShape.ts",
       "normalization": "lf",
-      "bytes": 1938,
-      "sha256": "d916600162c535eeab8c1bb0445ba4fd8e3d2772ec709fc139ca1f408d6a9bdc"
+      "bytes": 1516,
+      "sha256": "b90d23b3e90dc9a4cb3492313d66cc1e1a35b5af5fefb689554405a3719d8ab0"
     },
     {
       "path": "packages/core/src/artMeshCandidates.ts",
@@ -659,8 +665,8 @@
     {
       "path": "packages/core/src/artPath.ts",
       "normalization": "lf",
-      "bytes": 5000,
-      "sha256": "b298e1f2faf935ee1a596f9d06718964601d4d5f2f1823228903683d0156b381"
+      "bytes": 5365,
+      "sha256": "f5e3b9bfa1f94574155f3b90280ad1a2d6711898595c7d802132e3256f3dff6a"
     },
     {
       "path": "packages/core/src/artPathQa.ts",
@@ -711,6 +717,24 @@
       "sha256": "4953b5120db845e4ff55d93937596c923cc8caf3278db173d3cf34c9b0562c8e"
     },
     {
+      "path": "packages/core/src/deformBrush.ts",
+      "normalization": "lf",
+      "bytes": 9690,
+      "sha256": "ab13379be9912fb694bf0d6edea1cd36977c2b45bc3e995538e09873271177b9"
+    },
+    {
+      "path": "packages/core/src/deformOperations.ts",
+      "normalization": "lf",
+      "bytes": 13609,
+      "sha256": "e0229933d990d29c6c736e0097f7c05e3bc1dc5948c3efda6bd6ec9c8225964e"
+    },
+    {
+      "path": "packages/core/src/deformTypes.ts",
+      "normalization": "lf",
+      "bytes": 2838,
+      "sha256": "f2538d12ffe8dc9bdae0d79c2c8b77fc9dd9c59b5d6e9d4bd653bf40f61d51f4"
+    },
+    {
       "path": "packages/core/src/deformers.ts",
       "normalization": "lf",
       "bytes": 2737,
@@ -725,14 +749,20 @@
     {
       "path": "packages/core/src/evaluator.ts",
       "normalization": "lf",
-      "bytes": 20889,
-      "sha256": "f1c59f7443b3cb6c4d68762441cec88fb0fe7f98d30edcc97203a7f5ed68de33"
+      "bytes": 21208,
+      "sha256": "85de2bfa3682f08735ef24247bd047916ff7ee899fd656c66e2f6b193d707bca"
     },
     {
       "path": "packages/core/src/exposureQa.ts",
       "normalization": "lf",
       "bytes": 9574,
       "sha256": "9bb4c8408fb328e1411015c41c4f161380f9b0cb5049a78da44ef4b1ea5ecfce"
+    },
+    {
+      "path": "packages/core/src/extendedBlendShape.ts",
+      "normalization": "lf",
+      "bytes": 7958,
+      "sha256": "099993937d1d4e6bdb20eceaf9e8c04cb9a86b551a34d3a78693a76ca6ec24f2"
     },
     {
       "path": "packages/core/src/generationRequests.ts",
@@ -761,8 +791,8 @@
     {
       "path": "packages/core/src/glueVertex.ts",
       "normalization": "lf",
-      "bytes": 12282,
-      "sha256": "c8e4db479caa2e391afc01abe9a6e1d53745fa4bd4a7702c25ff6c6b499012c2"
+      "bytes": 12682,
+      "sha256": "82678b3b0602f98731a4167d0c453c0ac0318d7d46dd74086ad1d630fd569524"
     },
     {
       "path": "packages/core/src/glueVertexCandidates.ts",
@@ -773,8 +803,8 @@
     {
       "path": "packages/core/src/glueWarp.ts",
       "normalization": "lf",
-      "bytes": 8447,
-      "sha256": "d9ecaea26ae70461956dd9c3c6caf89a9fdeed55a82d3d66f7ec11bf7909b656"
+      "bytes": 8572,
+      "sha256": "f9950044676213abadd59a273a44f6998c199608c978e2707ad9927d45dad8a4"
     },
     {
       "path": "packages/core/src/headProxy.ts",
@@ -815,8 +845,8 @@
     {
       "path": "packages/core/src/inspect.ts",
       "normalization": "lf",
-      "bytes": 56635,
-      "sha256": "739651d1829a2f0c333dad9dfd622b146cd43a1ef20d8b9af7ec30415eaa7717"
+      "bytes": 56830,
+      "sha256": "b490395aea0997318d075654a94a31e2352086c194412d6e2e25279d71df7a45"
     },
     {
       "path": "packages/core/src/io.ts",
@@ -875,8 +905,8 @@
     {
       "path": "packages/core/src/modelingOps.ts",
       "normalization": "lf",
-      "bytes": 74561,
-      "sha256": "e3d8cbbad4541272dca8180832e3d247e13c204541501d343405f86ce5b3c0e8"
+      "bytes": 74766,
+      "sha256": "13ca23ec91c226de16feadf73de4d484d343ed841a9da5fb012b79a2a6aeb293"
     },
     {
       "path": "packages/core/src/modelingTechniqueGuide.ts",
@@ -899,8 +929,8 @@
     {
       "path": "packages/core/src/operationRegistry.ts",
       "normalization": "lf",
-      "bytes": 5176,
-      "sha256": "302575c96cf0c38a112776ab1c5c3d8b81c42b003909c5353a7557498f5eea42"
+      "bytes": 5390,
+      "sha256": "ac91f69d3c228807d0fb32ad9ce6e1503813c4d08024673b9cc35473f641975a"
     },
     {
       "path": "packages/core/src/pako.d.ts",
@@ -947,8 +977,8 @@
     {
       "path": "packages/core/src/physicsSafety.ts",
       "normalization": "lf",
-      "bytes": 9389,
-      "sha256": "c27e815158f21f2c12c8b7296cca9407a2e5ded6b414541a7d3d58e653804735"
+      "bytes": 9752,
+      "sha256": "d650fc7eb72278916ee6caf51c0293b84b4ed330e0edc0d937747f656eeeb532"
     },
     {
       "path": "packages/core/src/physicsSettlingQa.ts",
@@ -1001,8 +1031,8 @@
     {
       "path": "packages/core/src/serverRenderer.ts",
       "normalization": "lf",
-      "bytes": 41829,
-      "sha256": "b957cf117b64fad16271301abec4bb2903e12988056ec4ee00f902aff4e07974"
+      "bytes": 41862,
+      "sha256": "c82924c3b6b10ad9ff117468185cddeb124ebf815d60eeef681721f9446ebe8b"
     },
     {
       "path": "packages/core/src/shadowSeparation.ts",
@@ -1079,14 +1109,14 @@
     {
       "path": "packages/core/src/types.ts",
       "normalization": "lf",
-      "bytes": 20171,
-      "sha256": "7d3c56f18f3cd0d9d086ec720492ee1bf35c1fe9cf2ac6ee601fecf374c2428c"
+      "bytes": 20425,
+      "sha256": "d8f4b1a0ec6f72e5ed2811f59e7e8546a69015c00a7cdfaca990d8bcd09af905"
     },
     {
       "path": "packages/core/src/warp.ts",
       "normalization": "lf",
-      "bytes": 13940,
-      "sha256": "ae2de3d41eb301c2666984732ff2ce92df697be59e6f5127c4fde6beda41add1"
+      "bytes": 14335,
+      "sha256": "67371e9af8abcf9be85257945d504896796d991b7c09f038e92e26c1bfa929c6"
     },
     {
       "path": "packages/core/src/warpPinLinks.ts",
@@ -1115,8 +1145,8 @@
     {
       "path": "packages/mcp/src/server.mjs",
       "normalization": "lf",
-      "bytes": 8857,
-      "sha256": "fb5ecf57204ec28dd0f18fa888e3f99548a5c2e183b6c08ef617b5bbff1b5808"
+      "bytes": 8883,
+      "sha256": "4022fed253a7468b6933376d91fad8b9f6151eb43a1261cf637ece02a1697a14"
     },
     {
       "path": "packages/runtime/package.json",
@@ -1127,8 +1157,8 @@
     {
       "path": "packages/runtime/src/demo.ts",
       "normalization": "lf",
-      "bytes": 2192,
-      "sha256": "b77e3bac3aab56bdac8235c48e883f23757241eaeaff6e1a40959e0583097810"
+      "bytes": 2246,
+      "sha256": "5b9ae0de5c6d3db923f96d41a89e74caa9721f5ed2cb471a7272b4316b09426d"
     },
     {
       "path": "packages/runtime/src/index.ts",
@@ -1151,8 +1181,8 @@
     {
       "path": "packages/runtime/src/renderer.ts",
       "normalization": "lf",
-      "bytes": 74533,
-      "sha256": "7ff9581a387994925fac80038b6db751bdda60d00b2affe8195be1930c195254"
+      "bytes": 74565,
+      "sha256": "9c694d4bfb99c86c345ec2f3bcd6724ddc70bc1ce8537604f47a9fc7d764bee4"
     },
     {
       "path": "packages/runtime/src/webglMesh.ts",
@@ -1187,8 +1217,8 @@
     {
       "path": "scripts/generate-operation-schemas.mjs",
       "normalization": "lf",
-      "bytes": 5684,
-      "sha256": "38bcfa32c92e6adacb31d12513eda7857d5dec4e9183b237571d322251e59e23"
+      "bytes": 7043,
+      "sha256": "a472615c5749f0cca70657b53ef34898d7286663b746aecf1406f26b8144343e"
     },
     {
       "path": "scripts/init-empty.mjs",
@@ -1247,14 +1277,20 @@
     {
       "path": "templates/rig.schema.json",
       "normalization": "lf",
-      "bytes": 28502,
-      "sha256": "a259794a34299ebcbb6ac4ecb4cc20b693f6e0951443175e8f8a20e79553bda1"
+      "bytes": 42485,
+      "sha256": "92294e1c85c3fcf144c7c4c99f0cd133eae6917416c8b07e8e5fd09ea89217f8"
     },
     {
       "path": "tests/architecture.test.mjs",
       "normalization": "lf",
       "bytes": 965,
       "sha256": "9bf783f03138620caa95fda3bea4a22b72cf7e05d2c34074bbacbae8930e0f24"
+    },
+    {
+      "path": "tests/deform.test.mjs",
+      "normalization": "lf",
+      "bytes": 12716,
+      "sha256": "edd0cd6637a8296148a20f3272b5b1121a6e473d63df580443af9d3e1da49fc1"
     },
     {
       "path": "tests/demo.test.mjs",
@@ -1265,8 +1301,8 @@
     {
       "path": "tests/integration.test.mjs",
       "normalization": "lf",
-      "bytes": 10923,
-      "sha256": "95b6d2877ab448698b215bb899bc4feb9539493cd086c0316183b57635631045"
+      "bytes": 13372,
+      "sha256": "1f0b2a83e449435efc1a05d08ae14dd56a3190a4c4ec4204384aee249a9e71b7"
     },
     {
       "path": "tests/psd.test.mjs",
@@ -1284,7 +1320,7 @@
       "path": "tests/write-contract.test.mjs",
       "normalization": "lf",
       "bytes": 8747,
-      "sha256": "4d7b8db0e345a64719979054d9129ec546e813c6e66e167ed4b92610d0fffc07"
+      "sha256": "1cdb107b8a1470fc86f01dcad8ed1926deea7c8c1201ad22e46d7b71eb4d71da"
     },
     {
       "path": "tsconfig.json",

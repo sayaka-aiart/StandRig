@@ -1,3 +1,4 @@
+import type { PartBlendShape, DeformerBlendShape, ArtPathBlendShape, GlueBlendShape } from './deformTypes.js';
 export const RIG_SCHEMA_VERSION = "0.1.0";
 
 export const PARAMETER_IDS = [
@@ -298,6 +299,7 @@ export interface RigArtPathBinding {
 }
 
 export interface RigArtPath {
+  blendShapes?: ArtPathBlendShape[];
   version: 1;
   id: string;
   name: string;
@@ -358,6 +360,7 @@ export interface RigSharedWarpField {
 }
 
 export interface RigDeformer {
+  blendShapes?: DeformerBlendShape[];
   id: string;
   name: string;
   kind: DeformerKind;
@@ -436,6 +439,7 @@ export interface RigAlphaReveal {
 }
 
 export interface RigPart {
+  blendShapes?: PartBlendShape[];
   alphaReveal?: RigAlphaReveal;
   contourShade?: RigContourShade;
   id: string;
@@ -589,6 +593,7 @@ export interface RigGlueSeamPoint {
   strength?: number;
 }
 export interface RigGlue {
+  blendShapes?: GlueBlendShape[];
   id: string;
   name: string;
   enabled: boolean;

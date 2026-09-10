@@ -57,3 +57,27 @@ for(const [file,text]of [['operations.mjs',output],['index.d.ts',declarations]])
   else await writeFile(target,text);
 }
 console.log('Strict operation and QA schemas '+(process.argv.includes('--check')?'verified':'generated'));
+
+// Keep the document schema's new owner-local Blend Shape definitions in sync too.
+const {blendShapeSetSchema}=await import('../packages/contracts/src/operations.mjs');
+const {toJSONSchema}=await import('zod');
+const variants=toJSONSchema(blendShapeSetSchema).properties.shape.anyOf;
+const templatePath='templates/rig.schema.json';
+const original=await readFile(templatePath,'utf8');
+const template=JSON.parse(original);
+for(const variant of variants){
+  const kind=variant.properties.kind.const;
+  const name=kind.replaceAll('-','')+'BlendShape';
+  template.$defs[name]=variant;
+  const list={type:'array',maxItems:128,items:{$ref:'#/$defs/'+name}};
+  if(kind==='part')template.properties.parts.items.properties.blendShapes=list;
+  if(kind==='art-path')template.properties.parts.items.properties.artPaths.items.properties.blendShapes=list;
+  if(kind==='glue')template.properties.glue.items.properties.blendShapes=list;
+  if(kind==='deformer'){
+    template.properties.deformers??={type:'array',items:{type:'object',properties:{}}};
+    template.properties.deformers.items.properties.blendShapes=list;
+  }
+}
+const templateText=JSON.stringify(template,null,2)+'\n';
+if(process.argv.includes('--check')){if(original.replaceAll('\r\n','\n')!==templateText)throw Error('Document Blend Shape schemas are stale');}
+else await writeFile(templatePath,templateText);

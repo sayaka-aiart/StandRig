@@ -72,7 +72,7 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const tools=await client.listTools();
     assert.equal(tools.tools.length,12);
     const actionSchema=tools.tools.find(tool=>tool.name==='standrig_modeling_transaction').inputSchema.properties.operations.items.properties.action;
-    assert.equal(actionSchema.oneOf.length,33);
+    assert.equal(actionSchema.oneOf.length,35);
     assert.ok(actionSchema.oneOf.every(schema=>schema.additionalProperties===false));
     const invoke=(name,args={})=>client.callTool({name,arguments:args});
     const beforeDemo=(await call('/api/playback')).data.playback.values;
@@ -114,6 +114,25 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const restored=await invoke('standrig_restore',{id:committed.structuredContent.rollbackCheckpoint.id,expectedRevision:revision});
     assert.equal(restored.isError,undefined,JSON.stringify(restored));
     assert.equal((await invoke('standrig_context')).structuredContent.context.revision,context.revision);
+    const deformInput={expectedRevision:context.revision,commit:false,operations:[
+      {id:'shape',name:'Body shape',target:{partIds:['body']},action:{type:'blend-shape-set',shape:{kind:'part',id:'smile',parameter:'ParamAngleX',neutralInput:0,targetInput:30,transform:{x:2,rotation:3}}}},
+      {id:'mesh',name:'Mesh',target:{partIds:['body']},action:{type:'artmesh-generate',preset:'face-feature',columns:4,rows:4}},
+      {id:'brush',name:'Bounded inflate',target:{partIds:['body']},action:{type:'deform-brush',brush:{surface:{kind:'artmesh',space:'mesh-local'},center:[30,30],radius:200,effect:{mode:'inflate',distance:2},iterations:2,maxDisplacement:3,falloff:'smooth',destination:{kind:'blend-shape',shape:{id:'inflate',parameter:'ParamAngleX',neutralInput:0,targetInput:30}}}}}
+    ],qa:{poseSamples:[{poseId:'neutral',values:{ParamAngleX:0}},{poseId:'half',values:{ParamAngleX:15}},{poseId:'full',values:{ParamAngleX:30}}],regions:['full'],width:240,height:240,physics:false}};
+    const deformDry=await invoke('standrig_modeling_transaction',deformInput);
+    assert.equal(deformDry.isError,undefined,JSON.stringify(deformDry));
+    assert.equal(deformDry.structuredContent.ok,true,JSON.stringify(deformDry));
+    assert.equal((await invoke('standrig_context')).structuredContent.context.revision,context.revision);
+    const deformCommit=await invoke('standrig_modeling_transaction',{...deformInput,commit:true});
+    assert.equal(deformCommit.structuredContent.committed,true,JSON.stringify(deformCommit));
+    assert.ok(deformCommit.structuredContent.operationResults[2].deformReports[0].maxDisplacement<=3);
+    const deformExport=(await invoke('standrig_export')).structuredContent;
+    const deformBundle=JSON.parse(await readFile(deformExport.path,'utf8'));
+    assert.equal(deformBundle.rig.parts.find(p=>p.id==='body').blendShapes[0].id,'smile');
+    assert.equal(deformBundle.rig.parts.find(p=>p.id==='body').artMesh.blendShapes[0].id,'inflate');
+    const deformRestored=await invoke('standrig_restore',{id:deformCommit.structuredContent.rollbackCheckpoint.id,expectedRevision:deformCommit.structuredContent.revisionAfter});
+    assert.equal(deformRestored.isError,undefined,JSON.stringify(deformRestored));
+    assert.equal((await invoke('standrig_context')).structuredContent.context.revision,context.revision);
     const qa=await invoke('standrig_qa_check',{poses:['neutral'],regions:['full']});
     assert.equal(qa.isError,undefined,JSON.stringify(qa));
     const rendered=await invoke('standrig_render',{kind:'snapshot'});
@@ -125,7 +144,8 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const bundle=JSON.parse(await readFile(exported.path,'utf8'));
     assert.equal(bundle.format,'standrig-bundle');
     assert.ok(bundle.rig.assets.every(a=>a.src.startsWith('data:image/png;base64,')));
-    const resources=await client.listResources(); assert.equal(resources.resources.length,6);
+    const resources=await client.listResources(); assert.equal(resources.resources.length,7);
+    assert.match((await client.readResource({uri:'standrig://docs/deform'})).contents[0].text,/maxDisplacement/);
     const contract=await client.readResource({uri:'standrig://docs/contract'});
     assert.match(contract.contents[0].text,/Mandatory pre-model visual reference gate/);
     const guide=await client.readResource({uri:'standrig://docs/guide'});

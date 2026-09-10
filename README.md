@@ -16,6 +16,7 @@
 | --- | --- |
 | 素材の読み込み | パーツ分け済みPSDの画像レイヤー・位置・階層などを取り込む |
 | モデリング | MCP / HTTP APIから編集、試行、数値QA、確定、復元 |
+| AI用変形 | smooth / relax / inflate / pinch / bend / contour-follow。ArtMesh以外のBlend Shapeにも対応（[APIと制限](docs/DEFORM.md)） |
 | 再生 | 透過再生ページ、数値パラメータ入力、ブラウザへのランタイム組み込み |
 | トラッキング | 外部ツールで追跡して数値を入力。カメラ推論は同梱しない |
 | OBS | 外部OBSのブラウザソースに再生ページを指定。OBS制御は同梱しない |

@@ -1,3 +1,4 @@
+import { applyTransformShapes, resolveSharedShape } from './extendedBlendShape.js';
 import { sampleBinding } from "./bindings.js";
 import { sampleMultiParameterBinding } from "./multiBindings.js";
 import { deformerForPart } from "./deformers.js";
@@ -22,6 +23,7 @@ export interface PhysicsValue {
 }
 
 export interface EvaluatedPartState {
+  parameterValues?: ParameterValues;
   matrix: Matrix2D;
   parentMatrix: Matrix2D;
   opacity: number;
@@ -192,6 +194,7 @@ export function evaluateRigParts(
     const activeWarp = mergeResolvedWarpDeformers(parentComputed.warp, deformerComputed?.warp);
 
     const result: EvaluatedPartState = {
+      parameterValues: values,
       matrix: multiplyMatrices(parentMatrix, localMatrix),
       parentMatrix,
       opacity: parentComputed.opacity * (deformerComputed?.opacity ?? 1) * pose.opacity,
@@ -243,7 +246,7 @@ export function evaluateDeformers(
       visible: parentComputed.visible && deformer.visible,
       pose,
       warp: mergeResolvedWarpDeformers(parentComputed.warp, ownWarp),
-      sharedWarps: mergeSharedWarpFields(parentComputed.sharedWarps, deformer.sharedWarp ? [deformer.sharedWarp] : undefined)
+      sharedWarps: mergeSharedWarpFields(parentComputed.sharedWarps, deformer.sharedWarp ? [resolveSharedShape(deformer.sharedWarp, deformer.blendShapes, values)!] : undefined)
     };
     computed.set(deformer.id, result);
     visiting.delete(deformer.id);
@@ -283,6 +286,7 @@ export function resolvePartPose(
     applyTransformBindingSample(pose, binding.property, sampled, binding.additive, binding.composition);
   }
 
+  applyTransformShapes(pose, part.blendShapes, values);
   if (physicsOffset) {
     for (const [property, value] of Object.entries(physicsOffset) as Array<[TransformProperty, number]>) {
       pose[property] += value;
@@ -314,6 +318,7 @@ export function resolveDeformerPose(
     applyTransformBindingSample(pose, binding.property, sampled, binding.additive, binding.composition);
   }
 
+  applyTransformShapes(pose, deformer.blendShapes, values);
   if (physicsOffset) {
     for (const [property, value] of Object.entries(physicsOffset) as Array<[TransformProperty, number]>) {
       pose[property] += value;

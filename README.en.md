@@ -16,6 +16,7 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 | --- | --- |
 | Artwork import | Image layers, positions, hierarchy and other supported properties from a parts-separated PSD |
 | Modeling | Edit, dry-run, run numeric QA, commit and restore through MCP / HTTP APIs |
+| AI deformation | Six deterministic Brush effects and Blend Shapes beyond ArtMesh ([API and limits](docs/DEFORM.md)) |
 | Playback | Transparent player page, numeric parameter input and an embeddable browser runtime |
 | Tracking | Receive numeric values from external tracking tools; camera inference is not bundled |
 | OBS | Use the player page as a Browser Source in an external OBS installation; OBS control is not bundled |

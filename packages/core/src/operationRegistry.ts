@@ -1,7 +1,10 @@
+import type { DeformBrush, ExtendedBlendShape } from './deformTypes.js';
 import type { BindingProperty,ParameterCurve,ParameterDefinition,ParameterInterpolation,RigAlphaReveal,RigArtMeshPreset,RigArtMeshQuality,RigArtMeshTopology,RigArtMeshVertexOffset,RigBlendMode,RigClip,RigContourShade,RigDeformer,RigPartRole,RigPartTint,RigRotationDeformerMetadata,RigSymmetryContract,RigSymmetryLink,TransformProperty,WarpPinBindingProperty } from "./types.js";
 
 /** Authoritative action definitions. Registry keys must equal their type literals. */
 export interface ModelingActionRegistry {
+  "blend-shape-set": { type: "blend-shape-set"; shape: ExtendedBlendShape };
+  "deform-brush": { type: "deform-brush"; brush: DeformBrush };
   "transform": { type: "transform"; property: TransformProperty; operator: "add" | "set" | "multiply"; value: number };
   "part-visibility": { type: "part-visibility"; visible: boolean };
   "part-draw-order": { type: "part-draw-order"; drawOrder: number };

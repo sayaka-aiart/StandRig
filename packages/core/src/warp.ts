@@ -1,3 +1,4 @@
+import { blendWeight } from './extendedBlendShape.js';
 import { normalizeParameterInterpolation } from "./bindings.js";
 import { sampleMultiParameterBinding } from "./multiBindings.js";
 import {
@@ -253,6 +254,11 @@ export function resolveDeformerWarp(
     }
   }
 
+  for (const shape of deformer.blendShapes ?? []) {
+    const w=blendWeight(shape,values);
+    for(const key of ['bendX','bendY','taperX','taperY'] as const)warp[key]+=(shape.warp?.[key]??0)*w;
+    for(const delta of shape.pins??[]){const pin=warp.pins?.find(p=>p.id===delta.id);if(pin){pin.offsetX+=delta.x*w;pin.offsetY+=delta.y*w;}}
+  }
   return warp.enabled ? warp : undefined;
 }
 

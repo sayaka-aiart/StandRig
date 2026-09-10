@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 
 const repository = new URL('../../../', import.meta.url);
 const documents = {
-  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md',
+  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md', deform: 'docs/DEFORM.md',
   architecture: 'docs/ARCHITECTURE.md', adapters: 'docs/ADAPTERS.md', api: 'docs/API.md'
 };
 const values = z.record(z.string(), z.number().finite());

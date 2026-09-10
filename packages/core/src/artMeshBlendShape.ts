@@ -4,10 +4,7 @@ import type { ParameterInterpolation, RigArtMeshBlendShape } from "./types.js";
 /** Sample a neutral-to-delta ArtMesh shape without changing the neutral mesh. */
 export function sampleArtMeshBlendShape(shape: RigArtMeshBlendShape, input: number): Map<string, { x: number; y: number }> {
   if (!Number.isFinite(input) || !Number.isFinite(shape.neutralInput) || !Number.isFinite(shape.targetInput) || shape.neutralInput === shape.targetInput) return new Map();
-  const amount = shape.targetInput > shape.neutralInput
-    ? ratio(input, shape.neutralInput, shape.targetInput)
-    : ratio(input, shape.targetInput, shape.neutralInput);
-  const weight = applyParameterInterpolation(normalizeParameterInterpolation(shape.interpolation), amount, shape.curve);
+  const weight = sampleArtMeshBlendShapeWeight(shape, input);
   const offsets = new Map<string, { x: number; y: number }>();
   for (const offset of shape.offsets ?? []) {
     if (offset && typeof offset.vertexId === "string" && Number.isFinite(offset.x) && Number.isFinite(offset.y)) {
@@ -19,13 +16,6 @@ export function sampleArtMeshBlendShape(shape: RigArtMeshBlendShape, input: numb
 
 export function sampleArtMeshBlendShapeWeight(shape: Pick<RigArtMeshBlendShape, "neutralInput" | "targetInput" | "interpolation" | "curve">, input: number): number {
   if (!Number.isFinite(input) || !Number.isFinite(shape.neutralInput) || !Number.isFinite(shape.targetInput) || shape.neutralInput === shape.targetInput) return 0;
-  const amount = shape.targetInput > shape.neutralInput
-    ? ratio(input, shape.neutralInput, shape.targetInput)
-    : ratio(input, shape.targetInput, shape.neutralInput);
+  const amount = Math.min(1, Math.max(0, (input - shape.neutralInput) / (shape.targetInput - shape.neutralInput)));
   return applyParameterInterpolation(normalizeParameterInterpolation(shape.interpolation), amount, shape.curve);
 }
-
-function ratio(value: number, low: number, high: number) {
-  return Math.min(1, Math.max(0, (value - low) / (high - low || 1)));
-}
-

@@ -1,3 +1,4 @@
+import { blendWeight } from './extendedBlendShape.js';
 import { sampleBinding } from "./bindings.js";
 import type { ParameterValues, RigArtPath, RigArtPathPoint, RigPart } from "./types.js";
 
@@ -71,6 +72,7 @@ export function resolveArtPath(path: RigArtPath, values: ParameterValues, width:
       if (binding.property === "u") u += sampled / Math.max(1, width);
       else v += sampled / Math.max(1, height);
     }
+    for(const shape of path.blendShapes??[]){const delta=shape.points?.find(p=>p.id===point.id);if(delta){const w=blendWeight(shape,values);u+=delta.x*w;v+=delta.y*w;}}
     return { id: point.id, u: clamp(u, 0, 1, point.u), v: clamp(v, 0, 1, point.v) };
   });
   let offsetX = 0;
@@ -84,6 +86,7 @@ export function resolveArtPath(path: RigArtPath, values: ParameterValues, width:
     else if (binding.property === "width") strokeWidth += sampled;
     else if (binding.property === "opacity") opacity += sampled;
   }
+  for(const shape of path.blendShapes??[]){const w=blendWeight(shape,values);strokeWidth+=(shape.width??0)*w;opacity+=(shape.opacity??0)*w;}
   return {
     id: path.id,
     points: pointValues.map((point) => ({ ...point, u: clamp(point.u + offsetX, 0, 1, point.u), v: clamp(point.v + offsetY, 0, 1, point.v) })),

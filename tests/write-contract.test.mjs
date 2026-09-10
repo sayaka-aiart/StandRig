@@ -66,10 +66,10 @@ test('legacy writes need an explicit server-side opt-in',()=>harness(async(call)
  assert.equal((await call('/api/rig','POST',sample)).status,200);
 },{allowLegacyWrites:true}));
 
-test('all 33 operation variants are strict, including nested payloads',()=>{
+test('all 35 operation variants are strict, including nested payloads',()=>{
  const schema=z.toJSONSchema(operationSchema);
  const variants=schema.properties.action.oneOf;
- assert.equal(variants.length,33);
+ assert.equal(variants.length,35);
  function fixture(s){if(Array.isArray(s.type))return fixture({...s,type:s.type[0]});if('const'in s)return s.const;if(s.anyOf)return fixture(s.anyOf[0]);if(s.type==='string')return 'fixture';if(s.type==='number')return 0;if(s.type==='boolean')return false;if(s.type==='null')return null;if(s.type==='array')return s.prefixItems?s.prefixItems.map(fixture):[];if(s.type==='object')return Object.fromEntries((s.required??[]).map(k=>[k,fixture(s.properties[k])]));return {};}
  function unknowns(s,value){if(value===null||typeof value!=='object')return;if(s.anyOf){unknowns(s.anyOf.find(v=>v.const===value||v.type===typeof value)||s.anyOf[0],value);return;}if(s.type==='object'&&s.additionalProperties===false){value.__unknown=true;}}
  for(const variant of variants){

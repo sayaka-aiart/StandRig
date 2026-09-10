@@ -1,3 +1,4 @@
+import { glueBlendStrength } from './extendedBlendShape.js';
 import { invertMatrix, transformMatrixPoint, type EvaluatedPartState } from "./evaluator.js";
 import { readRigGlue } from "./glue.js";
 import { hasWarpEffect, type ResolvedWarpDeformer } from "./warp.js";
@@ -59,7 +60,7 @@ function gluePinsForPart(
     if (glue.seamPoints?.length) {
       glue.seamPoints.forEach((point, index) => {
         const pointWeight = currentSide === "A" ? point.weightA ?? glue.weightA : point.weightB ?? glue.weightB;
-        const pin = gluePinForSeamPoint(glue.id, index, currentSide, point, pointWeight, glue.strength, state, size, otherState, otherSize);
+        const pin = gluePinForSeamPoint(glue.id, index, currentSide, point, pointWeight, glueBlendStrength(glue,state.parameterValues), state, size, otherState, otherSize);
         if (pin) {
           pins.push(pin);
         }
@@ -68,7 +69,7 @@ function gluePinsForPart(
       const pin = gluePinForPair(
         glue.id,
         currentSide === "A" ? glue.weightA : glue.weightB,
-        glue.strength,
+        glueBlendStrength(glue,state.parameterValues),
         state,
         size,
         otherState,

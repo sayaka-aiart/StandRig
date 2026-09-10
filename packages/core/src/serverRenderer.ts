@@ -313,6 +313,7 @@ function renderRigToImage(
 
   const glueStitch = hasGlueStitches(rig)
     ? resolveGlueStitchOffsets(rig, {
+        values: effectiveValues,
         restScale: glueStitchRestScale(baseMatrix),
         projectVertex: (partId, vertexId) => {
           const part = rig.parts.find((entry) => entry.id === partId);

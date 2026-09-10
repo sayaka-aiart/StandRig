@@ -5174,6 +5174,930 @@
                 "properties": {
                   "type": {
                     "type": "string",
+                    "const": "blend-shape-set"
+                  },
+                  "shape": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "part"
+                          },
+                          "transform": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              },
+                              "scaleX": {
+                                "type": "number"
+                              },
+                              "scaleY": {
+                                "type": "number"
+                              },
+                              "opacity": {
+                                "type": "number"
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "parameter": {
+                            "type": "string"
+                          },
+                          "neutralInput": {
+                            "type": "number"
+                          },
+                          "targetInput": {
+                            "type": "number"
+                          },
+                          "interpolation": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "linear"
+                              },
+                              {
+                                "type": "string",
+                                "const": "smoothstep"
+                              },
+                              {
+                                "type": "string",
+                                "const": "hold"
+                              },
+                              {
+                                "type": "string",
+                                "const": "arc"
+                              },
+                              {
+                                "type": "string",
+                                "const": "curve"
+                              }
+                            ]
+                          },
+                          "curve": {
+                            "type": "object",
+                            "properties": {
+                              "controlPoints": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "t": {
+                                      "type": "number"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "t",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "controlPoints"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "transform",
+                          "id",
+                          "parameter",
+                          "neutralInput",
+                          "targetInput"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "deformer"
+                          },
+                          "transform": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "rotation": {
+                                "type": "number"
+                              },
+                              "scaleX": {
+                                "type": "number"
+                              },
+                              "scaleY": {
+                                "type": "number"
+                              },
+                              "opacity": {
+                                "type": "number"
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "warp": {
+                            "type": "object",
+                            "properties": {
+                              "bendX": {
+                                "type": "number"
+                              },
+                              "bendY": {
+                                "type": "number"
+                              },
+                              "taperX": {
+                                "type": "number"
+                              },
+                              "taperY": {
+                                "type": "number"
+                              }
+                            },
+                            "additionalProperties": false
+                          },
+                          "pins": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "x": {
+                                  "type": "number"
+                                },
+                                "y": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "x",
+                                "y"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "sharedPoints": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "x": {
+                                  "type": "number"
+                                },
+                                "y": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "x",
+                                "y"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "parameter": {
+                            "type": "string"
+                          },
+                          "neutralInput": {
+                            "type": "number"
+                          },
+                          "targetInput": {
+                            "type": "number"
+                          },
+                          "interpolation": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "linear"
+                              },
+                              {
+                                "type": "string",
+                                "const": "smoothstep"
+                              },
+                              {
+                                "type": "string",
+                                "const": "hold"
+                              },
+                              {
+                                "type": "string",
+                                "const": "arc"
+                              },
+                              {
+                                "type": "string",
+                                "const": "curve"
+                              }
+                            ]
+                          },
+                          "curve": {
+                            "type": "object",
+                            "properties": {
+                              "controlPoints": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "t": {
+                                      "type": "number"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "t",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "controlPoints"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id",
+                          "parameter",
+                          "neutralInput",
+                          "targetInput"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "art-path"
+                          },
+                          "pathId": {
+                            "type": "string"
+                          },
+                          "points": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "x": {
+                                  "type": "number"
+                                },
+                                "y": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "x",
+                                "y"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "width": {
+                            "type": "number"
+                          },
+                          "opacity": {
+                            "type": "number"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "parameter": {
+                            "type": "string"
+                          },
+                          "neutralInput": {
+                            "type": "number"
+                          },
+                          "targetInput": {
+                            "type": "number"
+                          },
+                          "interpolation": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "linear"
+                              },
+                              {
+                                "type": "string",
+                                "const": "smoothstep"
+                              },
+                              {
+                                "type": "string",
+                                "const": "hold"
+                              },
+                              {
+                                "type": "string",
+                                "const": "arc"
+                              },
+                              {
+                                "type": "string",
+                                "const": "curve"
+                              }
+                            ]
+                          },
+                          "curve": {
+                            "type": "object",
+                            "properties": {
+                              "controlPoints": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "t": {
+                                      "type": "number"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "t",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "controlPoints"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "pathId",
+                          "id",
+                          "parameter",
+                          "neutralInput",
+                          "targetInput"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "const": "glue"
+                          },
+                          "glueId": {
+                            "type": "string"
+                          },
+                          "strength": {
+                            "type": "number"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "parameter": {
+                            "type": "string"
+                          },
+                          "neutralInput": {
+                            "type": "number"
+                          },
+                          "targetInput": {
+                            "type": "number"
+                          },
+                          "interpolation": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": "linear"
+                              },
+                              {
+                                "type": "string",
+                                "const": "smoothstep"
+                              },
+                              {
+                                "type": "string",
+                                "const": "hold"
+                              },
+                              {
+                                "type": "string",
+                                "const": "arc"
+                              },
+                              {
+                                "type": "string",
+                                "const": "curve"
+                              }
+                            ]
+                          },
+                          "curve": {
+                            "type": "object",
+                            "properties": {
+                              "controlPoints": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "t": {
+                                      "type": "number"
+                                    },
+                                    "value": {
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "t",
+                                    "value"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "controlPoints"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "glueId",
+                          "strength",
+                          "id",
+                          "parameter",
+                          "neutralInput",
+                          "targetInput"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "shape"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "deform-brush"
+                  },
+                  "brush": {
+                    "type": "object",
+                    "properties": {
+                      "surface": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "artmesh"
+                              },
+                              "space": {
+                                "type": "string",
+                                "const": "mesh-local"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "space"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "warp-pins"
+                              },
+                              "space": {
+                                "type": "string",
+                                "const": "warp-local"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "space",
+                              "width",
+                              "height"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "shared-warp"
+                              },
+                              "space": {
+                                "type": "string",
+                                "const": "stage"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "space"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "center": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "radius": {
+                        "type": "number"
+                      },
+                      "effect": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "type": "string",
+                                "const": "smooth"
+                              },
+                              "strength": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "strength"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "type": "string",
+                                "const": "relax"
+                              },
+                              "strength": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "strength"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "type": "string",
+                                "const": "inflate"
+                              },
+                              "distance": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "distance"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "type": "string",
+                                "const": "pinch"
+                              },
+                              "strength": {
+                                "type": "number"
+                              },
+                              "axis": {
+                                "type": "array",
+                                "prefixItems": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "strength",
+                              "axis"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "type": "string",
+                                "const": "bend"
+                              },
+                              "angle": {
+                                "type": "number"
+                              },
+                              "axis": {
+                                "type": "array",
+                                "prefixItems": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "angle",
+                              "axis"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "type": "string",
+                                "const": "contour-follow"
+                              },
+                              "strength": {
+                                "type": "number"
+                              },
+                              "guide": {
+                                "type": "array",
+                                "items": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                }
+                              },
+                              "vertexIds": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "strength",
+                              "guide",
+                              "vertexIds"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      },
+                      "iterations": {
+                        "type": "number"
+                      },
+                      "maxDisplacement": {
+                        "type": "number"
+                      },
+                      "falloff": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "const": "linear"
+                          },
+                          {
+                            "type": "string",
+                            "const": "smooth"
+                          }
+                        ]
+                      },
+                      "lockedIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "edges": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "prefixItems": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "string"
+                            }
+                          ]
+                        }
+                      },
+                      "destination": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "base"
+                              }
+                            },
+                            "required": [
+                              "kind"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "blend-shape"
+                              },
+                              "shape": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "parameter": {
+                                    "type": "string"
+                                  },
+                                  "neutralInput": {
+                                    "type": "number"
+                                  },
+                                  "targetInput": {
+                                    "type": "number"
+                                  },
+                                  "interpolation": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "const": "linear"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": "smoothstep"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": "hold"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": "arc"
+                                      },
+                                      {
+                                        "type": "string",
+                                        "const": "curve"
+                                      }
+                                    ]
+                                  },
+                                  "curve": {
+                                    "type": "object",
+                                    "properties": {
+                                      "controlPoints": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "t": {
+                                              "type": "number"
+                                            },
+                                            "value": {
+                                              "type": "number"
+                                            }
+                                          },
+                                          "required": [
+                                            "t",
+                                            "value"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "controlPoints"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "parameter",
+                                  "neutralInput",
+                                  "targetInput"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "shape"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "const": "keyform"
+                              },
+                              "parameter": {
+                                "type": "string"
+                              },
+                              "input": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "parameter",
+                              "input"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "surface",
+                      "center",
+                      "radius",
+                      "effect",
+                      "iterations",
+                      "maxDisplacement",
+                      "falloff",
+                      "destination"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "type",
+                  "brush"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
                     "const": "transform"
                   },
                   "property": {
@@ -5846,6 +6770,178 @@
                   "deformer": {
                     "type": "object",
                     "properties": {
+                      "blendShapes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "deformer"
+                            },
+                            "transform": {
+                              "type": "object",
+                              "properties": {
+                                "x": {
+                                  "type": "number"
+                                },
+                                "y": {
+                                  "type": "number"
+                                },
+                                "rotation": {
+                                  "type": "number"
+                                },
+                                "scaleX": {
+                                  "type": "number"
+                                },
+                                "scaleY": {
+                                  "type": "number"
+                                },
+                                "opacity": {
+                                  "type": "number"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            "warp": {
+                              "type": "object",
+                              "properties": {
+                                "bendX": {
+                                  "type": "number"
+                                },
+                                "bendY": {
+                                  "type": "number"
+                                },
+                                "taperX": {
+                                  "type": "number"
+                                },
+                                "taperY": {
+                                  "type": "number"
+                                }
+                              },
+                              "additionalProperties": false
+                            },
+                            "pins": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "sharedPoints": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "x",
+                                  "y"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "parameter": {
+                              "type": "string"
+                            },
+                            "neutralInput": {
+                              "type": "number"
+                            },
+                            "targetInput": {
+                              "type": "number"
+                            },
+                            "interpolation": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": "linear"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "smoothstep"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "hold"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "arc"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "curve"
+                                }
+                              ]
+                            },
+                            "curve": {
+                              "type": "object",
+                              "properties": {
+                                "controlPoints": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "t": {
+                                        "type": "number"
+                                      },
+                                      "value": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "t",
+                                      "value"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                }
+                              },
+                              "required": [
+                                "controlPoints"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "id",
+                            "parameter",
+                            "neutralInput",
+                            "targetInput"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
                       "id": {
                         "type": "string"
                       },
@@ -6786,11 +7882,11 @@
                             "anyOf": [
                               {
                                 "type": "string",
-                                "const": "normalized"
+                                "const": "stage"
                               },
                               {
                                 "type": "string",
-                                "const": "stage"
+                                "const": "normalized"
                               }
                             ]
                           },
@@ -8672,11 +9768,11 @@
                         "anyOf": [
                           {
                             "type": "string",
-                            "const": "normalized"
+                            "const": "stage"
                           },
                           {
                             "type": "string",
-                            "const": "stage"
+                            "const": "normalized"
                           }
                         ]
                       },
@@ -9113,6 +10209,930 @@
                     },
                     "action": {
                       "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "blend-shape-set"
+                            },
+                            "shape": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "part"
+                                    },
+                                    "transform": {
+                                      "type": "object",
+                                      "properties": {
+                                        "x": {
+                                          "type": "number"
+                                        },
+                                        "y": {
+                                          "type": "number"
+                                        },
+                                        "rotation": {
+                                          "type": "number"
+                                        },
+                                        "scaleX": {
+                                          "type": "number"
+                                        },
+                                        "scaleY": {
+                                          "type": "number"
+                                        },
+                                        "opacity": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "parameter": {
+                                      "type": "string"
+                                    },
+                                    "neutralInput": {
+                                      "type": "number"
+                                    },
+                                    "targetInput": {
+                                      "type": "number"
+                                    },
+                                    "interpolation": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "const": "linear"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "smoothstep"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "hold"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "arc"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "curve"
+                                        }
+                                      ]
+                                    },
+                                    "curve": {
+                                      "type": "object",
+                                      "properties": {
+                                        "controlPoints": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "t": {
+                                                "type": "number"
+                                              },
+                                              "value": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "t",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "controlPoints"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "transform",
+                                    "id",
+                                    "parameter",
+                                    "neutralInput",
+                                    "targetInput"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "deformer"
+                                    },
+                                    "transform": {
+                                      "type": "object",
+                                      "properties": {
+                                        "x": {
+                                          "type": "number"
+                                        },
+                                        "y": {
+                                          "type": "number"
+                                        },
+                                        "rotation": {
+                                          "type": "number"
+                                        },
+                                        "scaleX": {
+                                          "type": "number"
+                                        },
+                                        "scaleY": {
+                                          "type": "number"
+                                        },
+                                        "opacity": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    },
+                                    "warp": {
+                                      "type": "object",
+                                      "properties": {
+                                        "bendX": {
+                                          "type": "number"
+                                        },
+                                        "bendY": {
+                                          "type": "number"
+                                        },
+                                        "taperX": {
+                                          "type": "number"
+                                        },
+                                        "taperY": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "additionalProperties": false
+                                    },
+                                    "pins": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "x": {
+                                            "type": "number"
+                                          },
+                                          "y": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "x",
+                                          "y"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "sharedPoints": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "x": {
+                                            "type": "number"
+                                          },
+                                          "y": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "x",
+                                          "y"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "parameter": {
+                                      "type": "string"
+                                    },
+                                    "neutralInput": {
+                                      "type": "number"
+                                    },
+                                    "targetInput": {
+                                      "type": "number"
+                                    },
+                                    "interpolation": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "const": "linear"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "smoothstep"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "hold"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "arc"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "curve"
+                                        }
+                                      ]
+                                    },
+                                    "curve": {
+                                      "type": "object",
+                                      "properties": {
+                                        "controlPoints": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "t": {
+                                                "type": "number"
+                                              },
+                                              "value": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "t",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "controlPoints"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "id",
+                                    "parameter",
+                                    "neutralInput",
+                                    "targetInput"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "art-path"
+                                    },
+                                    "pathId": {
+                                      "type": "string"
+                                    },
+                                    "points": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "x": {
+                                            "type": "number"
+                                          },
+                                          "y": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "x",
+                                          "y"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "width": {
+                                      "type": "number"
+                                    },
+                                    "opacity": {
+                                      "type": "number"
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "parameter": {
+                                      "type": "string"
+                                    },
+                                    "neutralInput": {
+                                      "type": "number"
+                                    },
+                                    "targetInput": {
+                                      "type": "number"
+                                    },
+                                    "interpolation": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "const": "linear"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "smoothstep"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "hold"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "arc"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "curve"
+                                        }
+                                      ]
+                                    },
+                                    "curve": {
+                                      "type": "object",
+                                      "properties": {
+                                        "controlPoints": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "t": {
+                                                "type": "number"
+                                              },
+                                              "value": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "t",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "controlPoints"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "pathId",
+                                    "id",
+                                    "parameter",
+                                    "neutralInput",
+                                    "targetInput"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "const": "glue"
+                                    },
+                                    "glueId": {
+                                      "type": "string"
+                                    },
+                                    "strength": {
+                                      "type": "number"
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "parameter": {
+                                      "type": "string"
+                                    },
+                                    "neutralInput": {
+                                      "type": "number"
+                                    },
+                                    "targetInput": {
+                                      "type": "number"
+                                    },
+                                    "interpolation": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "const": "linear"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "smoothstep"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "hold"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "arc"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "curve"
+                                        }
+                                      ]
+                                    },
+                                    "curve": {
+                                      "type": "object",
+                                      "properties": {
+                                        "controlPoints": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "t": {
+                                                "type": "number"
+                                              },
+                                              "value": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "t",
+                                              "value"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "controlPoints"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "glueId",
+                                    "strength",
+                                    "id",
+                                    "parameter",
+                                    "neutralInput",
+                                    "targetInput"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "shape"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "deform-brush"
+                            },
+                            "brush": {
+                              "type": "object",
+                              "properties": {
+                                "surface": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "artmesh"
+                                        },
+                                        "space": {
+                                          "type": "string",
+                                          "const": "mesh-local"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "space"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "warp-pins"
+                                        },
+                                        "space": {
+                                          "type": "string",
+                                          "const": "warp-local"
+                                        },
+                                        "width": {
+                                          "type": "number"
+                                        },
+                                        "height": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "space",
+                                        "width",
+                                        "height"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "shared-warp"
+                                        },
+                                        "space": {
+                                          "type": "string",
+                                          "const": "stage"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "space"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                },
+                                "center": {
+                                  "type": "array",
+                                  "prefixItems": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                },
+                                "radius": {
+                                  "type": "number"
+                                },
+                                "effect": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "type": "string",
+                                          "const": "smooth"
+                                        },
+                                        "strength": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "strength"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "type": "string",
+                                          "const": "relax"
+                                        },
+                                        "strength": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "strength"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "type": "string",
+                                          "const": "inflate"
+                                        },
+                                        "distance": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "distance"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "type": "string",
+                                          "const": "pinch"
+                                        },
+                                        "strength": {
+                                          "type": "number"
+                                        },
+                                        "axis": {
+                                          "type": "array",
+                                          "prefixItems": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "strength",
+                                        "axis"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "type": "string",
+                                          "const": "bend"
+                                        },
+                                        "angle": {
+                                          "type": "number"
+                                        },
+                                        "axis": {
+                                          "type": "array",
+                                          "prefixItems": [
+                                            {
+                                              "type": "number"
+                                            },
+                                            {
+                                              "type": "number"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "angle",
+                                        "axis"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "type": "string",
+                                          "const": "contour-follow"
+                                        },
+                                        "strength": {
+                                          "type": "number"
+                                        },
+                                        "guide": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                              {
+                                                "type": "number"
+                                              },
+                                              {
+                                                "type": "number"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "vertexIds": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "strength",
+                                        "guide",
+                                        "vertexIds"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                },
+                                "iterations": {
+                                  "type": "number"
+                                },
+                                "maxDisplacement": {
+                                  "type": "number"
+                                },
+                                "falloff": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string",
+                                      "const": "linear"
+                                    },
+                                    {
+                                      "type": "string",
+                                      "const": "smooth"
+                                    }
+                                  ]
+                                },
+                                "lockedIds": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                "edges": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "array",
+                                    "prefixItems": [
+                                      {
+                                        "type": "string"
+                                      },
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "destination": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "base"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "blend-shape"
+                                        },
+                                        "shape": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "parameter": {
+                                              "type": "string"
+                                            },
+                                            "neutralInput": {
+                                              "type": "number"
+                                            },
+                                            "targetInput": {
+                                              "type": "number"
+                                            },
+                                            "interpolation": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "string",
+                                                  "const": "linear"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "const": "smoothstep"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "const": "hold"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "const": "arc"
+                                                },
+                                                {
+                                                  "type": "string",
+                                                  "const": "curve"
+                                                }
+                                              ]
+                                            },
+                                            "curve": {
+                                              "type": "object",
+                                              "properties": {
+                                                "controlPoints": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "t": {
+                                                        "type": "number"
+                                                      },
+                                                      "value": {
+                                                        "type": "number"
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "t",
+                                                      "value"
+                                                    ],
+                                                    "additionalProperties": false
+                                                  }
+                                                }
+                                              },
+                                              "required": [
+                                                "controlPoints"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "parameter",
+                                            "neutralInput",
+                                            "targetInput"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "shape"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "const": "keyform"
+                                        },
+                                        "parameter": {
+                                          "type": "string"
+                                        },
+                                        "input": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "parameter",
+                                        "input"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "surface",
+                                "center",
+                                "radius",
+                                "effect",
+                                "iterations",
+                                "maxDisplacement",
+                                "falloff",
+                                "destination"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "brush"
+                          ],
+                          "additionalProperties": false
+                        },
                         {
                           "type": "object",
                           "properties": {
@@ -9790,6 +11810,178 @@
                             "deformer": {
                               "type": "object",
                               "properties": {
+                                "blendShapes": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "const": "deformer"
+                                      },
+                                      "transform": {
+                                        "type": "object",
+                                        "properties": {
+                                          "x": {
+                                            "type": "number"
+                                          },
+                                          "y": {
+                                            "type": "number"
+                                          },
+                                          "rotation": {
+                                            "type": "number"
+                                          },
+                                          "scaleX": {
+                                            "type": "number"
+                                          },
+                                          "scaleY": {
+                                            "type": "number"
+                                          },
+                                          "opacity": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      "warp": {
+                                        "type": "object",
+                                        "properties": {
+                                          "bendX": {
+                                            "type": "number"
+                                          },
+                                          "bendY": {
+                                            "type": "number"
+                                          },
+                                          "taperX": {
+                                            "type": "number"
+                                          },
+                                          "taperY": {
+                                            "type": "number"
+                                          }
+                                        },
+                                        "additionalProperties": false
+                                      },
+                                      "pins": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "x": {
+                                              "type": "number"
+                                            },
+                                            "y": {
+                                              "type": "number"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "x",
+                                            "y"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "sharedPoints": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "id": {
+                                              "type": "string"
+                                            },
+                                            "x": {
+                                              "type": "number"
+                                            },
+                                            "y": {
+                                              "type": "number"
+                                            }
+                                          },
+                                          "required": [
+                                            "id",
+                                            "x",
+                                            "y"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "parameter": {
+                                        "type": "string"
+                                      },
+                                      "neutralInput": {
+                                        "type": "number"
+                                      },
+                                      "targetInput": {
+                                        "type": "number"
+                                      },
+                                      "interpolation": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "const": "linear"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "smoothstep"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "hold"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "arc"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "curve"
+                                          }
+                                        ]
+                                      },
+                                      "curve": {
+                                        "type": "object",
+                                        "properties": {
+                                          "controlPoints": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "t": {
+                                                  "type": "number"
+                                                },
+                                                "value": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "required": [
+                                                "t",
+                                                "value"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "controlPoints"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "id",
+                                      "parameter",
+                                      "neutralInput",
+                                      "targetInput"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
                                 "id": {
                                   "type": "string"
                                 },
@@ -10730,11 +12922,11 @@
                                       "anyOf": [
                                         {
                                           "type": "string",
-                                          "const": "normalized"
+                                          "const": "stage"
                                         },
                                         {
                                           "type": "string",
-                                          "const": "stage"
+                                          "const": "normalized"
                                         }
                                       ]
                                     },
@@ -12616,11 +14808,11 @@
                                   "anyOf": [
                                     {
                                       "type": "string",
-                                      "const": "normalized"
+                                      "const": "stage"
                                     },
                                     {
                                       "type": "string",
-                                      "const": "stage"
+                                      "const": "normalized"
                                     }
                                   ]
                                 },

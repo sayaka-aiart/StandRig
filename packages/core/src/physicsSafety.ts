@@ -117,7 +117,10 @@ export function auditPhysicsSafety(rig: RigDocument, options: PhysicsSafetyOptio
     } else {
       const parameter = chain.parameterOutput.parameter;
       for (const part of parts) {
-        if ((part.bindings ?? []).some((binding) => binding.parameter === parameter)
+        if ((part.blendShapes ?? []).some(s=>s.parameter===parameter)
+          || (part.artPaths??[]).some(p=>(p.blendShapes??[]).some(s=>s.parameter===parameter))
+          || (rig.glue??[]).some(g=>(g.partAId===part.id||g.partBId===part.id)&&(g.blendShapes??[]).some(s=>s.parameter===parameter))
+          || (part.bindings ?? []).some((binding) => binding.parameter === parameter)
           || (part.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))
           || (part.artMesh?.bindings ?? []).some((binding) => binding.parameter === parameter)
           || (part.artMesh?.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))
@@ -126,7 +129,7 @@ export function auditPhysicsSafety(rig: RigDocument, options: PhysicsSafetyOptio
         }
       }
       for (const deformer of deformers) {
-        if ((deformer.bindings ?? []).some((binding) => binding.parameter === parameter) || (deformer.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))) {
+        if ((deformer.blendShapes??[]).some(s=>s.parameter===parameter) || (deformer.bindings ?? []).some((binding) => binding.parameter === parameter) || (deformer.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))) {
           for (const part of partsForDeformer(deformer, parts)) targets.push(makeTarget(part, "parameter", deformer.id, parameter, structuralIds));
         }
         for (const pin of deformer.warp?.pins ?? []) {
