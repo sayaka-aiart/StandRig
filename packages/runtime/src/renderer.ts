@@ -793,8 +793,11 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
   }
   private resolveContourImage(part: RigPart, source: CanvasImageSource, width: number, height: number, params: ParameterValues): CanvasImageSource {
     if (!part.contourShade || !validateContourShade(part.contourShade)) return source;
-    if (!(params[part.contourShade.yawParameter] ?? 0)
-      || (part.contourShade.strength === 0 && !part.contourShade.farContourFade && !part.contourShade.nearContourFade)) return source;
+    const yawActive = (params[part.contourShade.yawParameter] ?? 0) !== 0
+      && (part.contourShade.strength > 0 || part.contourShade.farContourFade || part.contourShade.nearContourFade);
+    const upActive = (params[part.contourShade.pitchParameter] ?? 0) < 0
+      && (part.contourShade.upContourFade || part.contourShade.upShadowStrength);
+    if (!yawActive && !upActive) return source;
     const key = JSON.stringify(part.contourShade);
     let entry = this.contourImages.get(part.id);
     if (!entry || entry.source !== source || entry.key !== key) {

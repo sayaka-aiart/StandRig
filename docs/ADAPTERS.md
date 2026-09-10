@@ -56,3 +56,7 @@ Keep SDK credentials, proprietary runtime binaries, tracker model files and the 
 ## Native motion playback
 
 Use GET/POST `/api/playback/motion` or MCP `standrig_motion` to load and control a native clip. Playback supports seek, speed, loop and channel ownership. Embedded `StandRigPlayer` exposes the same transport. See [MOTION.md](MOTION.md) for the strict format, external-input arbitration, physics seek limitations and future Live2D importer contract. Actual motion3 import is not included.
+
+## Guarded external input
+
+Playback snapshots advertise `inputContractVersion:2`. External senders may include `expectedSessionId` and `expectedModelVersion` in parameter frames. A mismatch rejects the entire frame before changing parameters or source sequence. Use both fields after reading `/api/playback` to prevent stale camera frames from reaching a reloaded model. The fields are optional for older clients; Connect requires contract 2.

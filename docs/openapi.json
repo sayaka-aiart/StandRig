@@ -3580,6 +3580,9 @@
                         "outputAcknowledged"
                       ],
                       "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
                         "version": {
                           "const": 1
                         },
@@ -3826,6 +3829,9 @@
                         "outputAcknowledged"
                       ],
                       "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
                         "version": {
                           "const": 1
                         },
@@ -4419,6 +4425,9 @@
                         "outputAcknowledged"
                       ],
                       "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
                         "version": {
                           "const": 1
                         },
@@ -4661,6 +4670,9 @@
                         "outputAcknowledged"
                       ],
                       "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
                         "version": {
                           "const": 1
                         },
@@ -4881,6 +4893,14 @@
                   "values"
                 ],
                 "properties": {
+                  "expectedSessionId": {
+                    "type": "string",
+                    "description": "Reject when the service session differs."
+                  },
+                  "expectedModelVersion": {
+                    "type": "integer",
+                    "description": "Reject when the loaded model version differs."
+                  },
                   "source": {
                     "type": "string",
                     "pattern": "^[a-zA-Z0-9_-]{1,64}$"
@@ -4937,6 +4957,9 @@
                         "outputAcknowledged"
                       ],
                       "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
                         "version": {
                           "const": 1
                         },
@@ -5223,6 +5246,9 @@
                         "outputAcknowledged"
                       ],
                       "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
                         "version": {
                           "const": 1
                         },
@@ -7255,6 +7281,12 @@
                             "type": "number"
                           },
                           "nearContourFade": {
+                            "type": "number"
+                          },
+                          "upContourFade": {
+                            "type": "number"
+                          },
+                          "upShadowStrength": {
                             "type": "number"
                           },
                           "lineWidth": {
@@ -12424,6 +12456,12 @@
                                       "type": "number"
                                     },
                                     "nearContourFade": {
+                                      "type": "number"
+                                    },
+                                    "upContourFade": {
+                                      "type": "number"
+                                    },
+                                    "upShadowStrength": {
                                       "type": "number"
                                     },
                                     "lineWidth": {

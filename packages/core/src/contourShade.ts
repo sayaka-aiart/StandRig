@@ -13,6 +13,8 @@ export function validateContourShade(shade: RigContourShade): boolean {
     && (shade.profile === undefined || shade.profile === "cheek")
     && (shade.farContourFade === undefined || (Number.isFinite(shade.farContourFade) && shade.farContourFade >= 0 && shade.farContourFade <= 1))
     && (shade.nearContourFade === undefined || (Number.isFinite(shade.nearContourFade) && shade.nearContourFade >= 0 && shade.nearContourFade <= 1))
+    && (shade.upContourFade === undefined || (Number.isFinite(shade.upContourFade) && shade.upContourFade >= 0 && shade.upContourFade <= 1))
+    && (shade.upShadowStrength === undefined || (Number.isFinite(shade.upShadowStrength) && shade.upShadowStrength >= 0 && shade.upShadowStrength <= 1))
     && (shade.lineWidth === undefined || (Number.isFinite(shade.lineWidth) && shade.lineWidth > 0 && shade.lineWidth <= .1)));
 }
 
@@ -33,6 +35,9 @@ export class ContourShadeProcessor {
   private nearFadeRight?: Float32Array;
   private skinLeft?: Float32Array;
   private skinRight?: Float32Array;
+  private jawInk?: Float32Array;
+  private jawShadow?: Float32Array;
+  private jawSkin?: Float32Array;
   constructor(private source: RgbaImage, private shade: RigContourShade) {
     this.left = new Float32Array(source.width * source.height);
     this.right = new Float32Array(this.left.length);
@@ -106,6 +111,40 @@ export class ContourShadeProcessor {
       }
     }
   }
+  private prepareJaw() {
+    if (this.jawInk) return;
+    const { width, height, data } = this.source;
+    this.jawInk = new Float32Array(width * height);
+    this.jawShadow = new Float32Array(width * height);
+    this.jawSkin = new Float32Array(width * 3);
+    const inkBand = Math.max(1, width * (this.shade.lineWidth ?? .035));
+    const shadowBand = Math.max(1, height * .075);
+    for (let x = 0; x < width; x++) {
+      let start = -1, bottom = -1, longest = 0;
+      for (let y = Math.floor(height * .5); y <= height; y++) {
+        if (y < height && data[(y * width + x) * 4 + 3] >= 128) {
+          if (start < 0) start = y;
+        } else if (start >= 0) {
+          if (y - start > longest) { longest = y - start; bottom = y - 1; }
+          start = -1;
+        }
+      }
+      if (bottom < 0) continue;
+      const sampleY = Math.round(bottom - Math.min(longest / 2, inkBand * 2.1));
+      for (let c = 0; c < 3; c++) this.jawSkin[x * 3 + c] = data[(sampleY * width + x) * 4 + c];
+      const lateral = 1 - smooth((Math.abs(x / Math.max(1, width - 1) - .5) - .16) / .24);
+      for (let y = Math.floor(height * .78); y < height; y++) {
+        const p = y * width + x, i = p * 4, distance = bottom - y;
+        if (distance < -inkBand || !data[i + 3]) continue;
+        const lowerJaw = lateral * smooth((y / Math.max(1, height - 1) - .78) / .13);
+        const contrast = (this.jawSkin[x * 3] - data[i]) * .2126
+          + (this.jawSkin[x * 3 + 1] - data[i + 1]) * .7152
+          + (this.jawSkin[x * 3 + 2] - data[i + 2]) * .0722;
+        this.jawInk[p] = lowerJaw * (1 - smooth((distance / inkBand - .5) / .5)) * smooth((contrast - 5) / 26);
+        this.jawShadow[p] = lowerJaw * Math.exp(-((Math.max(0, distance) / shadowBand) ** 2));
+      }
+    }
+  }
   render(values: ParameterValues): RgbaImage {
     const yaw = values[this.shade.yawParameter] ?? 0;
     const pitch = values[this.shade.pitchParameter] ?? 0;
@@ -114,11 +153,15 @@ export class ContourShadeProcessor {
     const fade = (this.shade.farContourFade ?? 0) * yawWeight;
     // The near outline yields to the shaded cheek plane before maximum yaw.
     const nearFade = (this.shade.nearContourFade ?? 0) * smooth(Math.abs(yaw) / (this.shade.maxYaw * 2 / 3));
+    const upWeight = smooth(-pitch / this.shade.maxPitch);
+    const upFade = (this.shade.upContourFade ?? 0) * upWeight;
+    const upShadow = (this.shade.upShadowStrength ?? 0) * upWeight;
+    if (upFade > 0 || upShadow > 0) this.prepareJaw();
     const strength = this.shade.strength * smooth(Math.abs(yaw) / this.shade.maxYaw)
       * (this.shade.axisStrength + (1 - this.shade.axisStrength) * smooth(Math.abs(pitch) / this.shade.maxPitch));
-    if (strength <= 0 && fade <= 0 && nearFade <= 0) return this.source;
+    if (strength <= 0 && fade <= 0 && nearFade <= 0 && upFade <= 0 && upShadow <= 0) return this.source;
     const pitchWeight = Math.min(1, Math.abs(pitch) / this.shade.maxPitch);
-    const key = `${yaw < 0}:${strength}:${fade}:${nearFade}:${this.shade.profile ? pitch : 0}`;
+    const key = `${yaw < 0}:${strength}:${fade}:${nearFade}:${upFade}:${upShadow}:${this.shade.profile ? pitch : 0}`;
     if (key === this.lastKey) return this.lastImage;
     const weights = yaw < 0 ? this.right : this.left;
     const volume = yaw < 0 ? this.volumeRight : this.volumeLeft;
@@ -134,12 +177,17 @@ export class ContourShadeProcessor {
       const a = weight * strength;
       const ink = fade * (fadeWeights?.[p] ?? 0);
       const nearInk = nearFade * (nearFadeWeights?.[p] ?? 0);
+      const jawInk = upFade * (this.jawInk?.[p] ?? 0);
+      const jawShade = upShadow * (this.jawShadow?.[p] ?? 0);
+      const column = (p % this.source.width) * 3;
       const row = Math.floor(p / this.source.width) * 3;
       for (let c = 0; c < 3; c++) {
         const skinColor = skin?.[row + c] ?? data[i + c];
         const farSoftened = data[i + c] + ink * (skinColor - data[i + c]);
         const softened = farSoftened + nearInk * ((nearSkin?.[row + c] ?? farSoftened) - farSoftened);
-        data[i + c] = Math.round(softened * (1 - a * (1 - this.color[c])));
+        const jawSoftened = softened + jawInk * ((this.jawSkin?.[column + c] ?? softened) - softened);
+        const combinedShade = jawShade > 0 ? 1 - (1 - a) * (1 - jawShade) : a;
+        data[i + c] = Math.round(jawSoftened * (1 - combinedShade * (1 - this.color[c])));
       }
     }
     this.lastKey = key;

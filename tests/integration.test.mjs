@@ -52,6 +52,12 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     });
     assert.equal(foreignHost,403);
     assert.equal((await call('/api/tracking')).status,404);
+    const guardedState=(await call('/api/playback')).data.playback;
+    assert.equal(guardedState.inputContractVersion,2);
+    for (const guard of [{expectedSessionId:'stale'}, {expectedModelVersion:guardedState.modelVersion+1}]) {
+      assert.equal((await call('/api/playback/parameters','POST',{source:'guard-test',sequence:1,values:{ParamAngleZ:20},...guard})).status,400);
+      assert.deepEqual((await call('/api/playback')).data.playback,guardedState);
+    }
     assert.equal((await call('/api/playback/parameters','POST',{source:'tracker',sequence:1,values:{ParamAngleZ:20}})).status,200);
     assert.equal((await call('/api/playback/parameters','POST',{source:'tracker',sequence:1,values:{ParamAngleZ:0}})).status,400);
     assert.equal((await call('/api/playback/parameters','POST',{source:'tracker',sequence:2,values:{ParamAngleZ:0,invalid:1}})).status,400);

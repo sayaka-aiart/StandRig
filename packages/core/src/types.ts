@@ -426,6 +426,10 @@ export interface RigContourShade {
   farContourFade?: number;
   /** Soften the near cheek ink into its shaded side plane, retaining the chin tip. */
   nearContourFade?: number;
+  /** Fade the lower jaw on negative (upward) pitch. */
+  upContourFade?: number;
+  /** Underside shadow on negative (upward) pitch. */
+  upShadowStrength?: number;
   /** Width of the ink repair region, relative to source width. */
   lineWidth?: number;
 }

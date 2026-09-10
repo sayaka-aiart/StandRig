@@ -28,7 +28,7 @@ export class PlaybackSession {
   }
   snapshot() { return { ...this.state, values: { ...this.state.values }, connectedOutputs: this.streams.size,
     parameters: parameterDefinitionsForRig(this.rig), outputAcknowledged: false,
-    motion:this.motion.snapshot(),
+    motion:this.motion.snapshot(), inputContractVersion:2,
     demo: { active: !!this.demoTimer, parameterIds: this.demoDefinitions.map(p => p.id), mode: this.demoMode } }; }
   private stopDemo() {
     if (this.demoTimer) clearInterval(this.demoTimer);
@@ -70,6 +70,8 @@ export class PlaybackSession {
   }
   input(body: Record<string, unknown>) {
     const { source, sequence, values } = body;
+    if (body.expectedSessionId !== undefined && body.expectedSessionId !== this.state.sessionId) throw new Error('playback session changed');
+    if (body.expectedModelVersion !== undefined && body.expectedModelVersion !== this.state.modelVersion) throw new Error('playback model changed');
     if (typeof source !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(source)) throw new Error('invalid source');
     if (typeof sequence !== 'number' || !Number.isSafeInteger(sequence) || sequence < 0) throw new Error('invalid sequence');
     const previous = this.sequences.get(source);
