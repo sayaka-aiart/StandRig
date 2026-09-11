@@ -125,8 +125,8 @@
     {
       "path": "apps/preview/src/styles.css",
       "normalization": "lf",
-      "bytes": 3977,
-      "sha256": "1c6b29119dd2a12e5a8d9746a8e63cc19011b17c6ed8db0fa1750b81aaf4071d"
+      "bytes": 4122,
+      "sha256": "52ba62735a872f2b2cc53f206a3b7c51c5509da1452b0969aed47fca7c3d64c2"
     },
     {
       "path": "apps/preview/src/vite-env.d.ts",
