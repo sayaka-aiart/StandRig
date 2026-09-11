@@ -1,3 +1,4 @@
+import { PoseInput } from './poseInput';
 import './styles.css';
 import { createRigFromPsdFile } from '@standrig/core/importers';
 import { fetchRigDocument, downloadRigDocument } from '@standrig/core/io';
@@ -28,7 +29,11 @@ let latest: PlaybackSnapshot | undefined;
 let reloadQueue = Promise.resolve();
 let inputSequence = 0;
 const inputSource = 'preview_' + crypto.randomUUID().replaceAll('-', '');
-let inputQueue = Promise.resolve();
+const poseInput = new PoseInput(
+  patch => post('/api/playback/parameters', { source: inputSource, sequence: ++inputSequence, values: patch, expectedSessionId: sessionId, expectedModelVersion: modelVersion }),
+  reply => { const state = (reply as { playback: PlaybackSnapshot }).playback; if (state.sessionId === latest?.sessionId && state.modelVersion === latest?.modelVersion && state.revision >= latest.revision) latest = state; applyState(); },
+  error => { report(error); applyState(); }
+);
 const demoButton = document.querySelector<HTMLButtonElement>('#demo')!;
 const demoMode = document.querySelector<HTMLSelectElement>('#demo-mode')!;
 demoButton.onclick = () => { void post('/api/playback/control', { command: latest?.demo?.active ? 'demo-stop' : 'demo-start', mode: demoMode.value }).catch(report); };
@@ -51,7 +56,11 @@ const pointerTimer = setInterval(() => {
 }, 50);
 document.querySelector('#api-url')!.textContent = `${location.origin}/api/context`;
 function report(error: unknown) { status.textContent = error instanceof Error ? error.message : String(error); }
-function render() { if (runtime && values) runtime.setParameters(values); }
+let renderFrame: number | undefined;
+function render() {
+  if (renderFrame !== undefined) return;
+  renderFrame = requestAnimationFrame(() => { renderFrame = undefined; if (runtime && values) runtime.setParameters(values); });
+}
 new ResizeObserver(render).observe(canvas.parentElement!);
 async function post(url: string, body: unknown) {
   const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -59,11 +68,7 @@ async function post(url: string, body: unknown) {
   if (!response.ok || result.ok === false) throw new Error(JSON.stringify(result));
   return result;
 }
-function sendPose(patch: ParameterValues) {
-  const sequence = ++inputSequence;
-  inputQueue = inputQueue.catch(() => {}).then(() => post('/api/playback/parameters', { source: inputSource, sequence, values: patch })).then(() => {});
-  return inputQueue;
-}
+function sendPose(patch: ParameterValues) { poseInput.enqueue(patch); }
 function parameters() {
   const container = document.querySelector('#params')!;
   container.replaceChildren();
@@ -73,7 +78,7 @@ function parameters() {
     const output = document.createElement('output'); output.textContent = String(Number(values[param.id].toFixed(3)));
     const input = document.createElement('input');
     input.type = 'range'; input.min = String(param.min); input.max = String(param.max); input.step = String(param.step ?? 0.1); input.value = String(Number(values[param.id].toFixed(3))); input.setAttribute('aria-label', param.id);
-    input.oninput = () => { values[param.id] = Number(input.value); output.textContent = input.value; render(); void sendPose({ [param.id]: Number(input.value) }).catch(report); };
+    input.oninput = () => { values[param.id] = Number(input.value); output.textContent = input.value; render(); sendPose({ [param.id]: Number(input.value) }); };
     label.append(caption, output, input); container.append(label);
   }
 }
@@ -81,12 +86,12 @@ function applyState() {
   if (!latest || !rig || modelVersion !== latest.modelVersion || sessionId !== latest.sessionId) return;
   if (physicsEpoch !== latest.physicsEpoch) { runtime.resetPhysics(); physicsEpoch = latest.physicsEpoch; }
   updateMotion();
-  values = { ...latest.values };
+  values = { ...latest.values, ...poseInput.optimistic };
   for (const input of document.querySelectorAll<HTMLInputElement>('#params input')) {
     const id = input.getAttribute('aria-label')!;
     if (document.activeElement !== input) { input.value = String(values[id]); input.parentElement!.querySelector('output')!.textContent = String(Number(values[id].toFixed(3))); }
   }
-  if (latest.playing) runtime.play(); else runtime.pause();
+  if (latest.playing && !runtime.playing) runtime.play(); else if (!latest.playing && runtime.playing) runtime.pause();
   const demo = latest.demo;
   const active = !!demo?.active;
   demoButton.disabled = !demo?.parameterIds.length;
@@ -187,12 +192,15 @@ const events = new EventSource('/api/playback/events');
 events.addEventListener('playback', event => {
   const previousVersion = latest?.modelVersion;
   const previousSession = latest?.sessionId;
-  latest = JSON.parse((event as MessageEvent).data);
+  const incoming: PlaybackSnapshot = JSON.parse((event as MessageEvent).data);
+  if (incoming.sessionId === latest?.sessionId && incoming.revision < latest.revision) return;
+  if (incoming.sessionId !== latest?.sessionId || incoming.modelVersion !== latest?.modelVersion) poseInput.reset();
+  latest = incoming;
   if (previousVersion !== latest?.modelVersion || previousSession !== latest?.sessionId) void reload().catch(report);
   else applyState();
 });
 events.onerror = () => { status.textContent = '再生サービスへ再接続しています…'; };
-window.addEventListener('pagehide', () => { events.close(); runtime?.dispose(); clearInterval(pointerTimer); });
+window.addEventListener('pagehide', () => { events.close(); poseInput.reset(); if (renderFrame !== undefined) cancelAnimationFrame(renderFrame); runtime?.dispose(); clearInterval(pointerTimer); });
 
 document.querySelector<HTMLButtonElement>("#bridge-check")!.onclick = async () => {
  const output = document.querySelector("#bridge-status")!;

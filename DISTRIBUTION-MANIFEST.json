@@ -113,14 +113,20 @@
     {
       "path": "apps/preview/src/main.ts",
       "normalization": "lf",
-      "bytes": 16824,
-      "sha256": "e6fbef2b375df967e30866632f21ab7e10e56b19580f05bdaa068ce8fb3e0a9d"
+      "bytes": 17705,
+      "sha256": "dfb6c23b9b0f029d34817784f74311ff878f9df4da8d91e5c8e64ad8787a8ec8"
     },
     {
       "path": "apps/preview/src/player.ts",
       "normalization": "lf",
       "bytes": 1823,
       "sha256": "e3bab0d2cc661f2d0884d28b542977264296ba9cc98491b61674fd0a4b256112"
+    },
+    {
+      "path": "apps/preview/src/poseInput.ts",
+      "normalization": "lf",
+      "bytes": 1117,
+      "sha256": "ca085492ee4f02c018c3bf67289c7f0562673616ed8da0b44caf825b4b475f07"
     },
     {
       "path": "apps/preview/src/styles.css",
@@ -1387,6 +1393,12 @@
       "normalization": "lf",
       "bytes": 10239,
       "sha256": "ebd856cf582e8f4f2a72ac7e26ca2174d93d3c59dbef6142d4096d7b6b20eaaf"
+    },
+    {
+      "path": "tests/pose-input.test.mjs",
+      "normalization": "lf",
+      "bytes": 1837,
+      "sha256": "3c359b80fd683719b646d345ee3fd6f281e5e8345f97e8b748c0733745850296"
     },
     {
       "path": "tests/psd.test.mjs",
