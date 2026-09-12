@@ -1,5 +1,5 @@
 import { invertMatrix, transformMatrixPoint, type Matrix2D } from "./evaluator.js";
-import { hasSharedWarpFieldEffect, warpSharedFieldPoint } from "./sharedWarp.js";
+import { createSharedWarpSampler, hasSharedWarpFieldEffect, warpSharedFieldPoint } from "./sharedWarp.js";
 import type { RigSharedWarpField } from "./types.js";
 
 export interface Point2D {
@@ -61,3 +61,17 @@ export function unprojectSharedWarpPoint(
   return transformMatrixPoint(invertMatrix(partMatrix), unwarpedRendered.x, unwarpedRendered.y);
 }
 
+
+/** Frame-scoped projector: callers rebuild it after transforms or fields change. */
+export function createSharedWarpProjector(partMatrix: Matrix2D, baseMatrix: Matrix2D, fields: readonly RigSharedWarpField[] | undefined) {
+  const part = { ...partMatrix }, base = { ...baseMatrix };
+  const samplers = (fields ?? []).filter(hasSharedWarpFieldEffect).map(createSharedWarpSampler);
+  const inverseBase = samplers.length ? invertMatrix(base) : undefined;
+  return (point: Point2D): Point2D => {
+    const rendered = transformMatrixPoint(part, point.x, point.y);
+    if (!inverseBase) return rendered;
+    let stage = transformMatrixPoint(inverseBase, rendered.x, rendered.y);
+    for (const sample of samplers) { const offset = sample(stage.x, stage.y); stage = { x: stage.x + offset.x, y: stage.y + offset.y }; }
+    return transformMatrixPoint(base, stage.x, stage.y);
+  };
+}

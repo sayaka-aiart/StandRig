@@ -38,6 +38,8 @@ export function validateParameterPatch(rig: RigDocument, patch: unknown): Parame
   return result;
 }
 
+export type PlaybackRenderer = 'canvas' | 'webgl';
+
 /** Browser-only player; no service, MCP, tracker or UI framework required. */
 export class StandRigPlayer {
   private runtime: RigRuntime;
@@ -45,6 +47,7 @@ export class StandRigPlayer {
   private values: ParameterValues;
   private frameId: number | undefined;
   private disposed = false;
+  private renderer: PlaybackRenderer = 'canvas';
   private readonly resize: ResizeObserver;
   constructor(private canvas: HTMLCanvasElement, private rig: RigDocument) {
     this.motion = new MotionController(parameterDefinitionsForRig(rig));
@@ -55,6 +58,12 @@ export class StandRigPlayer {
   }
   async load() { await this.runtime.loadAssets(); if (!this.disposed) this.render(); }
   get playing() { return this.frameId !== undefined; }
+  setRenderer(renderer: PlaybackRenderer) {
+    if (renderer !== 'canvas' && renderer !== 'webgl') throw new Error('unknown playback renderer');
+    this.renderer = renderer;
+    if (!this.playing) this.render();
+  }
+  get rendererStatus() { return { requested: this.renderer, ...this.runtime.getWebGLMeshStatus() }; }
   get parameters() { return { ...this.values }; }
   setParameters(patch: ParameterValues) {
     const validated=validateParameterPatch(this.rig,patch);
@@ -78,6 +87,6 @@ export class StandRigPlayer {
     this.frameId = requestAnimationFrame(tick);
   }
   pause() { if(this.motion.snapshot().loaded)Object.assign(this.values,this.motion.pause(performance.now()));if (this.frameId !== undefined) cancelAnimationFrame(this.frameId); this.frameId = undefined; this.render(); }
-  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.values, { transparent: true }); }
-  dispose() { this.pause(); this.disposed = true; this.resize.disconnect(); }
+  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.values, { transparent: true, webglWarp: this.renderer === 'webgl' }); }
+  dispose() { this.pause(); this.disposed = true; this.resize.disconnect(); this.runtime.dispose(); }
 }

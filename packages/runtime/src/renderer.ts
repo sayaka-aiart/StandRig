@@ -1,10 +1,11 @@
+import { buildWebGLPartGeometry } from "./webglGeometry.js";
 import { evaluateRigParts, resolveRigFrame, invertMatrix, multiplyMatrices, applyPhysicsParameterOffsets, resolvePhysicsFrame as resolveRuntimePhysicsFrame, scaleMatrix, transformMatrixPoint, translateMatrix, type EvaluatedPartState, type Matrix2D, type PhysicsValue } from "@standrig/core/evaluator";
 import { hasWarpEffect, normalizeWarpDeformer, warpPoint, type ResolvedWarpDeformer } from "@standrig/core/warp";
 import { hasSharedWarpFieldEffect, normalizeSharedWarpField } from "@standrig/core/sharedWarp";
-import { projectSharedWarpPoint, unprojectSharedWarpPoint } from "@standrig/core/sharedWarpProjection";
+import { createSharedWarpProjector, projectSharedWarpPoint, unprojectSharedWarpPoint } from "@standrig/core/sharedWarpProjection";
 import { readRigGlue } from "@standrig/core/glue";
 import { resolveGlueWarpForPart } from "@standrig/core/glueWarp";
-import { isCanonicalArtMesh, resolveArtMesh, type ResolvedArtMesh } from "@standrig/core/artMesh";
+import { resolveArtMesh, type ResolvedArtMesh } from "@standrig/core/artMesh";
 import { readRigArtPaths, resolveArtPath } from "@standrig/core/artPath";
 import { applySkinningToVertices } from "@standrig/core/skinning";
 import { glueStitchOffsetToLocal, hasGlueStitches, glueStitchRestScale, projectArtMeshVertex, resolveGlueStitchOffsets, type GlueVertexOffset, type GlueVertexOffsets } from "@standrig/core/glueVertex";
@@ -127,6 +128,8 @@ export interface RenderOptions {
   selectedArtMeshVertexIndex?: number;
   warpPinEditMode?: "position" | "offset";
   webglMesh?: boolean;
+  /** Experimental GPU rasterization for all meshes and Warp grids; Canvas composition retained. */
+  webglWarp?: boolean;
   /** Diagnostic filter: only these part IDs use the WebGL ArtMesh path. */
   webglMeshPartIds?: readonly string[];
   /** Display-only zoom multiplier around the stage center. */
@@ -159,7 +162,10 @@ export class RigRuntime {
   resumeClock() { this.lastFrameTime = performance.now(); }
   resetPhysics() { this.physicsState.clear(); this.resumeClock(); }
 
+  dispose() { this.webglMeshRenderer?.dispose(); this.webglMeshRenderer = undefined; }
+
   async setRig(rig: RigDocument) {
+    this.dispose();
     this.rig = prepareRigBindingOrder(rig);
     this.images.clear();
     this.tintedImages.clear();
@@ -245,13 +251,13 @@ export class RigRuntime {
           projectVertex: (partId, vertexId) => this.projectGlueVertex(partId, vertexId, computed, effectiveParams, view.pixelBaseMatrix, skinningTransforms)
         }).offsets
       : undefined;
-    const webglMeshRenderer = this.getWebGLMeshRenderer(options.webglMesh === true);
+    const webglMeshRenderer = this.getWebGLMeshRenderer(options.webglMesh === true || options.webglWarp === true);
     const webglMeshPartIds = options.webglMeshPartIds?.length ? new Set(options.webglMeshPartIds) : undefined;
     // Rect-grid meshes retain a complete image rectangle and are intentionally
     // kept on the Canvas path even when they are deformed. This avoids a
     // second rasterization seam at the WebGL boundary; alpha-contour meshes
     // remain the explicit WebGL opt-in path for sparse geometry.
-    const webglRendererForPart = (part: RigPart) => webglMeshRenderer && part.artMesh?.generator.topology === "alpha-contour" && (!webglMeshPartIds || webglMeshPartIds.has(part.id)) ? webglMeshRenderer : undefined;
+    const webglRendererForPart = (part: RigPart) => webglMeshRenderer && (options.webglWarp === true || part.artMesh?.generator.topology === "alpha-contour") && (!webglMeshPartIds || webglMeshPartIds.has(part.id)) ? webglMeshRenderer : undefined;
     const renderable = [...this.rig.parts]
       .filter((part) => part.kind === "image" && part.assetId)
       .sort((left, right) => left.drawOrder - right.drawOrder);
@@ -876,30 +882,26 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
     const sharedWarps = partState.sharedWarps;
     const stitchOffsets = localStitchOffsets(glueStitch?.get(part.id), partState.matrix);
     const hasSharedWarp = Boolean(sharedWarps?.some(hasSharedWarpFieldEffect));
+    const sharedProject = hasSharedWarp ? createSharedWarpProjector(partState.matrix, baseMatrix, sharedWarps) : undefined;
+    const inversePartMatrix = hasSharedWarp ? invertMatrix(partState.matrix) : undefined;
     const project = hasSharedWarp ? (point: { x: number; y: number }) => {
-      const rendered = projectSharedWarpPoint(point, partState.matrix, baseMatrix, sharedWarps);
-      return transformMatrixPoint(invertMatrix(partState.matrix), rendered.x, rendered.y);
+      const rendered = sharedProject!(point);
+      return transformMatrixPoint(inversePartMatrix!, rendered.x, rendered.y);
     } : undefined;
     const sharedGrid = hasSharedWarp ? {
       columns: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.columns)),
       rows: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.rows))
     } : undefined;
-    if (artMesh && !isCanonicalArtMesh(artMesh, size.width, size.height) && !hasWarpEffect(warp) && !hasSharedWarp) {
-      if (webglMeshRenderer) {
-        const projectedVertices = artMesh.vertices.map((vertex) => {
-          const offset = stitchOffsets?.get(vertex.id);
-          const local = { x: left + vertex.x + (offset?.dx ?? 0), y: top + vertex.y + (offset?.dy ?? 0) };
-          const screen = projectSharedWarpPoint(local, partState.matrix, baseMatrix, sharedWarps);
-          return { x: screen.x, y: screen.y, u: vertex.u, v: vertex.v };
-        });
-        if (webglMeshRenderer.draw(ctx, sourceImage as HTMLImageElement, projectedVertices, artMesh.triangles, ignoreVisualAlpha ? 1 : partState.opacity, ignoreVisualAlpha ? "source-over" : part.blendMode === "multiply" ? "multiply" : part.blendMode === "screen" ? "screen" : part.blendMode === "additive" ? "lighter" : "source-over")) {
-          drawArtPathsCanvas(ctx, part, params, size.width, size.height, left, top, warp, project);
-          ctx.restore();
-          return;
-        }
+    if (webglMeshRenderer) {
+      const geometry = buildWebGLPartGeometry({ left, top, width: size.width, height: size.height,
+        matrix: partState.matrix, mesh: artMesh, warp, project, sharedGrid, stitchOffsets });
+      if (webglMeshRenderer.draw(ctx, sourceImage as HTMLImageElement, geometry.vertices, geometry.triangles, ctx.globalAlpha, ctx.globalCompositeOperation)) {
+        drawArtPathsCanvas(ctx, part, params, size.width, size.height, left, top, warp, project);
+        ctx.restore();
+        return;
       }
-      drawArtMesh(ctx, sourceImage as HTMLImageElement, left, top, size.width, size.height, artMesh, warp, project, stitchOffsets);
-    } else if (artMesh) {
+    }
+    if (artMesh) {
       drawArtMesh(ctx, sourceImage as HTMLImageElement, left, top, size.width, size.height, artMesh, warp, project, stitchOffsets);
     } else if (hasWarpEffect(warp) || hasSharedWarp) {
       drawWarpedImage(ctx, sourceImage as HTMLImageElement, left, top, size.width, size.height, warp, project, sharedGrid);
@@ -1507,17 +1509,26 @@ function drawArtMesh(
   const bounds = { left, top, width, height };
   const imageWidth = image.naturalWidth || image.width || width;
   const imageHeight = image.naturalHeight || image.height || height;
+  // A vertex can belong to several triangles. Projection is pure within this draw.
+  const projectedVertices = new Map<number, { x: number; y: number }>();
+  const warpActive = hasWarpEffect(warp);
+  const overlap = localCoverageOverlap(ctx.getTransform());
   for (let index = 0; index < mesh.triangles.length; index += 3) {
     const source = [mesh.vertices[mesh.triangles[index]], mesh.vertices[mesh.triangles[index + 1]], mesh.vertices[mesh.triangles[index + 2]]];
     if (source.some((vertex) => !vertex)) continue;
-    const target = source.map((vertex) => {
+    const target = source.map((vertex, corner) => {
+      const vertexIndex = mesh.triangles[index + corner];
+      const cached = projectedVertices.get(vertexIndex);
+      if (cached) return cached;
       const x = left + vertex.x;
       const y = top + vertex.y;
-      const warped = hasWarpEffect(warp) ? warpPoint(x, y, bounds, warp) : { x, y };
+      const warped = warpActive ? warpPoint(x, y, bounds, warp) : { x, y };
       const projected = project ? project(warped) : warped;
       // The stitch is applied after warp and shared warps so it always has the final say.
       const offset = stitchOffsets?.get(vertex.id);
-      return offset ? { x: projected.x + offset.dx, y: projected.y + offset.dy } : projected;
+      const result = offset ? { x: projected.x + offset.dx, y: projected.y + offset.dy } : projected;
+      projectedVertices.set(vertexIndex, result);
+      return result;
     });
     const matrix = affineTriangleMatrix(
       source.map((vertex) => ({ x: vertex.u * imageWidth, y: vertex.v * imageHeight })),
@@ -1525,7 +1536,7 @@ function drawArtMesh(
     );
     if (!matrix) continue;
     ctx.save();
-    const coverage = expandTriangleForCoverage(target as [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }], localCoverageOverlap(ctx.getTransform()));
+    const coverage = expandTriangleForCoverage(target as [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }], overlap);
     ctx.beginPath();
     ctx.moveTo(coverage[0].x, coverage[0].y);
     ctx.lineTo(coverage[1].x, coverage[1].y);

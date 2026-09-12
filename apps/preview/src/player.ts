@@ -20,6 +20,7 @@ async function drain() {
         const rig = await fetchRigDocument();
         player?.dispose();
         player = new StandRigPlayer(canvas, rig);
+        player.setRenderer(new URLSearchParams(location.search).get('renderer') === 'webgl' ? 'webgl' : 'canvas');
         await player.load();
         modelVersion = state.modelVersion;
         sessionId = state.sessionId; physicsEpoch = undefined;

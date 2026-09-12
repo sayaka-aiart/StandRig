@@ -113,14 +113,14 @@
     {
       "path": "apps/preview/src/main.ts",
       "normalization": "lf",
-      "bytes": 17705,
-      "sha256": "dfb6c23b9b0f029d34817784f74311ff878f9df4da8d91e5c8e64ad8787a8ec8"
+      "bytes": 18780,
+      "sha256": "8ec5a3a57425cbbbb16a59a596f3659fd713a6332e94e56746c1dba4671dbcf2"
     },
     {
       "path": "apps/preview/src/player.ts",
       "normalization": "lf",
-      "bytes": 1823,
-      "sha256": "e3bab0d2cc661f2d0884d28b542977264296ba9cc98491b61674fd0a4b256112"
+      "bytes": 1938,
+      "sha256": "f806118106e372dc1b113c6568066917ffa708e5096439471c31e35a459c57a1"
     },
     {
       "path": "apps/preview/src/poseInput.ts",
@@ -289,6 +289,12 @@
       "normalization": "lf",
       "bytes": 11972,
       "sha256": "c1162fb998b8584b07d6ca3e6cc340f3b91cb91b05d6088f6ac3ff813f89e896"
+    },
+    {
+      "path": "docs/GPU_PLAYBACK.md",
+      "normalization": "lf",
+      "bytes": 2862,
+      "sha256": "6eeae216932670286834f4bfad15f76ac9b588f293eb5dee64bd1e0488bbc5b7"
     },
     {
       "path": "docs/MCP.md",
@@ -1109,14 +1115,14 @@
     {
       "path": "packages/core/src/sharedWarp.ts",
       "normalization": "lf",
-      "bytes": 5035,
-      "sha256": "63fcb9fe773b16ecc1c2d0e338241415fee6203554eeaef8ef9bfc95522028a1"
+      "bytes": 5683,
+      "sha256": "b01fb73d365007b6ed53890736339709a6896ad98a96c61fb3dd73db9539ab72"
     },
     {
       "path": "packages/core/src/sharedWarpProjection.ts",
       "normalization": "lf",
-      "bytes": 2430,
-      "sha256": "9eeff77669366b880c7b6012cb701ac52ed75c3772e340d7378022ebe8919fab"
+      "bytes": 3332,
+      "sha256": "b551358ea9b0eecd1ee2d67969bca29d658cfd89ff32667c562da586d15d5635"
     },
     {
       "path": "packages/core/src/skinning.ts",
@@ -1253,20 +1259,26 @@
     {
       "path": "packages/runtime/src/playback.ts",
       "normalization": "lf",
-      "bytes": 4970,
-      "sha256": "ccd91a0af26d06179901b7dd6f2472c1f3292ca257752ff9b3c22b31db49654a"
+      "bytes": 5452,
+      "sha256": "bf14623636abb279496f5e67cedfe35baea2760425bffd16c09ef42800d3b915"
     },
     {
       "path": "packages/runtime/src/renderer.ts",
       "normalization": "lf",
-      "bytes": 74768,
-      "sha256": "a42a5781b43fcc42f660d31c5fb36a8831d4b59a11d0427633ba81b50d399c29"
+      "bytes": 75062,
+      "sha256": "aef7990fa67f0b2e5cfc17718a3cb5319040892a09a91d78e26243ef7c4fa6eb"
+    },
+    {
+      "path": "packages/runtime/src/webglGeometry.ts",
+      "normalization": "lf",
+      "bytes": 2350,
+      "sha256": "9a270ffab01627ea79feb49ba1052caa318303ab529916a189f65da5926d58d8"
     },
     {
       "path": "packages/runtime/src/webglMesh.ts",
       "normalization": "lf",
-      "bytes": 12343,
-      "sha256": "6b8f80d5072e24e517e4c8f4eeca19b74cffc6eec435e21c4571b515f8441be9"
+      "bytes": 13948,
+      "sha256": "cb0ed194595d6d5880938d2b6cae2e77f5c9ec18e092d3a8687e81462784f12c"
     },
     {
       "path": "packages/runtime/tsconfig.json",
@@ -1413,6 +1425,12 @@
       "sha256": "2eda47b0116cf7bde8590ba345210d9c80347d4a1dbb78d14146ff897714ab90"
     },
     {
+      "path": "tests/shared-warp-projector.test.mjs",
+      "normalization": "lf",
+      "bytes": 1595,
+      "sha256": "4ef259e14ce9a55ec6d60942b1685b8af5ff4b66a7974160e67045d652cb425d"
+    },
+    {
       "path": "tests/target-constraints.test.mjs",
       "normalization": "lf",
       "bytes": 4009,
@@ -1429,6 +1447,18 @@
       "normalization": "lf",
       "bytes": 8941,
       "sha256": "05cf998a98e5dfe258d73cd5e6341e555aa41e86d42e4971d96ba0c8978d54d3"
+    },
+    {
+      "path": "tests/webgl-geometry.test.mjs",
+      "normalization": "lf",
+      "bytes": 1656,
+      "sha256": "1e0fa581e7cf28edd020fc55df09516d0d26108325d4f2b7906adcb8a71513b1"
+    },
+    {
+      "path": "tests/webgl-streaming.test.mjs",
+      "normalization": "lf",
+      "bytes": 2569,
+      "sha256": "c602bd119482e9229bbade6485b9541cf59ece3d561938944603db212a84b32e"
     },
     {
       "path": "tests/write-contract.test.mjs",

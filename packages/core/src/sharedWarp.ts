@@ -45,7 +45,17 @@ export function normalizeSharedWarpField(value: Partial<SharedWarpField> | undef
   return { version: 1, enabled: value?.enabled !== false, bounds, grid: { columns, rows }, controlPoints: [...points.values()] };
 }
 
+/** Compile a snapshot for repeated sampling within one evaluation frame. */
+export function createSharedWarpSampler(field: SharedWarpField) {
+  const snapshot = { ...field, bounds: { ...field.bounds }, grid: { ...field.grid } };
+  const points = new Map(field.controlPoints.map(point => [`${point.column}|${point.row}`, { ...point }]));
+  return (x: number, y: number) => sampleIndexedSharedWarpField(snapshot, points, x, y);
+}
 export function sampleSharedWarpField(field: SharedWarpField, x: number, y: number) {
+  if (!field.enabled) return { x: 0, y: 0 };
+  return sampleIndexedSharedWarpField(field, new Map(field.controlPoints.map(point => [`${point.column}|${point.row}`, point])), x, y);
+}
+function sampleIndexedSharedWarpField(field: SharedWarpField, points: ReadonlyMap<string, SharedWarpControlPoint>, x: number, y: number) {
   if (!field.enabled) return { x: 0, y: 0 };
   const u = clamp((x - field.bounds.left) / field.bounds.width, 0, 1);
   const v = clamp((y - field.bounds.top) / field.bounds.height, 0, 1);
@@ -54,7 +64,6 @@ export function sampleSharedWarpField(field: SharedWarpField, x: number, y: numb
   const x0 = Math.floor(gx), y0 = Math.floor(gy);
   const x1 = Math.min(field.grid.columns, x0 + 1), y1 = Math.min(field.grid.rows, y0 + 1);
   const tx = gx - x0, ty = gy - y0;
-  const points = new Map(field.controlPoints.map((point) => [`${point.column}|${point.row}`, point]));
   const point = (column: number, row: number) => points.get(`${column}|${row}`);
   const offset = (column: number, row: number) => {
     const entry = point(column, row);

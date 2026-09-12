@@ -47,6 +47,12 @@ export class WebGLArtMeshRenderer {
   private program: WebGLProgram;
   private vertexBuffer: WebGLBuffer;
   private indexBuffer: WebGLBuffer;
+  private disposed = false;
+  private textures = new Set<WebGLTexture>();
+  private vertexData = new Float32Array(0);
+  private indexData = new Uint32Array(0);
+  private vertexCapacity = 0;
+  private indexCapacity = 0;
   private textureByImage = new WeakMap<HTMLImageElement, WebGLTexture>();
   private positionLocation: number;
   private texCoordLocation: number;
@@ -73,6 +79,8 @@ export class WebGLArtMeshRenderer {
       this.statusValue = "context-lost";
     });
     this.canvas.addEventListener("webglcontextrestored", () => {
+      if (this.disposed) return;
+      this.textures.clear();
       try {
         const restored = this.createResources();
         this.program = restored.program;
@@ -82,12 +90,28 @@ export class WebGLArtMeshRenderer {
         this.texCoordLocation = restored.texCoordLocation;
         this.resolutionLocation = restored.resolutionLocation;
         this.opacityLocation = restored.opacityLocation;
+        this.vertexCapacity = 0;
+        this.indexCapacity = 0;
         this.textureByImage = new WeakMap<HTMLImageElement, WebGLTexture>();
         this.statusValue = "ready";
       } catch {
         this.statusValue = "restore-failed";
       }
     });
+  }
+
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    for (const texture of this.textures) this.gl.deleteTexture(texture);
+    this.textures.clear();
+    this.gl.deleteBuffer(this.vertexBuffer);
+    this.gl.deleteBuffer(this.indexBuffer);
+    this.gl.deleteProgram(this.program);
+    this.textureByImage = new WeakMap();
+    this.vertexData = new Float32Array(0);
+    this.indexData = new Uint32Array(0);
+    this.contextLossExtension?.loseContext();
   }
 
   get status(): "ready" | "context-lost" | "restore-failed" {
@@ -118,7 +142,7 @@ export class WebGLArtMeshRenderer {
     opacity: number,
     blendMode: GlobalCompositeOperation = "source-over"
   ): boolean {
-    if (this.statusValue !== "ready" || this.gl.isContextLost() || vertices.length < 3 || triangles.length < 3) return false;
+    if (this.disposed || this.statusValue !== "ready" || this.gl.isContextLost() || vertices.length < 3 || triangles.length < 3) return false;
     const width = Math.max(1, target.canvas.width);
     const height = Math.max(1, target.canvas.height);
     if (this.canvas.width !== width || this.canvas.height !== height) {
@@ -126,7 +150,11 @@ export class WebGLArtMeshRenderer {
       this.canvas.height = height;
     }
     const gl = this.gl;
-    const interleaved = new Float32Array(vertices.length * 4);
+    const vertexLength = vertices.length * 4;
+    if (this.vertexData.length < vertexLength) this.vertexData = new Float32Array(vertexLength);
+    if (this.indexData.length < triangles.length) this.indexData = new Uint32Array(triangles.length);
+    const interleaved = this.vertexData;
+    this.indexData.set(triangles);
     for (let index = 0; index < vertices.length; index += 1) {
       const vertex = vertices[index];
       const offset = index * 4;
@@ -146,20 +174,28 @@ export class WebGLArtMeshRenderer {
     gl.uniform2f(this.resolutionLocation, width, height);
     gl.uniform1f(this.opacityLocation, Math.min(1, Math.max(0, opacity)));
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, interleaved, gl.STREAM_DRAW);
+    if (this.vertexCapacity < interleaved.byteLength) {
+      gl.bufferData(gl.ARRAY_BUFFER, interleaved.byteLength, gl.STREAM_DRAW);
+      this.vertexCapacity = interleaved.byteLength;
+    }
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, interleaved, 0, vertexLength);
     gl.enableVertexAttribArray(this.positionLocation);
     gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 16, 0);
     gl.enableVertexAttribArray(this.texCoordLocation);
     gl.vertexAttribPointer(this.texCoordLocation, 2, gl.FLOAT, false, 16, 8);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(triangles), gl.STREAM_DRAW);
+    if (this.indexCapacity < this.indexData.byteLength) {
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexData.byteLength, gl.STREAM_DRAW);
+      this.indexCapacity = this.indexData.byteLength;
+    }
+    gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, this.indexData, 0, triangles.length);
     const texture = this.textureFor(image);
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     gl.drawElements(gl.TRIANGLES, triangles.length, gl.UNSIGNED_INT, 0);
-    gl.finish();
+    // Canvas drawImage consumes the WebGL surface; do not force a CPU/GPU fence here.
     target.save();
     target.setTransform(1, 0, 0, 1, 0, 0);
     target.globalAlpha = 1;
@@ -193,6 +229,7 @@ export class WebGLArtMeshRenderer {
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    this.textures.add(texture);
     this.textureByImage.set(image, texture);
     return texture;
   }
