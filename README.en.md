@@ -12,17 +12,45 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 
 ## Features and scope
 
-| Feature | Support |
+**This repository contains StandRig itself. Connect and Cubism API Bridge are separate applications, installed only when needed.**
+
+### StandRig: modeling and browser playback
+
+| Feature | Included in StandRig |
 | --- | --- |
 | Artwork import | Image layers, positions, hierarchy and other supported properties from a parts-separated PSD |
-| Modeling | Edit, dry-run, run numeric QA, commit and restore through MCP / HTTP APIs |
+| Modeling | Edit, dry-run, run numeric QA, commit and restore through MCP / HTTP APIs. AI operation requires a separate MCP-compatible client |
 | AI deformation | Six deterministic Brush effects and Blend Shapes beyond ArtMesh ([API and limits](docs/DEFORM.md)) |
-| Playback | Transparent player page, numeric parameter input and an embeddable browser runtime |
-| Tracking | Receive numeric values from external tracking tools; camera inference is not bundled |
-| OBS | Use the player page as a Browser Source in an external OBS installation; OBS control is not bundled |
-| Live2D / Cubism | Read Editor information and set transient parameters through an external bridge. Creating, converting or playing cmo3/moc3 files is unsupported |
+| Playback | Transparent player page, sliders and numeric parameter input, motion JSON playback and an embeddable browser runtime |
+| Export | Model JSON and model JSON with embedded images; use embedded images for Connect |
+| External input | APIs accepting numeric values produced by other tools; no camera tracking included |
+| OBS player page | A page usable as a Browser Source in a separately running OBS installation; no OBS control or Spout2 sender included |
 
 **Importing a PSD does not automatically create a finished rig or its movements.** Ask your AI client to create the required settings, then inspect the actual result. Automatic part separation, AI models and image generation services are not provided.
+
+#
+
+### StandRig Connect: camera tracking and native streaming (separate app)
+
+| Feature | Provided by Connect |
+| --- | --- |
+| Camera tracking | Head, eyelids, gaze and mouth tracking, adjustment and calibration. Body motion is inferred from the face |
+| Standalone Windows playback | Load embedded-image model JSON and render without running StandRig or a browser |
+| Motion and idle | StandRig motion playback, breathing, sway and smooth random micro-movement |
+| External parameter API | Local HTTP discovery, temporary overrides and clear; call Connect directly without running StandRig |
+| Model slots | Save a model copy and tracking settings inside the app |
+| OBS output | Output window for Game Capture / Window Capture and optional Spout2 sending. OBS is a separate installation |
+
+### Cubism API Bridge: Cubism Editor integration (separate app)
+
+| Feature | Available through the Bridge connection |
+| --- | --- |
+| Requirements | A separately running Cubism API Bridge, a compatible Cubism Editor and connection permission |
+| Reads from StandRig | Retrieve Cubism Editor model, parameter, part, deformer and physics information |
+| Temporary operations from StandRig | Set and clear transient Cubism parameter values |
+| Independent Bridge API | The Bridge also exposes its own HTTP / Python API; its scope differs from StandRig's adapter |
+
+StandRig's Bridge adapter does not provide persistent editing, automatic synchronization or model conversion. StandRig itself does not create, convert or play cmo3/moc3 files. See [Bridge scope and setup](docs/CUBISM-BRIDGE.md).
 
 ## Quick start
 
@@ -107,6 +135,12 @@ Example modeling request:
 
 MCP alone cannot paint new reference images or save arbitrary files. Use the AI client's file and image tools, or materials supplied by the operator. Passing numeric QA does not establish visual completion. See the [AI operating guide](AI_OPERATING_GUIDE.md) and [modeling contract](AGENTS.md).
 
+## Play a motion file
+
+Load the sample model, choose `examples/sample.standrig-motion.json` using **「モーションJSONを選択」**, then click **「モーション再生」**. The UI supports pause, stop, seek, speed, loop and JSON export. AI clients use `standrig_motion`.
+
+Only native StandRig motion JSON is supported today. Live2D `.motion3.json` import is **not implemented**. A separate importer interface allows a future converter to use the same playback engine. See [motion format and API](docs/MOTION.md).
+
 ## Save, restore and share models
 
 - Imports and committed edits are saved on the server. Slider values and playback state are transient and do not edit the model.
@@ -122,6 +156,58 @@ npm start -- --data-dir "C:/Models/My Character"
 ```
 
 Do not run multiple services against the same data directory. Stop the service with **Ctrl+C** in its command window. Use the launcher or `npm start` to restart it. After updating the source, rerun `npm ci` and `npm run build`.
+
+### Export a model with embedded images
+
+Click **「画像込みモデルJSONを書き出す」 (Export model JSON with embedded images)** to combine the saved model and part images into one file for Connect or another environment. This does not include the original PSD or external application tracking settings. The ordinary JSON export can retain external image references; use the embedded-image export when moving the model to another app.
+
+### Import a model JSON
+
+Under the import panel, choose a model JSON and press the model import button. Plain rig.json, image-embedded model JSON and StandRig bundles are supported. External image references must resolve in this StandRig instance; use an image-embedded export when moving between machines. The transaction validates the model and assets, then checkpoints the current model before replacing it. Tracking settings from bundles are not imported.
+
+## External application integrations
+
+The following setup is optional and requires separate applications.
+
+### StandRig Connect: tracking and streaming
+
+[**StandRig Connect**](https://github.com/sayaka-aiart/standrig-connect) is a separate Windows app that animates StandRig models with a camera and sends output to OBS. It is available as a **0.1.0 development preview source release**. Build it from source using the instructions and face inference setup in the [Connect README](https://github.com/sayaka-aiart/standrig-connect/blob/main/README.en.md).
+
+- Head, eyelid, gaze and mouth tracking, adjustment and neutral calibration.
+- Local slots containing a model copy and tracking settings.
+- StandRig motion playback and breathing, sway and smooth random idle presets.
+- OBS Game Capture / Window Capture and optional Spout2 output.
+
+After modeling and checking the movement in StandRig, click **「画像込みモデルJSONを書き出す」 (Export model JSON with embedded images)** and open that JSON in Connect's Model tab. This single file includes the artwork, so StandRig, a browser and the original PSD are not needed during Connect playback. Use the embedded-image export, rather than the ordinary JSON export that omits image data.
+
+Processing continues while Connect's control window is minimized or in the system tray. Keep the output window visible for OBS Game Capture / Window Capture. Spout2 allows it to be hidden, but requires a Spout-enabled build and a separately installed OBS receiver plugin. Body motion is inferred from the face, not full-body tracking.
+
+Connect exposes its external parameter API at `http://127.0.0.1:22036`: discover parameter IDs and ranges, temporarily override values, and clear selected or all overrides. AI scripts and other tools can call it directly without running StandRig. Credentials are stored in `%LOCALAPPDATA%\StandRigConnect\api-session.json`; Connect's API tab shows the location. Never share or commit this file.
+
+Overrides affect only supplied parameters and expire after one second by default (configurable from 100 to 10000ms), restoring ordinary input. Renew before expiry for continuous control. Retrieve a new model session ID after switching models. Stream Deck integration can use scripts or actions supporting HTTP calls; a dedicated plugin and expression-switching API are not implemented.
+
+Connect is optional; StandRig's browser playback and external numeric input remain available.
+
+### Connect to Cubism API Bridge
+
+The separate [Cubism API Bridge](https://github.com/sayaka-aiart/cubism-api-bridge) lets StandRig MCP read Cubism Editor information and set transient poses/expressions. The Bridge runs as a separate process; no Cubism SDK is added to the StandRig core.
+
+1. Build the Bridge and permit its connection in Cubism, following its README.
+2. Start HTTP from the Bridge directory:
+
+```powershell
+npm run http -- --port 22035 --session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
+```
+
+3. In another terminal, start the built StandRig from its own directory:
+
+```powershell
+npm start -- --bridge-session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
+```
+
+Use the UI's **Cubism Bridge** button to check status, or MCP tools `standrig_bridge_status`, `standrig_bridge_read`, and `standrig_bridge_pose`. Credentials stay in the service; never share or commit the session file. Restart StandRig after restarting the Bridge to reload its new credentials.
+
+The connection requires an idle Bridge with API 1.1.0. Persistent Cubism editing through StandRig, automatic synchronization, model conversion and motion import are not implemented. See the [connection guide and API examples](docs/CUBISM-BRIDGE.md).
 
 ## Troubleshooting
 
@@ -159,39 +245,8 @@ For UI development, keep the service running on port 5180, run `npm run dev` in 
 
 Use `npm run verify` to check the distribution's file hashes. Source edits will cause mismatches, so this is separate from normal development tests. See [release instructions](docs/RELEASING.md) for packaging and verification, and [validation notes](docs/VALIDATION.md) for tested behavior and remaining limits.
 
+Legacy write APIs are disabled by default. Import, editing and restore use the transaction service, SHA-256 revisions and shared strict HTTP/MCP schemas. See the [API reference](docs/API.md) for migration.
+
 ## License
 
 Original code, documentation text and synthetic samples are licensed under [Apache-2.0](LICENSE). See [NOTICE](NOTICE) and the [third-party notices](THIRD_PARTY_NOTICES.md). This repository's license does not apply to imported PSDs, character artwork, or the character shown in the screenshot. See the [screenshot artwork notice](docs/images/NOTICE.md).
-
-Legacy write APIs are disabled by default. Import, editing and restore use the transaction service, SHA-256 revisions and shared strict HTTP/MCP schemas. See the [API reference](docs/API.md) for migration.
-
-### Play a motion file
-
-Load the sample model, choose `examples/sample.standrig-motion.json` using **「モーションJSONを選択」**, then click **「モーション再生」**. The UI supports pause, stop, seek, speed, loop and JSON export. AI clients use `standrig_motion`.
-
-Only native StandRig motion JSON is supported today. Live2D `.motion3.json` import is **not implemented**. A separate importer interface allows a future converter to use the same playback engine. See [motion format and API](docs/MOTION.md).
-
-## Connect to Cubism API Bridge
-
-The separate [Cubism API Bridge](https://github.com/sayaka-aiart/cubism-api-bridge) lets StandRig MCP read Cubism Editor information and set transient poses/expressions. The Bridge runs as a separate process; no Cubism SDK is added to the StandRig core.
-
-1. Build the Bridge and permit its connection in Cubism, following its README.
-2. Start HTTP from the Bridge directory:
-
-```powershell
-npm run http -- --port 22035 --session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
-```
-
-3. In another terminal, start the built StandRig from its own directory:
-
-```powershell
-npm start -- --bridge-session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-session.json"
-```
-
-Use the UI's **Cubism Bridge** button to check status, or MCP tools `standrig_bridge_status`, `standrig_bridge_read`, and `standrig_bridge_pose`. Credentials stay in the service; never share or commit the session file. Restart StandRig after restarting the Bridge to reload its new credentials.
-
-The connection requires an idle Bridge with API 1.1.0. Persistent Cubism editing through StandRig, automatic synchronization, model conversion and motion import are not implemented. See the [connection guide and API examples](docs/CUBISM-BRIDGE.md).
-
-### Import a model JSON
-
-Under the import panel, choose a model JSON and press the model import button. Plain rig.json, image-embedded model JSON and StandRig bundles are supported. External image references must resolve in this StandRig instance; use an image-embedded export when moving between machines. The transaction validates the model and assets, then checkpoints the current model before replacing it. Tracking settings from bundles are not imported.
