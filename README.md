@@ -189,3 +189,7 @@ npm start -- --bridge-session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-
 UIの「Cubism Bridge」で接続状態を確認できます。MCPには `standrig_bridge_status`、`standrig_bridge_read`、`standrig_bridge_pose` を追加しています。認証情報はサーバー内で扱い、セッションファイルは共有・コミットしないでください。Bridge再起動後はStandRigサービスも再起動してください。
 
 この接続はAPI 1.1.0のBridgeが待機中の場合に利用できます。StandRigからのCubism永続編集、自動同期、モデル変換、モーション読込は未対応です。[対応範囲とAPI例](docs/CUBISM-BRIDGE.md)を参照してください。
+
+### 画像込みモデルの書き出し
+
+画面の「素材を読み込む」内にある「画像込みモデルJSONを書き出す」を押すと、保存済みモデルとパーツPNGを内包した `model.standrig.json` をダウンロードします。保存先はブラウザの設定に従います。PSDや画像フォルダを別途渡す必要はありません。プレビューで一時的に操作した姿勢や、外部アプリのトラッキング設定は含みません。通常の「モデルJSONを書き出す」は外部画像参照が残る場合があるため、別アプリへの持ち出しには画像込みを使用してください。
