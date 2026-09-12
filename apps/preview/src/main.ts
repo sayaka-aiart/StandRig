@@ -1,4 +1,5 @@
 import { PoseInput } from './poseInput';
+import { parseModelFile } from './modelFile';
 import './styles.css';
 import { createRigFromPsdFile } from '@standrig/core/importers';
 import { fetchRigDocument, downloadRigDocument } from '@standrig/core/io';
@@ -17,6 +18,11 @@ const status = document.querySelector<HTMLPreElement>('#status')!;
 const filesInput = document.querySelector<HTMLInputElement>('#files')!;
 const importButton = document.querySelector<HTMLButtonElement>('#import')!;
 const sampleButton = document.querySelector<HTMLButtonElement>('#sample')!;
+const modelImport = document.createElement('div');
+modelImport.innerHTML = `<label class="file-label">モデルJSONを選択<input id="model-file" type="file" accept=".json,application/json"></label><p id="model-selection">ファイル未選択</p><button id="model-import" disabled>モデルJSONを読み込む</button><p>rig.json・画像込みモデルJSON・StandRig bundleに対応します。通常のrig.jsonは参照画像がこのStandRig環境に必要です。読み込み前のモデルは自動保存します。</p>`;
+document.querySelector('#export')!.before(modelImport);
+const modelFile = document.querySelector<HTMLInputElement>('#model-file')!;
+const modelImportButton = document.querySelector<HTMLButtonElement>('#model-import')!;
 const qaButton = document.querySelector<HTMLButtonElement>('#qa')!;
 let rig: RigDocument;
 let runtime: StandRigPlayer;
@@ -142,7 +148,17 @@ async function importModel(document: RigDocument) {
   if (!response.ok || !context?.revision) throw new Error('Could not read the current model revision');
   return post('/api/modeling/transaction', {kind:'import',rig:document,expectedRevision:context.revision,commit:true,qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}});
 }
-function busy(value: boolean) { importing = value; importButton.disabled = value || !filesInput.files?.length; sampleButton.disabled = value; }
+function busy(value: boolean) { importing = value; importButton.disabled = value || !filesInput.files?.length; sampleButton.disabled = value; modelImportButton.disabled = value || !modelFile.files?.length; modelFile.disabled = value; filesInput.disabled = value; }
+modelFile.onchange = () => { document.querySelector('#model-selection')!.textContent = modelFile.files?.[0]?.name ?? 'ファイル未選択'; busy(importing); };
+modelImportButton.onclick = async () => {
+  const file = modelFile.files?.[0];
+  if (importing || !file) return;
+  busy(true); status.textContent = 'モデルJSONと画像を検証して読み込んでいます…';
+  try {
+    const imported = parseModelFile(await file.text());
+    await importModel(imported); await reload();
+  } catch (error) { report(error); } finally { busy(false); }
+};
 filesInput.onchange = () => { document.querySelector('#selection')!.textContent = filesInput.files?.[0]?.name ?? 'ファイル未選択'; busy(importing); };
 importButton.onclick = async () => {
   const files = Array.from(filesInput.files ?? []);
@@ -169,8 +185,13 @@ portableExport.onclick = async () => {
   portableExport.disabled = true;
   status.textContent = 'パーツ画像を含めて書き出しています…';
   try {
-    const response = await fetch('/api/bundle', { cache: 'no-store' });
-    if (!response.ok) throw new Error(`モデルの書き出しに失敗しました (${response.status})`);
+    const response = await fetch('/api/bundle', { cache: 'no-store' }).catch(() => {
+      throw new Error('StandRigサーバーに接続できません。StandRigを起動し直してから、もう一度書き出してください。');
+    });
+    if (!response.ok) {
+      const detail = await response.json().catch(() => null);
+      throw new Error(`モデルの書き出しに失敗しました (${response.status})${typeof detail?.error === 'string' ? ': ' + detail.error : ''}`);
+    }
     const bundle = await response.json();
     if (bundle.format !== 'standrig-bundle' || bundle.version !== 1 || !Array.isArray(bundle.rig?.parts) || !Array.isArray(bundle.rig?.assets)
       || !bundle.rig.assets.every((asset: {src?: string}) => typeof asset.src === 'string' && asset.src.startsWith('data:image/png;base64,'))) {

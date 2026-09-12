@@ -191,3 +191,7 @@ npm start -- --bridge-session-file "$env:LOCALAPPDATA\StandRigCubismBridge\http-
 Use the UI's **Cubism Bridge** button to check status, or MCP tools `standrig_bridge_status`, `standrig_bridge_read`, and `standrig_bridge_pose`. Credentials stay in the service; never share or commit the session file. Restart StandRig after restarting the Bridge to reload its new credentials.
 
 The connection requires an idle Bridge with API 1.1.0. Persistent Cubism editing through StandRig, automatic synchronization, model conversion and motion import are not implemented. See the [connection guide and API examples](docs/CUBISM-BRIDGE.md).
+
+### Import a model JSON
+
+Under the import panel, choose a model JSON and press the model import button. Plain rig.json, image-embedded model JSON and StandRig bundles are supported. External image references must resolve in this StandRig instance; use an image-embedded export when moving between machines. The transaction validates the model and assets, then checkpoints the current model before replacing it. Tracking settings from bundles are not imported.
