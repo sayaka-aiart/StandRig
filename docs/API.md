@@ -167,3 +167,7 @@ See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/rea
 ## Optional Cubism connection
 
 See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.
+
+### Embedded-image file extension
+
+The preview exports the embedded `rig` from `/api/bundle` as `model.srig`. Its content remains the same RigDocument JSON, not the bundle envelope. The preview accepts `.srig` and existing `.json` model files through the same validated import transaction. HTTP JSON bodies, bundle format/version and ordinary `rig.json` exports are unchanged.

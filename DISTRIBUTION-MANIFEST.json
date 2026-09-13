@@ -66,13 +66,13 @@
       "path": "README.en.md",
       "normalization": "lf",
       "bytes": 13246,
-      "sha256": "63a5573513630d2c6960df34028a8396f6e933b321a71d44334df8e05b64527e"
+      "sha256": "2db37808918f05b953ea72f9f1552c37cc971444fc730fcd26fd50bc07e51a39"
     },
     {
       "path": "README.md",
       "normalization": "lf",
       "bytes": 14824,
-      "sha256": "17c1543afbbe1f6336a2ba608ddcc94a291f857d08010c7c35e8406e058e0fe0"
+      "sha256": "a452df6e1975db2aba1f56a7d8dbf0b940f6fa20e978b09089851080cc0b47d2"
     },
     {
       "path": "SECURITY.md",
@@ -114,7 +114,7 @@
       "path": "apps/preview/src/main.ts",
       "normalization": "lf",
       "bytes": 18780,
-      "sha256": "8ec5a3a57425cbbbb16a59a596f3659fd713a6332e94e56746c1dba4671dbcf2"
+      "sha256": "5adeea3b790306cd596fea03a4b9ac49ce6340d91292f595e828fa6e7286ae45"
     },
     {
       "path": "apps/preview/src/player.ts",
@@ -270,7 +270,7 @@
       "path": "docs/API.md",
       "normalization": "lf",
       "bytes": 14219,
-      "sha256": "d22e1227ab1543039a472e289a1846ba5420d575111b2a6a089c1bfa31e6d4fa"
+      "sha256": "1e3d1a40f141402465aa2726c2a7e0b0d19d88f054673c3a7fdf378b6b2a7417"
     },
     {
       "path": "docs/ARCHITECTURE.md",

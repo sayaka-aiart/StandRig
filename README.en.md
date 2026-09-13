@@ -10,6 +10,9 @@ Import a PSD with separate artwork layers, edit meshes, deformers and keyforms t
 
 This is an actual screenshot of an imported character PSD. The character's PSD and model are not included. The “Try sample” button loads a geometric model. The screenshot uses test port 5196; the default service port is 5180. See the [screenshot artwork notice](docs/images/NOTICE.md).
 
+
+
+
 ## Features and scope
 
 **This repository contains StandRig itself. Connect and Cubism API Bridge are separate applications, installed only when needed.**
@@ -159,7 +162,9 @@ Do not run multiple services against the same data directory. Stop the service w
 
 ### Export a model with embedded images
 
-Click **「画像込みモデルJSONを書き出す」 (Export model JSON with embedded images)** to combine the saved model and part images into one file for Connect or another environment. This does not include the original PSD or external application tracking settings. The ordinary JSON export can retain external image references; use the embedded-image export when moving the model to another app.
+Embedded-image models use `.srig`; the content remains JSON. Both StandRig and Connect still accept existing embedded-image `.json` files. In StandRig, use the model file selector under the import panel to reopen a `.srig` for editing. It does not include the original PSD or Connect settings.
+
+Click **「画像込みモデルを書き出す（.srig）」 (Export model JSON with embedded images)** to combine the saved model and part images into one file for Connect or another environment. This does not include the original PSD or external application tracking settings. The ordinary JSON export can retain external image references; use the embedded-image export when moving the model to another app.
 
 ### Import a model JSON
 
@@ -178,7 +183,7 @@ The following setup is optional and requires separate applications.
 - StandRig motion playback and breathing, sway and smooth random idle presets.
 - OBS Game Capture / Window Capture and optional Spout2 output.
 
-After modeling and checking the movement in StandRig, click **「画像込みモデルJSONを書き出す」 (Export model JSON with embedded images)** and open that JSON in Connect's Model tab. This single file includes the artwork, so StandRig, a browser and the original PSD are not needed during Connect playback. Use the embedded-image export, rather than the ordinary JSON export that omits image data.
+After modeling and checking the movement in StandRig, click **「画像込みモデルを書き出す（.srig）」 (Export model JSON with embedded images)** and open that JSON in Connect's Model tab. This single file includes the artwork, so StandRig, a browser and the original PSD are not needed during Connect playback. Use the embedded-image export, rather than the ordinary JSON export that omits image data.
 
 Processing continues while Connect's control window is minimized or in the system tray. Keep the output window visible for OBS Game Capture / Window Capture. Spout2 allows it to be hidden, but requires a Spout-enabled build and a separately installed OBS receiver plugin. Body motion is inferred from the face, not full-body tracking.
 

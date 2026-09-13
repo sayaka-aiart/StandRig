@@ -10,7 +10,7 @@ import type { ParameterValues, RigDocument } from '@standrig/core/types';
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <header><div><span class="eyebrow">AI MODELING WORKSPACE</span><h1>StandRig <span>Modeling & Playback</span></h1></div><a id="player-link" href="/player" target="_blank" class="badge">再生画面を開く ↗</a></header>
 <main><section class="stage-panel"><div class="stage-heading"><h2 id="model-name">読み込み中…</h2><button id="reload">再読み込み</button></div><div class="motion-controls"><label>描画 <select id="renderer" aria-label="描画方式"><option value="canvas">標準</option><option value="webgl">GPU（試験版）</option></select></label><span id="renderer-status" role="status"></span><label>動作デモ <select id="demo-mode" aria-label="動作デモの種類"><option value="showcase-active">Showcase — Fast &amp; Wide</option><option value="mouse-expression">Mouse + Expressions</option></select></label><button id="demo" aria-pressed="false" disabled>デモを開始</button><p id="demo-status" role="status">モデルを読み込んでください。</p></div><div class="canvas-wrap"><canvas width="800" height="900" aria-label="モデルプレビュー"></canvas><div id="empty"><b>素材から、動くモデルへ。</b><p>パーツ分け済みPSDを読み込んで始めます。</p></div></div><p class="caption">動作デモはこの画面と「再生画面」に反映されます。パラメータ操作はモデルの保存内容を変更しません。</p></section>
-<aside><section><h2>Cubism Bridge</h2><p>設定方法: docs/CUBISM-BRIDGE.md</p><button id="bridge-check">接続状態を確認</button><pre id="bridge-status" role="status">未確認</pre></section><section><h2>素材を読み込む</h2><p>対応素材：パーツ分け済みPSD。読み込み前のモデルは自動でチェックポイントに保存します。</p><label class="file-label">PSDを選択<input id="files" type="file" accept=".psd"></label><p id="selection">ファイル未選択</p><button id="import" class="primary" disabled>PSDを読み込む</button><button id="export">モデルJSONを書き出す</button><button id="export-portable">画像込みモデルJSONを書き出す</button><p>別アプリへの持ち出しには「画像込み」を使用します。保存済みのモデルとパーツ画像を1ファイルにまとめます。PSDは不要です。</p><button id="sample">サンプルを試す</button></section>
+<aside><section><h2>Cubism Bridge</h2><p>設定方法: docs/CUBISM-BRIDGE.md</p><button id="bridge-check">接続状態を確認</button><pre id="bridge-status" role="status">未確認</pre></section><section><h2>素材を読み込む</h2><p>対応素材：パーツ分け済みPSD。読み込み前のモデルは自動でチェックポイントに保存します。</p><label class="file-label">PSDを選択<input id="files" type="file" accept=".psd"></label><p id="selection">ファイル未選択</p><button id="import" class="primary" disabled>PSDを読み込む</button><button id="export">モデルJSONを書き出す</button><button id="export-portable">画像込みモデルを書き出す（.srig）</button><p>別アプリへの持ち出しには「画像込み」を使用します。保存済みのモデルとパーツ画像を1ファイルにまとめます。PSDは不要です。</p><button id="sample">サンプルを試す</button></section>
 <section><h2>AIへ渡す入口</h2><code id="api-url"></code><p>MCP接続の設定は <b>docs/MCP.md</b>、操作手順は <b>AI_OPERATING_GUIDE.md</b> を参照してください。</p><button id="qa">数値QAを実行</button><pre id="status" role="status" aria-live="polite">起動中…</pre></section>
 <section><div class="stage-heading"><h2>姿勢・再生</h2><button id="reset">初期値</button></div><button id="play">再生</button> <button id="pause">一時停止</button><div id="params"></div></section><section id="motion-panel"><h2>モーション</h2><p>StandRigモーションJSONを読み込みます。Live2D形式の変換は今後対応予定です。</p><label class="file-label">モーションJSONを選択<input id="motion-file" type="file" accept=".json"></label><p id="motion-status" role="status">未読込</p><button id="motion-play" disabled>モーション再生</button><button id="motion-pause" disabled>モーション一時停止</button><button id="motion-stop" disabled>モーション停止</button><label>再生位置 <input id="motion-time" aria-label="モーション再生位置" type="range" min="0" max="1" step="0.01" value="0" disabled></label><label>速度 <input id="motion-speed" aria-label="モーション速度" type="number" min="0.1" max="4" step="0.1" value="1" disabled></label><label><input id="motion-loop" type="checkbox" disabled>ループ</label><button id="motion-export" disabled>モーションJSONを書き出す</button></section></aside></main>`;
 const canvas = document.querySelector('canvas')!;
@@ -19,7 +19,7 @@ const filesInput = document.querySelector<HTMLInputElement>('#files')!;
 const importButton = document.querySelector<HTMLButtonElement>('#import')!;
 const sampleButton = document.querySelector<HTMLButtonElement>('#sample')!;
 const modelImport = document.createElement('div');
-modelImport.innerHTML = `<label class="file-label">モデルJSONを選択<input id="model-file" type="file" accept=".json,application/json"></label><p id="model-selection">ファイル未選択</p><button id="model-import" disabled>モデルJSONを読み込む</button><p>rig.json・画像込みモデルJSON・StandRig bundleに対応します。通常のrig.jsonは参照画像がこのStandRig環境に必要です。読み込み前のモデルは自動保存します。</p>`;
+modelImport.innerHTML = `<label class="file-label">モデルを選択（.srig / .json）<input id="model-file" type="file" accept=".srig,.json,application/json"></label><p id="model-selection">ファイル未選択</p><button id="model-import" disabled>モデルを読み込む</button><p>画像込みモデル（.srig）・既存の画像込みJSON・rig.json・StandRig bundleに対応します。通常のrig.jsonは参照画像がこのStandRig環境に必要です。読み込み前のモデルは自動保存します。</p>`;
 document.querySelector('#export')!.before(modelImport);
 const modelFile = document.querySelector<HTMLInputElement>('#model-file')!;
 const modelImportButton = document.querySelector<HTMLButtonElement>('#model-import')!;
@@ -199,9 +199,9 @@ portableExport.onclick = async () => {
     }
     const url = URL.createObjectURL(new Blob([JSON.stringify(bundle.rig, null, 2)], { type: 'application/json' }));
     const link = document.createElement('a');
-    link.href = url; link.download = 'model.standrig.json'; link.click();
+    link.href = url; link.download = 'model.srig'; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    status.textContent = '画像込みモデルJSONのダウンロードを開始しました。保存先はブラウザのダウンロード設定に従います。';
+    status.textContent = '画像込みモデル（.srig）のダウンロードを開始しました。保存先はブラウザのダウンロード設定に従います。';
   } catch (error) { report(error); }
   finally { portableExport.disabled = false; }
 };
