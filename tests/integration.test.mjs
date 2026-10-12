@@ -76,9 +76,9 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     client=new Client({name:'standrig-integration',version:'1.0.0'});
     await client.connect(transport);
     const tools=await client.listTools();
-    assert.equal(tools.tools.length,16);
+    assert.equal(tools.tools.length,18);
     const actionSchema=tools.tools.find(tool=>tool.name==='standrig_modeling_transaction').inputSchema.properties.operations.items.properties.action;
-    assert.equal(actionSchema.oneOf.length,35);
+    assert.equal(actionSchema.oneOf.length,36);
     assert.ok(actionSchema.oneOf.every(schema=>schema.additionalProperties===false));
     const invoke=(name,args={})=>client.callTool({name,arguments:args});
     assert.equal((await invoke('standrig_bridge_status')).structuredContent.result.configured,false);
@@ -177,7 +177,7 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     const bundle=JSON.parse(await readFile(exported.path,'utf8'));
     assert.equal(bundle.format,'standrig-bundle');
     assert.ok(bundle.rig.assets.every(a=>a.src.startsWith('data:image/png;base64,')));
-    const resources=await client.listResources(); assert.equal(resources.resources.length,8);
+    const resources=await client.listResources(); assert.equal(resources.resources.length,9);
     assert.match((await client.readResource({uri:'standrig://docs/deform'})).contents[0].text,/maxDisplacement/);
     const contract=await client.readResource({uri:'standrig://docs/contract'});
     assert.match(contract.contents[0].text,/Mandatory pre-model visual reference gate/);

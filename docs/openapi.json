@@ -4007,6 +4007,736 @@
         }
       }
     },
+    "/api/playback/facial": {
+      "get": {
+        "summary": "Local service /api/playback/facial",
+        "operationId": "get__api_playback_facial",
+        "responses": {
+          "200": {
+            "description": "Transient playback state; not a render acknowledgment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "playback"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Local service /api/playback/facial",
+        "operationId": "post__api_playback_facial",
+        "responses": {
+          "200": {
+            "description": "Transient playback state; not a render acknowledgment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "ok",
+                    "playback"
+                  ],
+                  "properties": {
+                    "ok": {
+                      "const": true
+                    },
+                    "playback": {
+                      "type": "object",
+                      "required": [
+                        "version",
+                        "sessionId",
+                        "revision",
+                        "modelVersion",
+                        "playing",
+                        "values",
+                        "connectedOutputs",
+                        "outputAcknowledged"
+                      ],
+                      "properties": {
+                        "inputContractVersion": {
+                          "const": 2
+                        },
+                        "version": {
+                          "const": 1
+                        },
+                        "sessionId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Changes on service restart; compare together with modelVersion."
+                        },
+                        "revision": {
+                          "type": "integer"
+                        },
+                        "modelVersion": {
+                          "type": "integer"
+                        },
+                        "playing": {
+                          "type": "boolean"
+                        },
+                        "physicsEpoch": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "motion": {
+                          "type": "object",
+                          "properties": {
+                            "loaded": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "duration": {
+                              "type": "number"
+                            },
+                            "time": {
+                              "type": "number"
+                            },
+                            "running": {
+                              "type": "boolean"
+                            },
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "ended": {
+                              "type": "boolean"
+                            },
+                            "speed": {
+                              "type": "number",
+                              "minimum": 0.1,
+                              "maximum": 4
+                            },
+                            "loop": {
+                              "type": "boolean"
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "demo": {
+                          "type": "object",
+                          "properties": {
+                            "active": {
+                              "type": "boolean"
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "showcase-active",
+                                "mouse-expression"
+                              ]
+                            },
+                            "parameterIds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        "values": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "lastSource": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "connectedOutputs": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "outputAcknowledged": {
+                          "const": false
+                        },
+                        "parameters": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "expression"
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "strength": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "viseme"
+                      },
+                      "id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "const": "A"
+                          },
+                          {
+                            "type": "string",
+                            "const": "I"
+                          },
+                          {
+                            "type": "string",
+                            "const": "U"
+                          },
+                          {
+                            "type": "string",
+                            "const": "E"
+                          },
+                          {
+                            "type": "string",
+                            "const": "O"
+                          },
+                          {
+                            "type": "string",
+                            "const": "Silence"
+                          }
+                        ]
+                      },
+                      "strength": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "visemes"
+                      },
+                      "weights": {
+                        "type": "object",
+                        "properties": {
+                          "A": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "I": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "U": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "E": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "O": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "Silence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "action",
+                      "weights"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "action": {
+                        "type": "string",
+                        "const": "clear"
+                      },
+                      "layer": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "const": "expression"
+                          },
+                          {
+                            "type": "string",
+                            "const": "viseme"
+                          },
+                          {
+                            "type": "string",
+                            "const": "all"
+                          }
+                        ]
+                      },
+                      "immediate": {
+                        "anyOf": [
+                          {
+                            "type": "boolean",
+                            "const": false
+                          },
+                          {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "action"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/playback/motion": {
       "get": {
         "summary": "Local service /api/playback/motion",
@@ -4120,6 +4850,41 @@
                               "items": {
                                 "type": "string"
                               }
+                            }
+                          }
+                        },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
                             }
                           }
                         },
@@ -4369,6 +5134,41 @@
                               "items": {
                                 "type": "string"
                               }
+                            }
+                          }
+                        },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
                             }
                           }
                         },
@@ -4968,6 +5768,41 @@
                             }
                           }
                         },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
                         "values": {
                           "type": "object",
                           "additionalProperties": {
@@ -5210,6 +6045,41 @@
                               "items": {
                                 "type": "string"
                               }
+                            }
+                          }
+                        },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
                             }
                           }
                         },
@@ -5500,6 +6370,41 @@
                             }
                           }
                         },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
                         "values": {
                           "type": "object",
                           "additionalProperties": {
@@ -5786,6 +6691,41 @@
                               "items": {
                                 "type": "string"
                               }
+                            }
+                          }
+                        },
+                        "baseValues": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                        },
+                        "facial": {
+                          "type": "object",
+                          "properties": {
+                            "expressionId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "expressionWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "visemeWeights": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "number"
+                              },
+                              "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                            },
+                            "transitioning": {
+                              "type": "boolean"
                             }
                           }
                         },
@@ -6567,6 +7507,206 @@
           },
           "action": {
             "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "facial-presets-set"
+                  },
+                  "presets": {
+                    "anyOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "number",
+                            "const": 1
+                          },
+                          "expressions": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "document": {
+                                  "type": "object",
+                                  "properties": {
+                                    "Version": {
+                                      "type": "number",
+                                      "const": 3
+                                    },
+                                    "Type": {
+                                      "type": "string",
+                                      "const": "Live2D Expression"
+                                    },
+                                    "FadeInTime": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "maximum": 60
+                                    },
+                                    "FadeOutTime": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "maximum": 60
+                                    },
+                                    "Parameters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "Id": {
+                                            "type": "string"
+                                          },
+                                          "Value": {
+                                            "type": "number"
+                                          },
+                                          "Blend": {
+                                            "anyOf": [
+                                              {
+                                                "type": "string",
+                                                "const": "Add"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": "Multiply"
+                                              },
+                                              {
+                                                "type": "string",
+                                                "const": "Overwrite"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "Id",
+                                          "Value"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "Type",
+                                    "Parameters"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "name",
+                                "document"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "visemes": {
+                            "type": "object",
+                            "properties": {
+                              "mode": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "const": "pose"
+                                  },
+                                  {
+                                    "type": "string",
+                                    "const": "blend-shape"
+                                  }
+                                ]
+                              },
+                              "fadeInTime": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 60
+                              },
+                              "fadeOutTime": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 60
+                              },
+                              "presets": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "const": "A"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "I"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "U"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "E"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "O"
+                                        },
+                                        {
+                                          "type": "string",
+                                          "const": "Silence"
+                                        }
+                                      ]
+                                    },
+                                    "values": {
+                                      "type": "object",
+                                      "propertyNames": {
+                                        "type": "string"
+                                      },
+                                      "additionalProperties": {
+                                        "type": "number"
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "values"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "mode",
+                              "presets"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "expressions"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "presets"
+                ],
+                "additionalProperties": false
+              },
               {
                 "type": "object",
                 "properties": {
@@ -11742,6 +12882,206 @@
                     },
                     "action": {
                       "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "facial-presets-set"
+                            },
+                            "presets": {
+                              "anyOf": [
+                                {
+                                  "type": "null"
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "version": {
+                                      "type": "number",
+                                      "const": 1
+                                    },
+                                    "expressions": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "string"
+                                          },
+                                          "name": {
+                                            "type": "string"
+                                          },
+                                          "document": {
+                                            "type": "object",
+                                            "properties": {
+                                              "Version": {
+                                                "type": "number",
+                                                "const": 3
+                                              },
+                                              "Type": {
+                                                "type": "string",
+                                                "const": "Live2D Expression"
+                                              },
+                                              "FadeInTime": {
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 60
+                                              },
+                                              "FadeOutTime": {
+                                                "type": "number",
+                                                "minimum": 0,
+                                                "maximum": 60
+                                              },
+                                              "Parameters": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "Id": {
+                                                      "type": "string"
+                                                    },
+                                                    "Value": {
+                                                      "type": "number"
+                                                    },
+                                                    "Blend": {
+                                                      "anyOf": [
+                                                        {
+                                                          "type": "string",
+                                                          "const": "Add"
+                                                        },
+                                                        {
+                                                          "type": "string",
+                                                          "const": "Multiply"
+                                                        },
+                                                        {
+                                                          "type": "string",
+                                                          "const": "Overwrite"
+                                                        }
+                                                      ]
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "Id",
+                                                    "Value"
+                                                  ],
+                                                  "additionalProperties": false
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "Type",
+                                              "Parameters"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "required": [
+                                          "id",
+                                          "name",
+                                          "document"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "visemes": {
+                                      "type": "object",
+                                      "properties": {
+                                        "mode": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "const": "pose"
+                                            },
+                                            {
+                                              "type": "string",
+                                              "const": "blend-shape"
+                                            }
+                                          ]
+                                        },
+                                        "fadeInTime": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 60
+                                        },
+                                        "fadeOutTime": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "maximum": 60
+                                        },
+                                        "presets": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "id": {
+                                                "anyOf": [
+                                                  {
+                                                    "type": "string",
+                                                    "const": "A"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "I"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "U"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "E"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "O"
+                                                  },
+                                                  {
+                                                    "type": "string",
+                                                    "const": "Silence"
+                                                  }
+                                                ]
+                                              },
+                                              "values": {
+                                                "type": "object",
+                                                "propertyNames": {
+                                                  "type": "string"
+                                                },
+                                                "additionalProperties": {
+                                                  "type": "number"
+                                                }
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "values"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "mode",
+                                        "presets"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "version",
+                                    "expressions"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "presets"
+                          ],
+                          "additionalProperties": false
+                        },
                         {
                           "type": "object",
                           "properties": {
@@ -17389,6 +18729,235 @@
             "additionalProperties": false
           }
         ]
+      },
+      "FacialRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "expression"
+              },
+              "id": {
+                "type": "string"
+              },
+              "strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "action",
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "viseme"
+              },
+              "id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "A"
+                  },
+                  {
+                    "type": "string",
+                    "const": "I"
+                  },
+                  {
+                    "type": "string",
+                    "const": "U"
+                  },
+                  {
+                    "type": "string",
+                    "const": "E"
+                  },
+                  {
+                    "type": "string",
+                    "const": "O"
+                  },
+                  {
+                    "type": "string",
+                    "const": "Silence"
+                  }
+                ]
+              },
+              "strength": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "action",
+              "id"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "visemes"
+              },
+              "weights": {
+                "type": "object",
+                "properties": {
+                  "A": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "I": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "U": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "E": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "O": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "Silence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "action",
+              "weights"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "clear"
+              },
+              "layer": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "const": "expression"
+                  },
+                  {
+                    "type": "string",
+                    "const": "viseme"
+                  },
+                  {
+                    "type": "string",
+                    "const": "all"
+                  }
+                ]
+              },
+              "immediate": {
+                "anyOf": [
+                  {
+                    "type": "boolean",
+                    "const": false
+                  },
+                  {
+                    "type": "boolean",
+                    "const": true
+                  }
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ExpressionDocument": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "Version": {
+            "type": "number",
+            "const": 3
+          },
+          "Type": {
+            "type": "string",
+            "const": "Live2D Expression"
+          },
+          "FadeInTime": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 60
+          },
+          "FadeOutTime": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 60
+          },
+          "Parameters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "Id": {
+                  "type": "string"
+                },
+                "Value": {
+                  "type": "number"
+                },
+                "Blend": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "const": "Add"
+                    },
+                    {
+                      "type": "string",
+                      "const": "Multiply"
+                    },
+                    {
+                      "type": "string",
+                      "const": "Overwrite"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "Id",
+                "Value"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "Type",
+          "Parameters"
+        ],
+        "additionalProperties": false
       }
     }
   }

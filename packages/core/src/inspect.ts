@@ -1,4 +1,5 @@
 import { extendedBlendIssues } from './extendedBlendShape.js';
+import { parseFacialPresets } from './facial.js';
 import {
   PARAMETER_IDS,
   RIG_SCHEMA_VERSION,
@@ -158,6 +159,7 @@ export function summarizeRig(rig: RigDocument): RigSummary {
 export function validateRig(rig: RigDocument): RigValidationResult {
   const issues: RigValidationIssue[] = [];
   const addIssue = (issue: RigValidationIssue) => issues.push(issue);
+  if(rig.facialPresets!==undefined)try{parseFacialPresets(rig.facialPresets,rig);}catch(error){addIssue({severity:'error',code:'invalid-facial-presets',message:String(error),path:'facialPresets'});}
   for(const message of extendedBlendIssues(rig))addIssue({severity:"error",code:"invalid-blend-shape",message,path:"blendShapes"});
 
   if (rig.schemaVersion !== RIG_SCHEMA_VERSION) {

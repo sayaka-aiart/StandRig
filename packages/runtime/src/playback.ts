@@ -1,4 +1,6 @@
 import { MotionController } from './motion.js';
+import { FacialController } from './facial.js';
+import type { FacialRequest, FacialState } from '@standrig/core/facial';
 import type { MotionState } from '@standrig/core/motion';
 import { parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
 import type { ParameterValues, RigDocument } from '@standrig/core/types';
@@ -10,6 +12,7 @@ export interface PlaybackSnapshot {
   version: 1; sessionId: string; revision: number; modelVersion: number;
   playing: boolean; values: ParameterValues; lastSource: string | null;
   physicsEpoch?: number; motion?: MotionState;
+  facial?: FacialState; baseValues?: ParameterValues;
   demo?: { active: boolean; parameterIds: string[]; mode: 'showcase-active' | 'mouse-expression' };
 }
 export interface TrackingAdapter {
@@ -44,12 +47,14 @@ export type PlaybackRenderer = 'canvas' | 'webgl';
 export class StandRigPlayer {
   private runtime: RigRuntime;
   private motion: MotionController;
+  private facial: FacialController;
   private values: ParameterValues;
   private frameId: number | undefined;
   private disposed = false;
   private renderer: PlaybackRenderer = 'canvas';
   private readonly resize: ResizeObserver;
   constructor(private canvas: HTMLCanvasElement, private rig: RigDocument) {
+    this.facial = new FacialController(rig);
     this.motion = new MotionController(parameterDefinitionsForRig(rig));
     this.runtime = new RigRuntime(structuredClone(rig));
     this.values = previewParameterValuesForRig(rig);
@@ -64,7 +69,10 @@ export class StandRigPlayer {
     if (!this.playing) this.render();
   }
   get rendererStatus() { return { requested: this.renderer, ...this.runtime.getWebGLMeshStatus() }; }
-  get parameters() { return { ...this.values }; }
+  get parameters() { return this.facial.evaluate(this.values,performance.now()); }
+  get baseParameters() { return { ...this.values }; }
+  get facialState() { return this.facial.snapshot(performance.now()); }
+  facialCommand(request:FacialRequest) { const result=this.facial.command(request,performance.now());this.render();return result; }
   setParameters(patch: ParameterValues) {
     const validated=validateParameterPatch(this.rig,patch);
     Object.assign(this.values,this.motion.external(validated),validated);
@@ -77,7 +85,7 @@ export class StandRigPlayer {
   clearMotion() { Object.assign(this.values,this.motion.clear());this.pause();this.resetPhysics();this.render(); }
   seekMotion(time:number) { Object.assign(this.values,this.motion.seek(time,this.values,performance.now()));this.resetPhysics();this.render(); }
   configureMotion(options:{speed?:number;loop?:boolean}) { Object.assign(this.values,this.motion.configure(options.speed,options.loop,performance.now()));this.render(); }
-  reset() { this.motion.stop();this.values = previewParameterValuesForRig(this.rig); this.runtime.resetPhysics(); this.render(); }
+  reset() { this.motion.stop();this.facial.reset();this.values = previewParameterValuesForRig(this.rig); this.runtime.resetPhysics(); this.render(); }
   play() {
     if (this.disposed) return;
     if(this.motion.snapshot().loaded)Object.assign(this.values,this.motion.play(this.values,performance.now()));
@@ -87,6 +95,6 @@ export class StandRigPlayer {
     this.frameId = requestAnimationFrame(tick);
   }
   pause() { if(this.motion.snapshot().loaded)Object.assign(this.values,this.motion.pause(performance.now()));if (this.frameId !== undefined) cancelAnimationFrame(this.frameId); this.frameId = undefined; this.render(); }
-  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.values, { transparent: true, webglWarp: this.renderer === 'webgl' }); }
+  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.facial.evaluate(this.values,performance.now()), { transparent: true, webglWarp: this.renderer === 'webgl' }); }
   dispose() { this.pause(); this.disposed = true; this.resize.disconnect(); this.runtime.dispose(); }
 }

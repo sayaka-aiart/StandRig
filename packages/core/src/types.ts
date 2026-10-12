@@ -1,4 +1,5 @@
 import type { PartBlendShape, DeformerBlendShape, ArtPathBlendShape, GlueBlendShape } from './deformTypes.js';
+import type { FacialPresets } from './facialTypes.js';
 export const RIG_SCHEMA_VERSION = "0.1.0";
 
 export const PARAMETER_IDS = [
@@ -790,6 +791,7 @@ export interface RigDocument {
   physics: RigPhysics;
   tracking?: RigTracking;
   symmetry?: RigSymmetryContract;
+  facialPresets?: FacialPresets;
 }
 
 export const DEFAULT_TRANSFORM: Transform2D = {

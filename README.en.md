@@ -25,6 +25,7 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 | Modeling | Edit, dry-run, run numeric QA, commit and restore through MCP / HTTP APIs. AI operation requires a separate MCP-compatible client |
 | AI deformation | Six deterministic Brush effects and Blend Shapes beyond ArtMesh ([API and limits](docs/DEFORM.md)) |
 | Playback | Transparent player page, sliders and numeric parameter input, motion JSON playback and an embeddable browser runtime |
+| Expressions and visemes | Register and preview expressions and A/I/U/E/O/Silence mouth presets, saved inside .srig; import/export Live2D `.exp3.json` expressions ([usage and compatibility limits](docs/FACIAL.md)) |
 | Export | Model JSON and model JSON with embedded images; use embedded images for Connect |
 | External input | APIs accepting numeric values produced by other tools; no camera tracking included |
 | OBS player page | A page usable as a Browser Source in a separately running OBS installation; no OBS control or Spout2 sender included |

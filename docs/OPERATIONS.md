@@ -4,7 +4,13 @@ Generated from `packages/core/src/operationRegistry.ts`. Read `packages/core/src
 
 TypeScript action types and Zod schemas are derived from the same registry. HTTP and MCP share a `type`-discriminated union in `packages/contracts`; unknown keys in typed objects are rejected. Run `npm run schemas` after changing types.
 
-Each operation requires `id`, `name`, `target`, `action`; `enabled` is optional. Target is `{partIds?: string[], roles?: RigPartRole[], deformerIds?: string[]}`. Confirm IDs from this model. Some actions require matching target and action IDs.
+Each operation requires `id`, `name`, `target`, `action`; `enabled` is optional. Target is `{partIds?: string[], roles?: RigPartRole[], deformerIds?: string[]}`. Confirm IDs from this model. Some actions require matching target and action IDs. `facial-presets-set` is rig-wide and requires `target:{}`; see docs/FACIAL.md for the catalog type.
+
+## facial-presets-set
+
+```ts
+{ type: "facial-presets-set"; presets: FacialPresets | null }
+```
 
 ## blend-shape-set
 

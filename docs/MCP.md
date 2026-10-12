@@ -49,12 +49,14 @@ After saving, reconnect/restart the MCP connection in your client. Confirm that 
 | `standrig_export` | Write a self-contained bundle and return its local path |
 | `standrig_playback_state` | Transient parameters, play state and output connections |
 | `standrig_playback_parameters` | Pose/expression input without editing the model |
+| `standrig_facial_catalog` | 登録済み表情・母音の一覧と設定を取得 |
+| `standrig_facial` | 登録済み表情・母音の再生、合成、解除。モデルへの保存はtransactionを使用 |
 | `standrig_motion` | Load native motion JSON; play / pause / stop / clear / seek / configure (speed, loop). See [MOTION.md](MOTION.md) |
 | `standrig_playback_control` | play / pause / reset / reload / demo-start / demo-stop / demo-pointer |
 
 動作デモは `{command:"demo-start", mode:"showcase-active"}`（既定）または `{command:"demo-start", mode:"mouse-expression"}`。マウス位置は `{command:"demo-pointer", x:0.5, y:-0.5}` のように -1〜1 の座標を渡します（画面右が+X、下が+Y）。`demo-stop` で開始前の姿勢・再生状態を復元します。通常のパラメータ入力はデモを止め、元の姿勢に入力値を適用します。保存モデルは変更しません。
 
-HTTP and MCP transactions share `@standrig/contracts`: 35 `type`-discriminated action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Named action types and schemas are generated from `packages/core/src/operationRegistry.ts` and QA types (`npm run generate`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
+HTTP and MCP transactions share `@standrig/contracts`: 36 `type`-discriminated action variants with strict nested typed objects, finite numbers and rejection of unknown keys. `expectedRevision` and `qa` are mandatory. Named action types and schemas are generated from `packages/core/src/operationRegistry.ts` and QA types (`npm run generate`); `npm test` rejects stale schemas. Typed parameter-ID maps accept arbitrary keys with declared value types. Tool errors return `isError:true`; successful JSON calls also return `structuredContent`. The service creates rollback checkpoints after commit gates pass, for both HTTP and MCP.
 
 ## Resources and workflow
 

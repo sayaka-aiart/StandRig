@@ -1138,6 +1138,185 @@
           }
         }
       }
+    },
+    "facialPresets": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "expressions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "document": {
+                "type": "object",
+                "properties": {
+                  "Version": {
+                    "type": "number",
+                    "const": 3
+                  },
+                  "Type": {
+                    "type": "string",
+                    "const": "Live2D Expression"
+                  },
+                  "FadeInTime": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60
+                  },
+                  "FadeOutTime": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60
+                  },
+                  "Parameters": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "Id": {
+                          "type": "string"
+                        },
+                        "Value": {
+                          "type": "number"
+                        },
+                        "Blend": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "const": "Add"
+                            },
+                            {
+                              "type": "string",
+                              "const": "Multiply"
+                            },
+                            {
+                              "type": "string",
+                              "const": "Overwrite"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "Id",
+                        "Value"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "Type",
+                  "Parameters"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "document"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "visemes": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "const": "pose"
+                },
+                {
+                  "type": "string",
+                  "const": "blend-shape"
+                }
+              ]
+            },
+            "fadeInTime": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 60
+            },
+            "fadeOutTime": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 60
+            },
+            "presets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "const": "A"
+                      },
+                      {
+                        "type": "string",
+                        "const": "I"
+                      },
+                      {
+                        "type": "string",
+                        "const": "U"
+                      },
+                      {
+                        "type": "string",
+                        "const": "E"
+                      },
+                      {
+                        "type": "string",
+                        "const": "O"
+                      },
+                      {
+                        "type": "string",
+                        "const": "Silence"
+                      }
+                    ]
+                  },
+                  "values": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "values"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "mode",
+            "presets"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "expressions"
+      ],
+      "additionalProperties": false
     }
   },
   "$defs": {

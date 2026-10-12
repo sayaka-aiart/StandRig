@@ -1,6 +1,7 @@
 import { matchesPartTarget as matchesTarget, type ModelingOperationTarget } from "./modelingTarget.js";
 export type { ModelingOperationTarget } from "./modelingTarget.js";
 import { executeDeformOperation } from './deformOperations.js';
+import { parseFacialPresets } from './facial.js';
 import { validateAlphaReveal } from "./alphaReveal.js";
 import { createAlphaContourArtMesh,createRectArtMesh } from "./artMesh.js";
 import type { ArtMeshAlphaSampler } from "./artMeshAsset.js";
@@ -191,6 +192,14 @@ export function executeModelingOperation(rig: RigDocument, operation: ModelingOp
 
   const result: ModelingOperationResult = { operationId: operation.id, dryRun, matchedPartIds: [], changes: [], skipped: [] };
   if (operation.enabled === false) return result;
+  if(operation.action.type==='facial-presets-set') {
+    if(Object.values(operation.target).some(v=>Array.isArray(v)&&v.length))throw Error('facial-presets-set is rig-wide; target must be empty');
+    const next=operation.action.presets===null?undefined:parseFacialPresets(operation.action.presets,rig);
+    result.matchedPartIds=['rig'];
+    if(JSON.stringify(rig.facialPresets)!==JSON.stringify(next))result.changes.push({partId:'rig',path:'facialPresets',before:rig.facialPresets,after:next});
+    if(!dryRun){if(next)rig.facialPresets=next;else delete rig.facialPresets;}
+    return result;
+  }
   if(operation.action.type==="blend-shape-set"||operation.action.type==="deform-brush")return executeDeformOperation(rig,operation,dryRun);
   if (operation.action.type === "warp-pin-binding-key") return executeWarpPinBindingKey(rig, operation, dryRun);
   if (operation.action.type === "deformer-create") return executeDeformerCreate(rig, operation, dryRun);
@@ -878,6 +887,7 @@ function validateSymmetryContract(contract: RigSymmetryContract) {
   }
 }function validateOperation(operation: ModelingOperation) {
   if (!operation?.id?.trim() || !operation.name?.trim()) throw new Error("Modeling operation requires id and name");
+  if(operation.action?.type==='facial-presets-set'){if(!operation.target||typeof operation.target!=='object'||Array.isArray(operation.target)||Object.keys(operation.target).length)throw Error('facial-presets-set is rig-wide; target must be empty');return;}
   if (!operation.target?.roles?.length && !operation.target?.partIds?.length && !operation.target?.deformerIds?.length) throw new Error("Modeling operation requires a role, partId, or deformerId target");
   const action = operation.action;
   if (!action) throw new Error("Modeling operation requires an action");

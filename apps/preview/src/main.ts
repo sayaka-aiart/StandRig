@@ -1,4 +1,5 @@
 import { PoseInput } from './poseInput';
+import { createFacialPanel } from './facialPanel';
 import { parseModelFile } from './modelFile';
 import './styles.css';
 import { createRigFromPsdFile } from '@standrig/core/importers';
@@ -90,6 +91,7 @@ async function post(url: string, body: unknown) {
   return result;
 }
 function sendPose(patch: ParameterValues) { poseInput.enqueue(patch); }
+const facialPanel = createFacialPanel({rig:()=>rig,values:()=>values,state:()=>latest,post,reload,report});
 function parameters() {
   const container = document.querySelector('#params')!;
   container.replaceChildren();
@@ -108,6 +110,7 @@ function applyState() {
   if (physicsEpoch !== latest.physicsEpoch) { runtime.resetPhysics(); physicsEpoch = latest.physicsEpoch; }
   updateMotion();
   values = { ...latest.values, ...poseInput.optimistic };
+  facialPanel.update();
   for (const input of document.querySelectorAll<HTMLInputElement>('#params input')) {
     const id = input.getAttribute('aria-label')!;
     if (document.activeElement !== input) { input.value = String(values[id]); input.parentElement!.querySelector('output')!.textContent = String(Number(values[id].toFixed(3))); }
@@ -137,7 +140,7 @@ function reload() {
     document.querySelector('#model-name')!.textContent = rig.name;
     document.querySelector<HTMLElement>('#empty')!.hidden = rig.assets.length > 0;
     qaButton.disabled = rig.assets.length === 0;
-    parameters(); applyState(); render();
+    parameters(); facialPanel.refresh(); applyState(); render();
     status.textContent = rig.assets.length ? `${rig.parts.length} parts / ${rig.assets.length} assets\n読み込み完了` : 'パーツ分け済みPSDを読み込むか、サンプルを試してください。';
   });
   return reloadQueue;

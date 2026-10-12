@@ -67,6 +67,7 @@
     "/api/bridge/pose",
     "/api/sample",
     "/api/exports/bundle",
+    "/api/playback/facial",
     "/api/playback/motion",
     "/api/playback/events",
     "/api/playback",
@@ -922,7 +923,7 @@
       "methodNotes": "Exact local service route."
     },
     {
-      "path": "/api/playback/motion",
+      "path": "/api/playback/facial",
       "methods": [
         "GET",
         "POST"
@@ -932,12 +933,22 @@
       "methodNotes": "Exact local service route."
     },
     {
+      "path": "/api/playback/motion",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 89,
+      "methodNotes": "Exact local service route."
+    },
+    {
       "path": "/api/playback/events",
       "methods": [
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 89,
+      "line": 91,
       "methodNotes": "Exact local service route."
     },
     {
@@ -946,7 +957,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 90,
+      "line": 92,
       "methodNotes": "Exact local service route."
     },
     {
@@ -955,7 +966,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 91,
+      "line": 93,
       "methodNotes": "Exact local service route."
     },
     {
@@ -964,7 +975,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 92,
+      "line": 94,
       "methodNotes": "Exact local service route."
     },
     {
@@ -973,7 +984,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 93,
+      "line": 95,
       "methodNotes": "Exact local service route."
     },
     {
@@ -983,7 +994,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 96,
+      "line": 98,
       "methodNotes": "Exact local service route."
     },
     {
@@ -992,7 +1003,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 105,
+      "line": 107,
       "methodNotes": "Exact local service route."
     }
   ]

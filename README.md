@@ -22,6 +22,7 @@
 | モデリング | MCP / HTTP APIから編集、試行、数値QA、確定、復元。AI操作には別途MCP対応クライアントが必要 |
 | AI用変形 | smooth / relax / inflate / pinch / bend / contour-follow。ArtMesh以外のBlend Shapeにも対応（[APIと制限](docs/DEFORM.md)） |
 | 再生 | 透過再生ページ、スライダー・数値パラメータ入力、モーションJSON再生、ブラウザへのランタイム組み込み |
+| 表情・母音 | 表情と「あ・い・う・え・お・無音」の口形を登録・プレビューし、.srigへ保存。表情はLive2D `.exp3.json` の読込・書出しに対応（[使い方と互換範囲](docs/FACIAL.md)） |
 | 書き出し | モデルJSON、画像込みモデルJSON。Connectへの持ち出しには画像込みを使用 |
 | 外部入力の受信 | 外部ツールが生成した数値を受け取るAPI。カメラでの追跡処理は含まない |
 | OBS用の再生ページ | 別途起動したOBSのブラウザソースに指定できる。本体にOBS制御・Spout2送信は含まない |

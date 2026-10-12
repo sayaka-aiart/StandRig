@@ -1,3 +1,5 @@
+import { FacialController } from '@standrig/runtime/facial';
+import type { FacialRequest } from '@standrig/core/facial';
 import { MotionController } from '@standrig/runtime/motion';
 import type { MotionRequest } from '@standrig/core/motion';
 import type { ServerResponse } from 'node:http';
@@ -9,6 +11,9 @@ import { demoParameters, sampleDemo } from '@standrig/runtime/demo';
 import { MOTION_PREVIEW_MODES, type MotionPreviewMode } from '@standrig/runtime/motionPreview';
 
 export class PlaybackSession {
+  private facial:FacialController;
+  private facialTimer:ReturnType<typeof setInterval>|undefined;
+  private baseValues:PlaybackSnapshot["values"];
   private motion:MotionController;
   private motionTimer:ReturnType<typeof setInterval>|undefined;
   private sequences = new Map<string, number>();
@@ -21,26 +26,28 @@ export class PlaybackSession {
   private pointer = { x: 0, y: 0 };
   private smoothedPointer = { x: 0, y: 0 };
   constructor(private rig: RigDocument) {
+    this.facial=new FacialController(rig);
+    this.baseValues=previewParameterValuesForRig(rig);
     this.motion=new MotionController(parameterDefinitionsForRig(rig));
     this.demoDefinitions = demoParameters(rig);
     this.state = { version: 1, sessionId: randomUUID(), revision: 0, modelVersion: 0, playing: false,
       physicsEpoch:0,values: previewParameterValuesForRig(rig), lastSource: null };
   }
-  snapshot() { return { ...this.state, values: { ...this.state.values }, connectedOutputs: this.streams.size,
+  snapshot() { const now=performance.now();return { ...this.state, values:this.facial.evaluate(this.baseValues,now),baseValues:{...this.baseValues},facial:this.facial.snapshot(now), connectedOutputs: this.streams.size,
     parameters: parameterDefinitionsForRig(this.rig), outputAcknowledged: false,
     motion:this.motion.snapshot(), inputContractVersion:2,
     demo: { active: !!this.demoTimer, parameterIds: this.demoDefinitions.map(p => p.id), mode: this.demoMode } }; }
   private stopDemo() {
     if (this.demoTimer) clearInterval(this.demoTimer);
     this.demoTimer = undefined;
-    if (this.demoBase) Object.assign(this.state, this.demoBase);
+    if (this.demoBase) {this.baseValues={...this.demoBase.values};this.state.playing=this.demoBase.playing;this.state.lastSource=this.demoBase.lastSource;}
     this.demoBase = undefined;
     this.pointer = { x: 0, y: 0 }; this.smoothedPointer = { x: 0, y: 0 };
   }
   private startDemo() {
     if (this.demoTimer) return;
     if (!this.demoDefinitions.length) throw new Error('No authored parameter bindings; load the sample or rig the PSD first.');
-    this.demoBase = { values: { ...this.state.values }, playing: this.state.playing, lastSource: this.state.lastSource };
+    this.demoBase = { values: { ...this.baseValues }, playing: this.state.playing, lastSource: this.state.lastSource };
     const base = this.demoBase.values;
     const started = performance.now();
     this.state.playing = true;
@@ -48,7 +55,7 @@ export class PlaybackSession {
     this.demoTimer = setInterval(() => {
       this.smoothedPointer.x += (this.pointer.x - this.smoothedPointer.x) * 0.82;
       this.smoothedPointer.y += (this.pointer.y - this.smoothedPointer.y) * 0.82;
-      this.state.values = sampleDemo(parameterDefinitionsForRig(this.rig), base, this.demoMode, (performance.now() - started) / 1000, this.smoothedPointer);
+      this.baseValues = sampleDemo(parameterDefinitionsForRig(this.rig), base, this.demoMode, (performance.now() - started) / 1000, this.smoothedPointer);
       this.broadcast();
     }, 1000 / 30);
     this.demoTimer.unref();
@@ -79,7 +86,7 @@ export class PlaybackSession {
     if (!this.sequences.has(source) && this.sequences.size >= 64) throw new Error('too many sources; reload model');
     const patch = validateParameterPatch(this.rig, values);
     this.stopDemo();
-    Object.assign(this.state.values,this.motion.external(patch), patch);
+    Object.assign(this.baseValues,this.motion.external(patch), patch);
     this.syncMotionTimer();
     this.sequences.set(source, sequence);
     this.state.lastSource = source;
@@ -99,15 +106,15 @@ export class PlaybackSession {
       const mode = options.mode ?? 'showcase-active';
       if (!MOTION_PREVIEW_MODES.includes(mode as MotionPreviewMode)) throw new Error('invalid demo mode');
       if(!this.demoDefinitions.length)throw Error('No authored parameter bindings; load the sample or rig the PSD first.');
-      Object.assign(this.state.values,this.motion.stop());this.syncMotionTimer();
+      Object.assign(this.baseValues,this.motion.stop());this.syncMotionTimer();
       if (mode !== this.demoMode) this.stopDemo();
       this.demoMode = mode as MotionPreviewMode;
       this.startDemo();
     }
     else this.stopDemo();
-    if (command === 'play') { if(this.motion.snapshot().loaded)Object.assign(this.state.values,this.motion.play(this.state.values,performance.now()));this.state.playing = true; }
-    if (command === 'pause') { if(this.motion.snapshot().loaded)Object.assign(this.state.values,this.motion.pause(performance.now()));this.state.playing = false; }
-    if (command === 'reset') { this.motion.stop();this.state.physicsEpoch=(this.state.physicsEpoch??0)+1;this.state.values = previewParameterValuesForRig(this.rig); this.state.lastSource = null; }
+    if (command === 'play') { if(this.motion.snapshot().loaded)Object.assign(this.baseValues,this.motion.play(this.baseValues,performance.now()));this.state.playing = true; }
+    if (command === 'pause') { if(this.motion.snapshot().loaded)Object.assign(this.baseValues,this.motion.pause(performance.now()));this.state.playing = false; }
+    if (command === 'reset') { this.facial.reset();this.syncFacialTimer();this.motion.stop();this.state.physicsEpoch=(this.state.physicsEpoch??0)+1;this.baseValues = previewParameterValuesForRig(this.rig); this.state.lastSource = null; }
     this.syncMotionTimer();
     this.broadcast();
     return this.snapshot();
@@ -115,29 +122,37 @@ export class PlaybackSession {
   private syncMotionTimer() {
     if(!this.motion.snapshot().running){if(this.motionTimer)clearInterval(this.motionTimer);this.motionTimer=undefined;return;}
     if(this.motionTimer)return;
-    this.motionTimer=setInterval(()=>{Object.assign(this.state.values,this.motion.tick(performance.now()));this.syncMotionTimer();this.broadcast();},1000/30);this.motionTimer.unref();
+    this.motionTimer=setInterval(()=>{Object.assign(this.baseValues,this.motion.tick(performance.now()));this.syncMotionTimer();this.broadcast();},1000/30);this.motionTimer.unref();
   }
+  private syncFacialTimer(){
+    if(!this.facial.snapshot(performance.now()).transitioning){if(this.facialTimer)clearInterval(this.facialTimer);this.facialTimer=undefined;return;}
+    if(this.facialTimer)return;
+    this.facialTimer=setInterval(()=>{this.broadcast();this.syncFacialTimer();},1000/30);this.facialTimer.unref();
+  }
+  facialCatalog(){return this.facial.catalog();}
+  facialCommand(request:FacialRequest){this.facial.command(request,performance.now());this.syncFacialTimer();this.broadcast();return this.snapshot();}
   motionDocument(){return this.motion.document();}
   motionCommand(input:MotionRequest){
     const now=performance.now();
-    if(input.action==='load'){this.motion.prepare(input.clip);this.stopDemo();Object.assign(this.state.values,this.motion.load(input.clip));this.state.playing=false;}
-    else if(input.action==='play'){if(!this.motion.snapshot().loaded)throw Error('no motion loaded');this.stopDemo();Object.assign(this.state.values,this.motion.play(this.state.values,now));this.state.playing=true;}
-    else if(input.action==='pause'){if(!this.motion.snapshot().loaded)throw Error('no motion loaded');this.stopDemo();Object.assign(this.state.values,this.motion.pause(now));this.state.playing=false;}
-    else if(input.action==='stop'||input.action==='clear'){this.stopDemo();Object.assign(this.state.values,input.action==='stop'?this.motion.stop():this.motion.clear());this.state.playing=false;}
-    else if(input.action==='seek'){const motion=this.motion.snapshot();if(!motion.loaded||!Number.isFinite(input.time)||input.time<0||input.time>motion.duration)throw Error('seek outside loaded motion duration');this.stopDemo();Object.assign(this.state.values,this.motion.seek(input.time,this.state.values,now));this.state.playing=this.motion.snapshot().running;}
-    else if(input.action==='configure'){Object.assign(this.state.values,this.motion.configure(input.speed,input.loop,now));}
+    if(input.action==='load'){this.motion.prepare(input.clip);this.stopDemo();Object.assign(this.baseValues,this.motion.load(input.clip));this.state.playing=false;}
+    else if(input.action==='play'){if(!this.motion.snapshot().loaded)throw Error('no motion loaded');this.stopDemo();Object.assign(this.baseValues,this.motion.play(this.baseValues,now));this.state.playing=true;}
+    else if(input.action==='pause'){if(!this.motion.snapshot().loaded)throw Error('no motion loaded');this.stopDemo();Object.assign(this.baseValues,this.motion.pause(now));this.state.playing=false;}
+    else if(input.action==='stop'||input.action==='clear'){this.stopDemo();Object.assign(this.baseValues,input.action==='stop'?this.motion.stop():this.motion.clear());this.state.playing=false;}
+    else if(input.action==='seek'){const motion=this.motion.snapshot();if(!motion.loaded||!Number.isFinite(input.time)||input.time<0||input.time>motion.duration)throw Error('seek outside loaded motion duration');this.stopDemo();Object.assign(this.baseValues,this.motion.seek(input.time,this.baseValues,now));this.state.playing=this.motion.snapshot().running;}
+    else if(input.action==='configure'){Object.assign(this.baseValues,this.motion.configure(input.speed,input.loop,now));}
     else throw Error('invalid motion command');
     if(['load','seek','stop','clear'].includes(input.action))this.state.physicsEpoch=(this.state.physicsEpoch??0)+1;
     if(input.action!=='configure'||this.motion.snapshot().active)this.state.lastSource=this.motion.snapshot().active?'standrig_motion':null;
     this.syncMotionTimer();this.broadcast();return this.snapshot();
   }
   reload(rig: RigDocument) {
+    this.facial.reset();this.syncFacialTimer();this.facial=new FacialController(rig);
     this.motion.clear();this.syncMotionTimer();this.motion=new MotionController(parameterDefinitionsForRig(rig));
     this.state.physicsEpoch=(this.state.physicsEpoch??0)+1;
     this.stopDemo(); this.demoDefinitions = demoParameters(rig);
     this.rig = rig; this.sequences.clear(); this.state.modelVersion++;
-    this.state.values = previewParameterValuesForRig(rig); this.state.lastSource = null;
+    this.baseValues = previewParameterValuesForRig(rig); this.state.lastSource = null;
     this.broadcast();
   }
-  close() { this.motion.clear();this.syncMotionTimer();this.stopDemo(); for (const stream of this.streams) stream.end(); this.streams.clear(); }
+  close() { this.facial.reset();this.syncFacialTimer();this.motion.clear();this.syncMotionTimer();this.stopDemo(); for (const stream of this.streams) stream.end(); this.streams.clear(); }
 }

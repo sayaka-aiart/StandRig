@@ -1,12 +1,12 @@
 import { bridgeReadSchema, bridgePoseSchema } from '@standrig/contracts/bridge';
-import { transactionSchema, motionRequestSchema } from '@standrig/contracts';
+import { transactionSchema, motionRequestSchema, facialRequestSchema } from '@standrig/contracts';
 import { McpServer } from '@modelcontextprotocol/server';
 import * as z from 'zod';
 import { readFile } from 'node:fs/promises';
 
 const repository = new URL('../../../', import.meta.url);
 const documents = {
-  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md', deform: 'docs/DEFORM.md', motion: 'docs/MOTION.md',
+  contract: 'AGENTS.md', guide: 'AI_OPERATING_GUIDE.md', operations: 'docs/OPERATIONS.md', deform: 'docs/DEFORM.md', motion: 'docs/MOTION.md', facial: 'docs/FACIAL.md',
   architecture: 'docs/ARCHITECTURE.md', adapters: 'docs/ADAPTERS.md', api: 'docs/API.md'
 };
 const values = z.record(z.string(), z.number().finite());
@@ -104,6 +104,8 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
   tool('standrig_playback_control', 'Play, pause, reset or reload. demo-start runs Showcase Fast & Wide or Mouse + Expressions; demo-stop restores the starting pose. demo-pointer supplies normalized mouse x/y. Manual parameter input stops the demo. View in preview or /player.', z.object({ command: z.enum(['play','pause','reset','reload','demo-start','demo-stop','demo-pointer']), mode: z.enum(['showcase-active','mouse-expression']).optional(), x: z.number().min(-1).max(1).optional(), y: z.number().min(-1).max(1).optional() }), false,
     (input) => request(input.command === 'reload' ? '/api/playback/reload' : '/api/playback/control', 'POST', input));
   tool('standrig_motion', 'Load a standrig-motion v1 clip, play/pause/stop, seek in seconds, configure speed/loop, or clear. Transient only. Live2D motion3 import is not installed. See standrig://docs/motion.', motionRequestSchema, false, input=>request('/api/playback/motion','POST',input));
+  tool('standrig_facial_catalog', 'Read registered expression and viseme IDs/poses. Author via facial-presets-set in a modeling transaction; see standrig://docs/facial.', z.strictObject({}), true,()=>request('/api/playback/facial'));
+  tool('standrig_facial', 'Select a registered expression, select/mix visemes, or clear a facial layer with fades. Transient only; combines with live motion/tracking before physics.', facialRequestSchema, false,input=>request('/api/playback/facial','POST',input));
   tool('standrig_bridge_status', 'Check the optional external Cubism Bridge. Credentials are configured only on the service.', z.strictObject({}), true, () => request('/api/bridge/status'));
   tool('standrig_bridge_read', 'Read Cubism Editor through the external Bridge. Requires an idle Bridge; ModelUID is a Cubism UID, not a StandRig part ID.', bridgeReadSchema, true, input => request('/api/bridge/read','POST',input));
   tool('standrig_bridge_pose', 'Set or clear transient Cubism parameter overrides. Does not save, convert or synchronize the StandRig model. No automatic retries.', bridgePoseSchema, false, input => request('/api/bridge/pose','POST',input));

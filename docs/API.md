@@ -171,3 +171,11 @@ See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/rea
 ### Embedded-image file extension
 
 The preview exports the embedded `rig` from `/api/bundle` as `model.srig`. Its content remains the same RigDocument JSON, not the bundle envelope. The preview accepts `.srig` and existing `.json` model files through the same validated import transaction. HTTP JSON bodies, bundle format/version and ordinary `rig.json` exports are unchanged.
+
+## Optional Cubism connection
+
+See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/read and /api/bridge/pose.
+
+## Expressions and visemes
+
+GET/POST `/api/playback/facial` discovers and previews registered facial presets. Persistent catalogs use `facial-presets-set` in `/api/modeling/transaction`. See [FACIAL.md](FACIAL.md) for schemas, composition, `.exp3.json` interchange and limitations.

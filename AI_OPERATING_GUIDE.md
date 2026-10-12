@@ -4,7 +4,7 @@ You are operating StandRig, a local modeling and playback engine accessed throug
 
 ## Connection and first reads
 
-For MCP setup and the 12 available tools, read `docs/MCP.md`. Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide` via MCP resources. For imports, use only a parts-separated PSD with at least two drawable image layers; PNG/flattened PSD/PSB inputs are not supported. The parser cannot certify whether the layer separation is suitable for animation.
+For MCP setup and the available tools, read `docs/MCP.md`. Read `standrig://docs/contract` (AGENTS.md), then `standrig://docs/guide` via MCP resources. For imports, use only a parts-separated PSD with at least two drawable image layers; PNG/flattened PSD/PSB inputs are not supported. The parser cannot certify whether the layer separation is suitable for animation.
 
 Default base URL: `http://127.0.0.1:5180`. Start with `GET /api/context`.
 Read `context.revision`, `context.semanticHash`, `context.summary.counts`, role/modeling audit and freeze state. Never reuse IDs or revisions from an example or another model.
@@ -75,3 +75,7 @@ For numeric Brush operations and owner-local Part/Deformer/ArtPath/Glue Blend Sh
 ## Optional Cubism connection
 
 See [docs/CUBISM-BRIDGE.md](docs/CUBISM-BRIDGE.md) for the separate HTTP adapter, connection status, read queries and transient pose tools.
+
+## Expressions and visemes
+
+Read `docs/FACIAL.md` / `standrig://docs/facial`. Discover the current catalog via `standrig_facial_catalog` or GET `/api/playback/facial`. Register versioned catalogs with `facial-presets-set`, `target:{}`, in a revision-checked transaction. Preserve other entries when replacing the catalog. Preview or clear with `standrig_facial`; it does not persist. Registration only stores parameter operations/poses and does not create missing mouth geometry or keyforms. Use explicit IDs/mappings for exp3 import; the mouth-open compatibility alias is the only automatic mapping.
