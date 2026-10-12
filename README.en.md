@@ -25,6 +25,7 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 | Modeling | Edit, dry-run, run numeric QA, commit and restore through MCP / HTTP APIs. AI operation requires a separate MCP-compatible client |
 | AI deformation | Six deterministic Brush effects and Blend Shapes beyond ArtMesh ([API and limits](docs/DEFORM.md)) |
 | Playback | Transparent player page, sliders and numeric parameter input, motion JSON playback and an embeddable browser runtime |
+| Audio lip sync | Estimate five speaker-calibrated vowels from recording input and play authored mouth targets; gain/gate and additional mouth delay |
 | Expressions and visemes | Register and preview expressions and A/I/U/E/O/Silence mouth presets, saved inside .srig; import/export Live2D `.exp3.json` expressions ([usage and compatibility limits](docs/FACIAL.md)) |
 | Export | Model JSON and model JSON with embedded images; use embedded images for Connect |
 | External input | APIs accepting numeric values produced by other tools; no camera tracking included |
@@ -42,6 +43,7 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 | Standalone Windows playback | Load embedded-image model JSON and render without running StandRig or a browser |
 | Motion and idle | StandRig motion playback, breathing, sway and smooth random micro-movement |
 | External parameter API | Local HTTP discovery, temporary overrides and clear; call Connect directly without running StandRig |
+| Audio lip sync | Estimate five speaker-calibrated vowels from recording input and play authored mouth targets; gain/gate and additional mouth delay |
 | Expressions and visemes | Select, adjust strength, mix and clear presets authored in StandRig and exported in .srig; Connect UI and HTTP API |
 | Model slots | Save a model copy and tracking settings inside the app |
 | OBS output | Output window for Game Capture / Window Capture and optional Spout2 sending. OBS is a separate installation |
@@ -195,7 +197,7 @@ Overrides affect only supplied parameters and expire after one second by default
 
 Author expressions and visemes in StandRig and export an embedded-image `.srig`. Update/build a compatible Connect and select entries in its `表情・母音` tab. Connect's **GET / POST `/api/v1/facial`** discovers catalog/state, selects expressions, selects/mixes vowels and clears layers, using the same authentication/model session as numeric input. Commands are applied on the renderer thread. Selection persists until cleared and coexists with camera tracking/motion; explicit numeric overrides take precedence. See [Connect facial usage/API](https://github.com/sayaka-aiart/standrig-connect/blob/main/docs/FACIAL-API.md). Older Connect builds cannot play the new catalog.
 
-Registration/editing and Live2D `.exp3.json` import/export belong to StandRig; camera/OBS output and selection from external applications belong to Connect. Audio vowel recognition is not implemented. Connect is optional; StandRig's browser playback and external numeric input remain available.
+Registration/editing and Live2D `.exp3.json` import/export belong to StandRig; camera/OBS output and selection from external applications belong to Connect. Connect provides calibrated audio vowel matching through a Unity-free uLipSync MFCC adaptation. Its `リップシンク` tab selects recording input, calibrates your five vowels and enables application, with 0–2000ms additional mouth-only delay. Register A/I/U/E/O/Silence in the model. Connect does not forward broadcast audio or automatically synchronize it. See [audio routing/settings](https://github.com/sayaka-aiart/standrig-connect/blob/main/docs/LIPSYNC.md). Audio estimation/capture and synchronization adjustment belong to Connect, not StandRig itself. Connect is optional; StandRig's browser playback and external numeric input remain available.
 
 ### Connect to Cubism API Bridge
 
