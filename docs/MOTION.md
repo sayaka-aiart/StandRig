@@ -22,6 +22,8 @@ Times are seconds. Values are absolute, model-space numeric parameter values. A 
 
 Each key optionally describes its outgoing segment: `{"kind":"linear"}` (default), `{"kind":"hold"}`, `{"kind":"inverse-hold"}`, or `{"kind":"bezier","control1":{"time":0.3,"value":0},"control2":{"time":0.7,"value":20}}`. Bezier controls use absolute time/value coordinates; control times must be monotone and inside the segment. Time is inverted before evaluating the cubic value. Hold keeps the starting value until the next key; inverse-hold jumps immediately after the starting key. Exactly at a key, that key's value wins. Outside a track's key range, endpoints are held. The last key cannot have an outgoing segment.
 
+Sampling bounds floating-point roundoff to the segment's control hull: the endpoint interval for linear segments, and the interval containing both endpoints and both controls for Bezier segments. Keys exactly at a parameter limit therefore remain playable. This does not relax validation of authored values or remove intentional Bezier movement beyond the endpoint interval.
+
 Unknown fields, unknown formats/versions, nonfinite numbers, duplicate tracks and nonincreasing key times are rejected. Duration is >0 and <=3600 seconds; 1..256 tracks, 1..4096 keys per track, <=50000 keys total. Names and parameter IDs are at most 160 characters. Key times must be in [0,duration]. Keys and Bezier control values must fit the loaded model's parameter ranges (conservative control-hull validation, no silent clamping). HTTP accepts at most 1 MiB including the request envelope; the UI also checks file size. JSON structure and numeric bounds are shared by HTTP/MCP; model-dependent and cross-field checks run in core before replacing the current clip.
 
 ## HTTP and MCP

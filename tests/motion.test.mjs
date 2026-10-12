@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {setTimeout as delay} from 'node:timers/promises';
 import {parseMotion,sampleMotion,validateMotionParameters,importMotionWith} from '@standrig/core/motion';
 import {MotionController} from '@standrig/runtime/motion';
-import {StandRigPlayer} from '@standrig/runtime/playback';
+import {StandRigPlayer,validateParameterPatch} from '@standrig/runtime/playback';
 import {parameterDefinitionsForRig,previewParameterValuesForRig} from '@standrig/core/parameters';
 import {motionRequestSchema} from '@standrig/contracts';
 import {PlaybackSession} from '../apps/service/dist/playback.js';
@@ -28,6 +28,52 @@ test('native curves sample exact keys, endpoint holds and time-inverted Bezier',
  assert.equal(sampleMotion(late,0.5).ParamAngleZ,0);
  assert.throws(()=>sampleMotion(c,NaN));
  const huge=parseMotion(changed(c=>{c.tracks[0].keys[0].value=-1e308;c.tracks[0].keys[1].value=1e308;}));assert.equal(sampleMotion(huge,1).ParamAngleZ,0);
+});
+
+test('boundary-valued curves never send floating-point overshoot to Player validation',()=>{
+ for(const value of [-30,30])for(const kind of ['linear','bezier']){
+  const boundary=parseMotion({format:'standrig-motion',version:1,name:'Boundary',duration:1,tracks:[{parameter:'ParamAngleZ',keys:[
+   {time:0,value,segment:kind==='bezier'?{kind,control1:{time:0.2,value},control2:{time:0.8,value}}:{kind}},
+   {time:1,value}
+  ]}]});
+  validateMotionParameters(boundary,defs);
+  for(let i=0;i<=1000;i++){
+   const patch=sampleMotion(boundary,i/1000);
+   assert.equal(patch.ParamAngleZ,value,`${kind} ${value} at ${i/1000}`);
+   assert.deepEqual(validateParameterPatch(rig,patch),patch);
+  }
+ }
+ // Bezier may intentionally leave the endpoint interval, but must remain in its control hull.
+ const bulge=parseMotion(changed(c=>{c.tracks[0].keys[0].segment={kind:'bezier',control1:{time:0.5,value:30},control2:{time:1.5,value:30}};c.tracks[0].keys[1].value=0;}));
+ validateMotionParameters(bulge,defs);
+ assert.equal(sampleMotion(bulge,1).ParamAngleZ,22.5);
+ for(const kind of ['linear','bezier'])for(const value of [-30-1e-10,30+1e-10]){
+  const invalid=changed(c=>{if(kind==='linear')c.tracks[0].keys[1].value=value;else c.tracks[0].keys[0].segment={kind,control1:{time:0.5,value},control2:{time:1.5,value:0}};});
+  assert.throws(()=>validateMotionParameters(parseMotion(invalid),defs),/outside model range/);
+  assert.throws(()=>validateParameterPatch(rig,{ParamAngleZ:value}),/out-of-range/);
+ }
+});
+
+test('service boundary motion snapshots remain playable by the actual embedded Player',()=>{
+ const previous=Object.fromEntries(['ResizeObserver','requestAnimationFrame','cancelAnimationFrame'].map(k=>[k,globalThis[k]]));
+ const frames=new Map();let next=0;
+ globalThis.ResizeObserver=class{observe(){}disconnect(){}};
+ globalThis.requestAnimationFrame=callback=>{frames.set(++next,callback);return next;};
+ globalThis.cancelAnimationFrame=id=>frames.delete(id);
+ const session=new PlaybackSession(rig);let player;
+ try {
+  player=new StandRigPlayer({getContext:()=>null},rig);player.play();
+  for(const value of [-30,30])for(const kind of ['linear','bezier']){
+   session.motionCommand({action:'load',clip:{format:'standrig-motion',version:1,name:'Boundary',duration:1,tracks:[{parameter:'ParamAngleZ',keys:[
+    {time:0,value,segment:kind==='bezier'?{kind,control1:{time:0.2,value},control2:{time:0.8,value}}:{kind}},{time:1,value}
+   ]}]}});
+   for(const time of [0.002,0.008,0.063,0.271,0.499,0.999,1]){
+    const state=session.motionCommand({action:'seek',time});
+    assert.doesNotThrow(()=>player.setParameters(state.values));
+    assert.equal(player.parameters.ParamAngleZ,value);assert.equal(player.playing,true);
+   }
+  }
+ } finally {session.close();player?.dispose();for(const [key,value]of Object.entries(previous)){if(value===undefined)delete globalThis[key];else globalThis[key]=value;}}
 });
 
 test('native parser rejects invalid format, structure, bounds and lossy ambiguity',()=>{

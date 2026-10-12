@@ -68,6 +68,9 @@ export function validateMotionParameters(clip: MotionClip, parameters: Parameter
     }
 }
 const cubic = (a: number, b: number, c: number, d: number, t: number) => { const u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; };
+// Convex interpolation stays inside its control hull mathematically. Restore
+// that bound after floating-point arithmetic so valid boundary keys remain valid.
+const withinControlHull = (value: number, ...controls: number[]) => Math.max(Math.min(...controls), Math.min(Math.max(...controls), value));
 export function sampleMotionTrack(track: MotionTrack, time: number): number {
     const keys = track.keys;
     if (time <= keys[0].time)
@@ -99,10 +102,10 @@ export function sampleMotionTrack(track: MotionTrack, time: number): number {
             else
                 right = t;
         }
-        return cubic(a.value, s.control1.value, s.control2.value, b.value, (left + right) / 2);
+        return withinControlHull(cubic(a.value, s.control1.value, s.control2.value, b.value, (left + right) / 2), a.value, s.control1.value, s.control2.value, b.value);
     }
     const fraction = (time - a.time) / (b.time - a.time);
-    return (1 - fraction) * a.value + fraction * b.value;
+    return withinControlHull((1 - fraction) * a.value + fraction * b.value, a.value, b.value);
 }
 /** Sample a previously validated clip. Values before/after a track's keys hold endpoints. */
 export function sampleMotion(clip: MotionClip, time: number): ParameterValues { if (!Number.isFinite(time))
