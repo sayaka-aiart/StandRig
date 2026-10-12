@@ -38,10 +38,11 @@ This is an actual screenshot of an imported character PSD. The character's PSD a
 
 | Feature | Provided by Connect |
 | --- | --- |
-| Camera tracking | Head, eyelids, gaze and mouth tracking, adjustment and calibration. Body motion is inferred from the face |
+| Camera tracking | Head, eyelids, gaze and mouth tracking, adjustment and calibration. Optional upper-body tracking estimates body motion from shoulders/hips |
 | Standalone Windows playback | Load embedded-image model JSON and render without running StandRig or a browser |
 | Motion and idle | StandRig motion playback, breathing, sway and smooth random micro-movement |
 | External parameter API | Local HTTP discovery, temporary overrides and clear; call Connect directly without running StandRig |
+| Expressions and visemes | Select, adjust strength, mix and clear presets authored in StandRig and exported in .srig; Connect UI and HTTP API |
 | Model slots | Save a model copy and tracking settings inside the app |
 | OBS output | Output window for Game Capture / Window Capture and optional Spout2 sending. OBS is a separate installation |
 
@@ -186,13 +187,15 @@ The following setup is optional and requires separate applications.
 
 After modeling and checking the movement in StandRig, click **「画像込みモデルを書き出す（.srig）」 (Export model JSON with embedded images)** and open that JSON in Connect's Model tab. This single file includes the artwork, so StandRig, a browser and the original PSD are not needed during Connect playback. Use the embedded-image export, rather than the ordinary JSON export that omits image data.
 
-Processing continues while Connect's control window is minimized or in the system tray. Keep the output window visible for OBS Game Capture / Window Capture. Spout2 allows it to be hidden, but requires a Spout-enabled build and a separately installed OBS receiver plugin. Body motion is inferred from the face, not full-body tracking.
+Processing continues while Connect's control window is minimized or in the system tray. Keep the output window visible for OBS Game Capture / Window Capture. Spout2 allows it to be hidden, but requires a Spout-enabled build and a separately installed OBS receiver plugin. Optional upper-body tracking estimates body orientation from shoulders/hips; arms and full-body tracking are not supported.
 
 Connect exposes its external parameter API at `http://127.0.0.1:22036`: discover parameter IDs and ranges, temporarily override values, and clear selected or all overrides. AI scripts and other tools can call it directly without running StandRig. Credentials are stored in `%LOCALAPPDATA%\StandRigConnect\api-session.json`; Connect's API tab shows the location. Never share or commit this file.
 
-Overrides affect only supplied parameters and expire after one second by default (configurable from 100 to 10000ms), restoring ordinary input. Renew before expiry for continuous control. Retrieve a new model session ID after switching models. Stream Deck integration can use scripts or actions supporting HTTP calls; a dedicated plugin and expression-switching API are not implemented.
+Overrides affect only supplied parameters and expire after one second by default (configurable from 100 to 10000ms), restoring ordinary input. Renew before expiry for continuous control. Retrieve a new model session ID after switching models. Stream Deck integration can use scripts or actions supporting HTTP calls; a dedicated plugin and built-in hotkey configuration are not implemented.
 
-Connect is optional; StandRig's browser playback and external numeric input remain available.
+Author expressions and visemes in StandRig and export an embedded-image `.srig`. Update/build a compatible Connect and select entries in its `表情・母音` tab. Connect's **GET / POST `/api/v1/facial`** discovers catalog/state, selects expressions, selects/mixes vowels and clears layers, using the same authentication/model session as numeric input. Commands are applied on the renderer thread. Selection persists until cleared and coexists with camera tracking/motion; explicit numeric overrides take precedence. See [Connect facial usage/API](https://github.com/sayaka-aiart/standrig-connect/blob/main/docs/FACIAL-API.md). Older Connect builds cannot play the new catalog.
+
+Registration/editing and Live2D `.exp3.json` import/export belong to StandRig; camera/OBS output and selection from external applications belong to Connect. Audio vowel recognition is not implemented. Connect is optional; StandRig's browser playback and external numeric input remain available.
 
 ### Connect to Cubism API Bridge
 

@@ -65,14 +65,14 @@
     {
       "path": "README.en.md",
       "normalization": "lf",
-      "bytes": 18970,
-      "sha256": "9b03226da34a58299eed9fec2d4ac32981a0cb7c44485ad98864f98b7369b8b1"
+      "bytes": 20095,
+      "sha256": "713213261799651dc82c9d15c3bfa3e0da614367c75a9a68e28eaf0a9717f7d6"
     },
     {
       "path": "README.md",
       "normalization": "lf",
-      "bytes": 21577,
-      "sha256": "a45eee32cc2c0f017d196925c54460a4247a84d510240e57c1c10a1fd423afd3"
+      "bytes": 22931,
+      "sha256": "aea3ce3727b3c7af3a39bc75c96c779aa51876f5c4a15177650527926f282ef3"
     },
     {
       "path": "SECURITY.md",
@@ -305,8 +305,8 @@
     {
       "path": "docs/FACIAL.md",
       "normalization": "lf",
-      "bytes": 9907,
-      "sha256": "54d17b6f5d793b4011c2b8b5b20a7b46bf70107c2650b5142084d296061e8773"
+      "bytes": 10404,
+      "sha256": "ccddb2bb6ca0d98cc64e23b3f5ca04b24a0e7b9250cade4dba6ff0f9d4b561b8"
     },
     {
       "path": "docs/GPU_PLAYBACK.md",
