@@ -103,15 +103,17 @@ export function resolveRigFrame(
     : emptyPhysicsFrame();
   const effectiveValues = applyPhysicsParameterOffsets(values, physics.parameterOffsets);
   const deformerStates = evaluateDeformers(rig.deformers ?? [], effectiveValues, physics.deformerOffsets);
-  const neutralDeformerStates = evaluateDeformers(rig.deformers ?? [], defaultParameterValues(rig));
+  // Skinning uses only neutral matrices. Shared fields and warp pins do not
+  // contribute to those matrices, so do not resample their keyframes here.
+  const neutralDeformerStates = evaluateDeformerStates(rig.deformers ?? [], defaultParameterValues(rig), undefined, false);
   return {
     values: effectiveValues,
     physics,
     skinningTransforms: resolveDeformerSkinningTransforms(deformerStates, neutralDeformerStates),
-    parts: evaluateRigParts(rig, effectiveValues, baseMatrix, {
+    parts: evaluateRigPartsWithDeformers(rig, effectiveValues, baseMatrix, {
       physicsOffsets: physics.partOffsets,
       physicsDeformerOffsets: physics.deformerOffsets
-    })
+    }, deformerStates)
   };
 }
 
@@ -154,9 +156,20 @@ export function evaluateRigParts(
   baseMatrix: Matrix2D,
   options: RigEvaluationOptions = {}
 ): Map<string, EvaluatedPartState> {
+  return evaluateRigPartsWithDeformers(rig, values, baseMatrix, options,
+    evaluateDeformers(rig.deformers ?? [], values, options.physicsDeformerOffsets));
+}
+
+/** Frame-local reuse only: editing a rig between calls always evaluates fresh data. */
+function evaluateRigPartsWithDeformers(
+  rig: RigDocument,
+  values: ParameterValues,
+  baseMatrix: Matrix2D,
+  options: RigEvaluationOptions,
+  deformerStates: ReadonlyMap<string, EvaluatedDeformerState>
+): Map<string, EvaluatedPartState> {
   const byId = new Map(rig.parts.map((part) => [part.id, part]));
   const deformers = rig.deformers ?? [];
-  const deformerStates = evaluateDeformers(deformers, values, options.physicsDeformerOffsets);
   const computed = new Map<string, EvaluatedPartState>();
   const visiting = new Set<string>();
 
@@ -220,6 +233,15 @@ export function evaluateDeformers(
   values: ParameterValues,
   physicsOffsets: Map<string, Partial<Record<TransformProperty, number>>> | undefined = undefined
 ): Map<string, EvaluatedDeformerState> {
+  return evaluateDeformerStates(deformers, values, physicsOffsets, true);
+}
+
+function evaluateDeformerStates(
+  deformers: RigDeformer[],
+  values: ParameterValues,
+  physicsOffsets: Map<string, Partial<Record<TransformProperty, number>>> | undefined,
+  includeWarpFields: boolean
+): Map<string, EvaluatedDeformerState> {
   const byId = new Map(deformers.map((deformer) => [deformer.id, deformer]));
   const computed = new Map<string, EvaluatedDeformerState>();
   const visiting = new Set<string>();
@@ -239,14 +261,14 @@ export function evaluateDeformers(
     const parent = deformer.parentId ? byId.get(deformer.parentId) : undefined;
     const parentComputed = parent ? computeDeformer(parent) : { matrix: identityMatrix(), opacity: 1, visible: true, pose: zeroPose(), warp: undefined };
     const pose = resolveDeformerPose(deformer, values, physicsOffsets?.get(deformer.id));
-    const ownWarp = resolveDeformerWarp(deformer, values, sampleBinding);
+    const ownWarp = includeWarpFields ? resolveDeformerWarp(deformer, values, sampleBinding) : undefined;
     const result: EvaluatedDeformerState = {
       matrix: multiplyMatrices(parentComputed.matrix, deformerMatrix(deformer, pose)),
       opacity: parentComputed.opacity * pose.opacity,
       visible: parentComputed.visible && deformer.visible,
       pose,
       warp: mergeResolvedWarpDeformers(parentComputed.warp, ownWarp),
-      sharedWarps: mergeSharedWarpFields(parentComputed.sharedWarps, deformer.sharedWarp ? [resolveSharedShape(deformer.sharedWarp, deformer.blendShapes, values)!] : undefined)
+      sharedWarps: includeWarpFields ? mergeSharedWarpFields(parentComputed.sharedWarps, deformer.sharedWarp ? [resolveSharedShape(deformer.sharedWarp, deformer.blendShapes, values)!] : undefined) : undefined
     };
     computed.set(deformer.id, result);
     visiting.delete(deformer.id);

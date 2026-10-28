@@ -20,20 +20,35 @@ export function applyTransformShapes(pose: Transform2D, shapes: Array<BlendWeigh
 export function resolveSharedShape(field: RigSharedWarpField | undefined, shapes: DeformerBlendShape[] | undefined, values: ParameterValues) {
     if (!field || (!shapes?.some(s => s.sharedPoints?.length) && !field.controlPoints.some(p=>p.bindings?.length)))
         return field;
-    const result = structuredClone(field);
+    // Key arrays are immutable during evaluation. Copy only frame-local geometry;
+    // cloning thousands of unchanged keyframes dominates live shared-warp frames.
+    const result = {
+        ...field,
+        bounds: { ...field.bounds },
+        grid: { ...field.grid },
+        controlPoints: field.controlPoints.map(point => ({ ...point }))
+    };
     for (const point of result.controlPoints) for(const binding of (point.bindings??[]).slice(0,16)) {
         const value=sampleBinding(binding,values[binding.parameter]??0);
         point[binding.property]=binding.additive===false?value:point[binding.property]+value;
     }
-    for (const shape of shapes ?? [])
+    // Keep the first matching id, as Array.find did, including malformed input
+    // with duplicate ids. One index and one weight per shape replace repeated scans.
+    const pointsById = new Map<string, typeof result.controlPoints[number]>();
+    if (shapes?.some(shape => shape.sharedPoints?.length)) {
+        for (const point of result.controlPoints) if (!pointsById.has(point.id)) pointsById.set(point.id, point);
+    }
+    for (const shape of shapes ?? []) {
+        if (!shape.sharedPoints?.length) continue;
+        const w = blendWeight(shape, values);
         for (const delta of shape.sharedPoints ?? []) {
-            const point = result.controlPoints.find(p => p.id === delta.id);
+            const point = pointsById.get(delta.id);
             if (point) {
-                const w = blendWeight(shape, values);
                 point.offsetX += delta.x * w;
                 point.offsetY += delta.y * w;
             }
         }
+    }
     return result;
 }
 export function validateBlendWeight(shape: BlendWeight, rig: RigDocument) {
