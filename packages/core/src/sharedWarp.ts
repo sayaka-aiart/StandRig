@@ -48,6 +48,36 @@ export function normalizeSharedWarpField(value: Partial<SharedWarpField> | undef
 /** Compile a snapshot for repeated sampling within one evaluation frame. */
 export function createSharedWarpSampler(field: SharedWarpField) {
   const snapshot = { ...field, bounds: { ...field.bounds }, grid: { ...field.grid } };
+  const { columns, rows } = snapshot.grid;
+  // Normalized grids are small and rectangular. Index their coordinates once
+  // instead of constructing four string keys for every projected vertex.
+  if (Number.isInteger(columns) && columns >= 1 && columns <= 16 && Number.isInteger(rows) && rows >= 1 && rows <= 16) {
+    const stride = columns + 1;
+    const offsetsX = new Float64Array(stride * (rows + 1));
+    const offsetsY = new Float64Array(offsetsX.length);
+    for (const point of field.controlPoints) {
+      if (!Number.isInteger(point.column) || !Number.isInteger(point.row) || point.column < 0 || point.column > columns || point.row < 0 || point.row > rows) continue;
+      const index = point.row * stride + point.column;
+      // Last duplicate wins, including a disabled control replacing an active one.
+      offsetsX[index] = point.enabled === false ? 0 : point.offsetX;
+      offsetsY[index] = point.enabled === false ? 0 : point.offsetY;
+    }
+    return (x: number, y: number) => {
+      if (!snapshot.enabled) return { x: 0, y: 0 };
+      const gx = clamp((x - snapshot.bounds.left) / snapshot.bounds.width, 0, 1) * columns;
+      const gy = clamp((y - snapshot.bounds.top) / snapshot.bounds.height, 0, 1) * rows;
+      const x0 = Math.floor(gx), y0 = Math.floor(gy);
+      const x1 = Math.min(columns, x0 + 1), y1 = Math.min(rows, y0 + 1);
+      const tx = gx - x0, ty = gy - y0;
+      const a = y0 * stride + x0, b = y0 * stride + x1;
+      const c = y1 * stride + x0, d = y1 * stride + x1;
+      return {
+        x: bilinear(offsetsX[a], offsetsX[b], offsetsX[c], offsetsX[d], tx, ty),
+        y: bilinear(offsetsY[a], offsetsY[b], offsetsY[c], offsetsY[d], tx, ty)
+      };
+    };
+  }
+  // Retain the reference behavior for nonstandard, unnormalized inputs.
   const points = new Map(field.controlPoints.map(point => [`${point.column}|${point.row}`, { ...point }]));
   return (x: number, y: number) => sampleIndexedSharedWarpField(snapshot, points, x, y);
 }

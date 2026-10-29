@@ -277,7 +277,9 @@ export function isValidArtMesh(mesh: RigArtMesh | undefined, width?: number, hei
     const a = mesh.triangles[index];
     const b = mesh.triangles[index + 1];
     const c = mesh.triangles[index + 2];
-    if (![a, b, c].every((value) => Number.isInteger(value) && value >= 0 && value < mesh.vertices.length) || a === b || b === c || a === c) {
+    if (!Number.isInteger(a) || a < 0 || a >= mesh.vertices.length ||
+        !Number.isInteger(b) || b < 0 || b >= mesh.vertices.length ||
+        !Number.isInteger(c) || c < 0 || c >= mesh.vertices.length || a === b || b === c || a === c) {
       return false;
     }
     const area = triangleArea(mesh.vertices[a], mesh.vertices[b], mesh.vertices[c]);
