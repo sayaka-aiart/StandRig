@@ -130,5 +130,13 @@ function distortionScore(entry: ArtMeshTriangleDistortion, thresholds: Required<
   if (entry.degenerate || entry.inverted) return Number.POSITIVE_INFINITY;
   return Math.max(entry.stretchRatio / thresholds.maxStretchRatio, entry.compressionRatio / thresholds.maxCompressionRatio, entry.anisotropy / thresholds.maxAnisotropy);
 }
-function finiteMaximum(values: number[], fallback: number) { return values.some((value) => !Number.isFinite(value)) ? Number.POSITIVE_INFINITY : values.length ? Math.max(...values) : fallback; }
+function finiteMaximum(values: number[], fallback: number) {
+  if (values.length === 0) return fallback;
+  let maximum = Number.NEGATIVE_INFINITY;
+  for (const value of values) {
+    if (!Number.isFinite(value)) return Number.POSITIVE_INFINITY;
+    maximum = Math.max(maximum, value);
+  }
+  return maximum;
+}
 function positive(value: unknown, fallback: number) { const numeric = Number(value); return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback; }
