@@ -1,4 +1,5 @@
 import { buildWebGLPartGeometry } from "./webglGeometry.js";
+import { prepareLivePhysicsStep } from "./physicsStepping.js";
 import { evaluateRigParts, resolveRigFrame, invertMatrix, multiplyMatrices, applyPhysicsParameterOffsets, resolvePhysicsFrame as resolveRuntimePhysicsFrame, scaleMatrix, transformMatrixPoint, translateMatrix, type EvaluatedPartState, type Matrix2D, type PhysicsValue } from "@standrig/core/evaluator";
 import { hasWarpEffect, normalizeWarpDeformer, warpPoint, type ResolvedWarpDeformer } from "@standrig/core/warp";
 import { hasSharedWarpFieldEffect, normalizeSharedWarpField } from "@standrig/core/sharedWarp";
@@ -150,6 +151,7 @@ export class RigRuntime {
   private alphaMasks = new Map<string, AlphaMask>();
   private physicsState = new Map<string, PhysicsValue>();
   private lastFrameTime = performance.now();
+  private previousPhysicsInputs?: ParameterValues;
   private clippingLayers: Array<HTMLCanvasElement | undefined> = [undefined, undefined];
   private clippingLayerAllocations = 0;
   private webglMeshRenderer?: WebGLArtMeshRenderer;
@@ -159,7 +161,7 @@ export class RigRuntime {
     this.rig = prepareRigBindingOrder(rig);
   }
 
-  resumeClock() { this.lastFrameTime = performance.now(); }
+  resumeClock() { this.lastFrameTime = performance.now(); this.previousPhysicsInputs = undefined; }
   resetPhysics() { this.physicsState.clear(); this.resumeClock(); }
 
   dispose() { this.webglMeshRenderer?.dispose(); this.webglMeshRenderer = undefined; }
@@ -173,6 +175,7 @@ export class RigRuntime {
     this.contourImages.clear();
     this.alphaMasks.clear();
     this.physicsState.clear();
+    this.resumeClock();
     await this.loadAssets();
   }
 
@@ -235,10 +238,11 @@ export class RigRuntime {
     }
 
     const now = performance.now();
-    const dt = Math.min(0.05, Math.max(0.001, (now - this.lastFrameTime) / 1000));
+    const elapsed = (now - this.lastFrameTime) / 1000;
     this.lastFrameTime = now;
-
-    const frame = resolveRigFrame(this.rig, params, view.pixelBaseMatrix, { physicsState: this.physicsState, physicsTime: now / 1000, physicsDt: dt });
+    const step = prepareLivePhysicsStep(this.rig, params, this.previousPhysicsInputs, this.physicsState, elapsed, now / 1000);
+    this.previousPhysicsInputs = { ...params };
+    const frame = resolveRigFrame(this.rig, params, view.pixelBaseMatrix, { physicsState: this.physicsState, physicsTime: step.time, physicsDt: step.dt });
     const effectiveParams = frame.values;
     const computed = frame.parts;
     const skinningTransforms = frame.skinningTransforms;
