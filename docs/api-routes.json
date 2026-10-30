@@ -883,7 +883,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 73,
+      "line": 74,
       "methodNotes": "Exact local service route."
     },
     {
@@ -892,7 +892,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 74,
+      "line": 75,
       "methodNotes": "Exact local service route."
     },
     {
@@ -901,7 +901,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 75,
+      "line": 76,
       "methodNotes": "Exact local service route."
     },
     {
@@ -910,7 +910,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 76,
+      "line": 77,
       "methodNotes": "Exact local service route."
     },
     {
@@ -919,7 +919,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 79,
+      "line": 80,
       "methodNotes": "Exact local service route."
     },
     {
@@ -929,7 +929,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 87,
+      "line": 88,
       "methodNotes": "Exact local service route."
     },
     {
@@ -939,7 +939,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 89,
+      "line": 90,
       "methodNotes": "Exact local service route."
     },
     {
@@ -948,7 +948,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 91,
+      "line": 92,
       "methodNotes": "Exact local service route."
     },
     {
@@ -957,7 +957,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 92,
+      "line": 93,
       "methodNotes": "Exact local service route."
     },
     {
@@ -966,7 +966,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 93,
+      "line": 94,
       "methodNotes": "Exact local service route."
     },
     {
@@ -975,7 +975,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 94,
+      "line": 95,
       "methodNotes": "Exact local service route."
     },
     {
@@ -984,7 +984,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 95,
+      "line": 96,
       "methodNotes": "Exact local service route."
     },
     {
@@ -994,7 +994,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 98,
+      "line": 99,
       "methodNotes": "Exact local service route."
     },
     {
@@ -1003,7 +1003,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 107,
+      "line": 108,
       "methodNotes": "Exact local service route."
     }
   ]

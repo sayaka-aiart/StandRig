@@ -8769,6 +8769,18 @@
                       {
                         "type": "string",
                         "const": "additive"
+                      },
+                      {
+                        "type": "string",
+                        "const": "color-dodge"
+                      },
+                      {
+                        "type": "string",
+                        "const": "overlay"
+                      },
+                      {
+                        "type": "string",
+                        "const": "soft-light"
                       }
                     ]
                   }
@@ -10266,6 +10278,150 @@
                                       "parameter",
                                       "property",
                                       "keys"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "multiBindings": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "parameters": {
+                                        "anyOf": [
+                                          {
+                                            "type": "array",
+                                            "prefixItems": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "string"
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "type": "array",
+                                            "prefixItems": [
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "string"
+                                              },
+                                              {
+                                                "type": "string"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      },
+                                      "property": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "const": "offsetX"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "offsetY"
+                                          }
+                                        ]
+                                      },
+                                      "additive": {
+                                        "anyOf": [
+                                          {
+                                            "type": "boolean",
+                                            "const": false
+                                          },
+                                          {
+                                            "type": "boolean",
+                                            "const": true
+                                          }
+                                        ]
+                                      },
+                                      "interpolation": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string",
+                                            "const": "linear"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "hold"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "smoothstep"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "arc"
+                                          },
+                                          {
+                                            "type": "string",
+                                            "const": "curve"
+                                          }
+                                        ]
+                                      },
+                                      "curve": {
+                                        "type": "object",
+                                        "properties": {
+                                          "controlPoints": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "t": {
+                                                  "type": "number"
+                                                },
+                                                "value": {
+                                                  "type": "number"
+                                                }
+                                              },
+                                              "required": [
+                                                "t",
+                                                "value"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "controlPoints"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "keyforms": {
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "inputs": {
+                                              "type": "object",
+                                              "propertyNames": {
+                                                "type": "string"
+                                              },
+                                              "additionalProperties": {
+                                                "type": "number"
+                                              }
+                                            },
+                                            "value": {
+                                              "type": "number"
+                                            }
+                                          },
+                                          "required": [
+                                            "inputs",
+                                            "value"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "parameters",
+                                      "property",
+                                      "keyforms"
                                     ],
                                     "additionalProperties": false
                                   }
@@ -14144,6 +14300,18 @@
                                 {
                                   "type": "string",
                                   "const": "additive"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "color-dodge"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "overlay"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "soft-light"
                                 }
                               ]
                             }
@@ -15641,6 +15809,150 @@
                                                 "parameter",
                                                 "property",
                                                 "keys"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          },
+                                          "multiBindings": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "parameters": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "array",
+                                                      "prefixItems": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "string"
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "type": "array",
+                                                      "prefixItems": [
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "string"
+                                                        },
+                                                        {
+                                                          "type": "string"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                },
+                                                "property": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "const": "offsetX"
+                                                    },
+                                                    {
+                                                      "type": "string",
+                                                      "const": "offsetY"
+                                                    }
+                                                  ]
+                                                },
+                                                "additive": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "boolean",
+                                                      "const": false
+                                                    },
+                                                    {
+                                                      "type": "boolean",
+                                                      "const": true
+                                                    }
+                                                  ]
+                                                },
+                                                "interpolation": {
+                                                  "anyOf": [
+                                                    {
+                                                      "type": "string",
+                                                      "const": "linear"
+                                                    },
+                                                    {
+                                                      "type": "string",
+                                                      "const": "hold"
+                                                    },
+                                                    {
+                                                      "type": "string",
+                                                      "const": "smoothstep"
+                                                    },
+                                                    {
+                                                      "type": "string",
+                                                      "const": "arc"
+                                                    },
+                                                    {
+                                                      "type": "string",
+                                                      "const": "curve"
+                                                    }
+                                                  ]
+                                                },
+                                                "curve": {
+                                                  "type": "object",
+                                                  "properties": {
+                                                    "controlPoints": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                          "t": {
+                                                            "type": "number"
+                                                          },
+                                                          "value": {
+                                                            "type": "number"
+                                                          }
+                                                        },
+                                                        "required": [
+                                                          "t",
+                                                          "value"
+                                                        ],
+                                                        "additionalProperties": false
+                                                      }
+                                                    }
+                                                  },
+                                                  "required": [
+                                                    "controlPoints"
+                                                  ],
+                                                  "additionalProperties": false
+                                                },
+                                                "keyforms": {
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "inputs": {
+                                                        "type": "object",
+                                                        "propertyNames": {
+                                                          "type": "string"
+                                                        },
+                                                        "additionalProperties": {
+                                                          "type": "number"
+                                                        }
+                                                      },
+                                                      "value": {
+                                                        "type": "number"
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "inputs",
+                                                      "value"
+                                                    ],
+                                                    "additionalProperties": false
+                                                  }
+                                                }
+                                              },
+                                              "required": [
+                                                "parameters",
+                                                "property",
+                                                "keyforms"
                                               ],
                                               "additionalProperties": false
                                             }
