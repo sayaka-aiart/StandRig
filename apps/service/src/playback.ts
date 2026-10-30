@@ -18,6 +18,8 @@ export class PlaybackSession {
   private motionTimer:ReturnType<typeof setInterval>|undefined;
   private sequences = new Map<string, number>();
   private streams = new Set<ServerResponse>();
+  /** Backed-up outputs waiting for 'drain'; the value records whether a frame was skipped meanwhile. */
+  private congested = new Map<ServerResponse, boolean>();
   private state: PlaybackSnapshot;
   private demoTimer: ReturnType<typeof setInterval> | undefined;
   private demoBase: { values: PlaybackSnapshot['values']; playing: boolean; lastSource: string | null } | undefined;
@@ -62,18 +64,31 @@ export class PlaybackSession {
   }
   private broadcast() {
     this.state.revision++;
-    const message = `event: playback\ndata: ${JSON.stringify(this.snapshot())}\n\n`;
-    for (const stream of this.streams) {
-      // A stalled output must not accumulate an unbounded stream of tracking frames.
-      if (!stream.write(message)) { this.streams.delete(stream); stream.destroy(); }
-    }
+    const message = this.playbackEvent();
+    for (const stream of this.streams) this.send(stream, message);
+  }
+  private playbackEvent() { return `event: playback\ndata: ${JSON.stringify(this.snapshot())}\n\n`; }
+  // A slow output must not accumulate an unbounded queue of frames, but it must not be dropped either: every
+  // snapshot carries the whole state (and the parameter catalogue), so a few queued frames of a large model reach
+  // the high-water mark during normal playback. While a stream is backed up, skip frames; once it drains, send the
+  // current state so a skipped final frame (stop, pause, model change) is never lost.
+  private send(stream: ServerResponse, message: string) {
+    if (stream.destroyed) { this.streams.delete(stream); this.congested.delete(stream); return; }
+    if (this.congested.has(stream)) { this.congested.set(stream, true); return; }
+    if (stream.write(message)) return;
+    this.congested.set(stream, false);
+    stream.once('drain', () => {
+      const skipped = this.congested.get(stream);
+      this.congested.delete(stream);
+      if (skipped && this.streams.has(stream)) this.send(stream, this.playbackEvent());
+    });
   }
   subscribe(res: ServerResponse) {
     res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', 'connection': 'keep-alive' });
     this.streams.add(res);
-    res.write(`event: playback\ndata: ${JSON.stringify(this.snapshot())}\n\n`);
+    this.send(res, this.playbackEvent());
     const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000);
-    res.on('close', () => { clearInterval(heartbeat); this.streams.delete(res); });
+    res.on('close', () => { clearInterval(heartbeat); this.streams.delete(res); this.congested.delete(res); });
   }
   input(body: Record<string, unknown>) {
     const { source, sequence, values } = body;
@@ -154,5 +169,5 @@ export class PlaybackSession {
     this.baseValues = previewParameterValuesForRig(rig); this.state.lastSource = null;
     this.broadcast();
   }
-  close() { this.facial.reset();this.syncFacialTimer();this.motion.clear();this.syncMotionTimer();this.stopDemo(); for (const stream of this.streams) stream.end(); this.streams.clear(); }
+  close() { this.facial.reset();this.syncFacialTimer();this.motion.clear();this.syncMotionTimer();this.stopDemo(); for (const stream of this.streams) stream.end(); this.streams.clear(); this.congested.clear(); }
 }
