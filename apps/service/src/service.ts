@@ -6,6 +6,7 @@ import { constants } from 'node:fs';
 import { copyFile,mkdir,readdir,readFile,realpath,writeFile } from 'node:fs/promises';
 import { createServer,type IncomingMessage,type ServerResponse } from 'node:http';
 import path from 'node:path';
+import { MODEL_BODY_LIMIT } from './httpLimits.js';
 import { fileURLToPath } from 'node:url';
 import { ApplicationError,ModelingService } from './application/modelingService.js';
 import type { ApiHandler } from './host.js';
@@ -141,7 +142,7 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     if (req.headers.origin && !allowedHosts.map(h => `http://${h}`).includes(req.headers.origin)) {
       json(res, 403, { ok: false, error: 'origin_not_allowed' }); return;
     }
-    if (Number(req.headers['content-length'] ?? 0) > 64 * 1024 * 1024) { json(res, 413, { ok: false, error: 'body_too_large' }); return; }
+    if (Number(req.headers['content-length'] ?? 0) > MODEL_BODY_LIMIT) { json(res, 413, { ok: false, error: 'body_too_large' }); return; }
     const run = async () => {
       try { await dispatch(req, res); }
       catch (error) { if (!res.headersSent) json(res, error instanceof ApplicationError ? error.status : 400, { ok: false, error: String(error), ...(error instanceof ApplicationError ? error.details : {}) }); }

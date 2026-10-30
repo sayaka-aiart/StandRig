@@ -1,4 +1,5 @@
 import { createArtMeshAlphaSampler, type ArtMeshAlphaSampler } from "@standrig/core/artMeshAsset";
+import { MODEL_BODY_LIMIT } from '../httpLimits.js';
 import { decodeDataUrl } from "@standrig/core/assetManifest";
 import { normalizeDeformer } from "@standrig/core/deformers";
 import { summarizeRig } from "@standrig/core/inspect";
@@ -133,7 +134,7 @@ export function sendJson(res: import("node:http").ServerResponse, status: number
     res.end(JSON.stringify(body, null, 2));
 }
 export function readBody(req: import("node:http").IncomingMessage): Promise<string> {
-    return readBodyLimited(req, 64 * 1024 * 1024);
+    return readBodyLimited(req, MODEL_BODY_LIMIT);
 }
 export function readBodyLimited(req: import("node:http").IncomingMessage, limit: number): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -406,6 +407,9 @@ export function partListItem(part: RigPart) {
         assetId: part.assetId,
         deformerId: part.deformerId ?? null,
         blendMode: part.blendMode ?? "normal",
+        compositing: part.compositing ?? null,
+        clippingBaseId: part.clippingBaseId ?? null,
+        rasterMaskPartId: part.rasterMaskPartId ?? null,
         tint: part.tint ?? null,
         clip: part.clip ?? null,
         tags: part.tags ?? []

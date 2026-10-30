@@ -5,8 +5,8 @@ import { invertMatrix, multiplyMatrices, resolveRigFrame, scaleMatrix, transform
 import { hasWarpEffect, warpPoint, type ResolvedWarpDeformer } from "./warp.js";
 import { resolveGlueWarpForPart } from "./glueWarp.js";
 import { hasSharedWarpFieldEffect } from "./sharedWarp.js";
-import { projectSharedWarpPoint } from "./sharedWarpProjection.js";
-import { isCanonicalArtMesh, resolveArtMesh, type ResolvedArtMesh } from "./artMesh.js";
+import { projectSharedWarpPoint, createSharedWarpProjector } from "./sharedWarpProjection.js";
+import { resolveArtMesh, type ResolvedArtMesh } from "./artMesh.js";
 import { readRigArtPaths, resolveArtPath } from "./artPath.js";
 import { applySkinningToVertices } from "./skinning.js";
 import { applyPartGlueStitchOffset, hasGlueStitches, glueStitchRestScale, projectArtMeshVertex, resolveGlueStitchOffsets, type GlueVertexOffset } from "./glueVertex.js";
@@ -20,7 +20,8 @@ import { createBlankRgba, decodePng, encodePng, type RgbaImage } from "./png.js"
 import { applyTintChannel, parseTintColor } from "./tint.js";
 import { applyContourShade } from "./contourShade.js";
 import { applyAlphaReveal } from "./alphaReveal.js";
-import type { AssetDefinition, ParameterValues, RigDocument, RigPart, RigPartTint, RigSharedWarpField, Transform2D } from "./types.js";
+import { blendChannel, compositeRgba, hasLayerCompositing, layerCompositingPlan, paintLayerPlan } from './compositing.js';
+import type { AssetDefinition, ParameterValues, RigDocument, RigPart, RigPartTint, RigSharedWarpField, Transform2D, RigBlendMode } from "./types.js";
 
 export interface ScreenshotOptions {
   width: number;
@@ -71,11 +72,13 @@ interface PartDrawGeometry {
 
 // Reusing decoded PNGs keeps repeated numeric QA (part x pose) bounded in memory and time.
 const DECODED_ASSET_CACHE = new Map<string, RgbaImage>();
-const DECODED_ASSET_CACHE_LIMIT = 256;
+const DECODED_ASSET_CACHE_LIMIT = 512;
+const DECODED_ASSET_CACHE_BYTES = 1024 * 1024 * 1024;
+let decodedAssetBytes = 0;
 
 const MIN_SCALE = 0.001;
 const LABEL_HEIGHT = 28;
-type PartBlendMode = "normal" | "multiply" | "screen" | "additive";
+type PartBlendMode = RigBlendMode;
 
 export function screenshotOptionsFromUrl(rig: RigDocument, url: URL): ScreenshotOptions {
   const setValue = url.searchParams.get("set") ?? url.searchParams.get("preset") ?? "single";
@@ -130,7 +133,18 @@ export async function renderRigScreenshot(rig: RigDocument, publicDir: string, o
 
 async function renderRigScreenshotBase(rig: RigDocument, publicDir: string, options: ScreenshotOptions): Promise<ScreenshotResult> {
   prepareRigBindingOrder(rig);
-  const assets = await loadAssets(rig.assets, publicDir);
+  // Hidden costume/expression folders in large PSDs must not evict every live texture on each pose.
+  // Opacity is intentionally not pruned: parameter keys and ignore-opacity masks can reveal it.
+  const byId = new Map(rig.parts.map(part=>[part.id,part]));
+  const visible = (part:RigPart,seen=new Set<string>()):boolean => {
+    if(!part.visible||seen.has(part.id))return false;
+    seen.add(part.id);const parent=part.parentId?byId.get(part.parentId):undefined;
+    return !parent||visible(parent,seen);
+  };
+  const needed = new Set(rig.parts.filter(part=>options.forceParts||visible(part)).map(part=>part.assetId));
+  for(const part of rig.parts)if(part.clip?.maskOpacity==='ignore')for(const id of [part.clip.maskPartId,...(part.clip.maskPartIds??[])])needed.add(id?byId.get(id)?.assetId:undefined);
+  for(const part of rig.parts)if(part.rasterMaskPartId&&(options.forceParts||visible(part)))needed.add(byId.get(part.rasterMaskPartId)?.assetId);
+  const assets = await loadAssets(rig.assets.filter(asset=>needed.has(asset.id)), publicDir);
   const presets = screenshotPresets(rig, options.values, options.set);
 
   if (options.set === "single") {
@@ -338,7 +352,7 @@ function renderRigToImage(
       }).offsets
     : undefined;
 
-  const drawPartTo = (target: RgbaImage, part: RigPart, forceVisible = false, ignoreVisualAlpha = false) => {
+  const drawPartTo = (target: RgbaImage, part: RigPart, forceVisible = false, ignoreVisualAlpha = false, opacityScale = 1, modeOverride?: RigBlendMode) => {
     if (!part.assetId) {
       return;
     }
@@ -350,15 +364,14 @@ function renderRigToImage(
     const coloredImage = ignoreVisualAlpha ? geometry.sourceImage : applyContourShade(geometry.sourceImage, part.contourShade, effectiveValues);
     const sourceImage = applyAlphaReveal(coloredImage, part.alphaReveal, effectiveValues);
     const warp = geometry.warp;
-    const blendMode: PartBlendMode = ignoreVisualAlpha ? "normal" : part.blendMode === "multiply" ? "multiply" : part.blendMode === "screen" ? "screen" : part.blendMode === "additive" ? "additive" : "normal";
-    const opacity = ignoreVisualAlpha ? 1 : state.opacity;
+    const blendMode: PartBlendMode = ignoreVisualAlpha ? "normal" : modeOverride ?? part.blendMode ?? 'normal';
+    const opacity = ignoreVisualAlpha ? 1 : Math.min(1, state.opacity * opacityScale);
     const artMesh = geometry.artMesh;
     const stitchOffsets = glueStitch?.get(part.id);
-    // A deformed mesh must go through the mesh path even when the part also carries a warp or a
-    // shared warp: drawArtMesh applies both per vertex, while drawWarpedImage ignores the mesh and
-    // silently drops the vertex keys. Canvas has always drawn the mesh whenever one exists, so this
-    // also keeps the server renderer in parity with what Preview shows.
-    if (artMesh && (!isCanonicalArtMesh(artMesh, sourceImage.width, sourceImage.height) || part.artMesh?.skinning || stitchOffsets?.size)) {
+    // Keep the authored triangulation at neutral as well as under every warp. Switching canonical
+    // meshes to an affine image (or a different fallback grid) changes pixels on stationary feet
+    // when an unrelated region starts moving. Canvas always uses the authored mesh too.
+    if (artMesh) {
       drawArtMesh(target, sourceImage, state.matrix, state.pose, opacity, artMesh, warp, baseMatrix, state.sharedWarps, blendMode, stitchOffsets);
     } else if (hasWarpEffect(warp) || state.sharedWarps?.some(hasSharedWarpFieldEffect)) {
       drawWarpedImage(target, sourceImage, state.matrix, state.pose, opacity, warp, baseMatrix, state.sharedWarps, blendMode);
@@ -368,7 +381,33 @@ function renderRigToImage(
     drawArtPaths(target, part, effectiveValues, sourceImage.width, sourceImage.height, state.matrix, state.pose, baseMatrix, state.sharedWarps, warp);
   };
 
-  for (let index = 0; index < renderable.length;) {
+  if (hasLayerCompositing(rig)) {
+    const included = new Set(renderable.map(part=>part.id));
+    const pool: RgbaImage[] = [];
+    paintLayerPlan(layerCompositingPlan(rig), output, {
+      create: () => {const image=pool.pop()??createBlankRgba(options.width,options.height);image.data.fill(0);return image;},
+      release: image => { pool.push(image); },
+      state: part => {
+        const state=frame.parts.get(part.id);
+        return state && (part.kind==='group'||included.has(part.id)) ? {opacity:state.opacity,visible:state.visible || Boolean(explicitPartIds?.has(part.id)&&options.forceParts)} : undefined;
+      },
+      draw: (target,part,scale,mode) => {
+        const clip=resolvePartClip(rig,part);
+        if (!clip) {drawPartTo(target,part,options.forceParts,false,scale,mode);return;}
+        const content=createBlankRgba(options.width,options.height),mask=createBlankRgba(options.width,options.height);
+        drawPartTo(content,part,options.forceParts,false,scale,'normal');
+        for(const source of clip.maskParts)drawPartTo(mask,source,false,clip.clip.maskOpacity==='ignore');
+        applyAlphaMask(content,mask);compositeRgba(target,content,mode);
+      },
+      compose: compositeRgba,
+      mask: (surface,part) => {
+        const source=rig.parts.find(p=>p.id===part.rasterMaskPartId);
+        const mask=createBlankRgba(options.width,options.height);
+        if(source)drawPartTo(mask,source,false,true);
+        applyAlphaMask(surface,mask);
+      }
+    });
+  } else for (let index = 0; index < renderable.length;) {
     const part = renderable[index];
     const forceVisible = Boolean(explicitPartIds?.has(part.id) && options.forceParts);
     const clip = resolvePartClip(rig, part);
@@ -402,15 +441,19 @@ async function loadAssets(assets: AssetDefinition[], publicDir: string): Promise
       const cacheKey = asset.id + "|" + asset.src + "|" + asset.width + "|" + asset.height;
       const cachedImage = DECODED_ASSET_CACHE.get(cacheKey);
       if (cachedImage) {
+        DECODED_ASSET_CACHE.delete(cacheKey);
+        DECODED_ASSET_CACHE.set(cacheKey,cachedImage);
         decoded.set(asset.id, { asset, image: cachedImage });
         continue;
       }
       const bytes = await readAssetBytes(asset, publicDir);
       const image = decodePng(bytes);
       DECODED_ASSET_CACHE.set(cacheKey, image);
-      while (DECODED_ASSET_CACHE.size > DECODED_ASSET_CACHE_LIMIT) {
+      decodedAssetBytes += image.data.byteLength;
+      while (DECODED_ASSET_CACHE.size > DECODED_ASSET_CACHE_LIMIT || decodedAssetBytes > DECODED_ASSET_CACHE_BYTES) {
         const oldestKey = DECODED_ASSET_CACHE.keys().next().value;
         if (oldestKey === undefined) break;
+        decodedAssetBytes -= DECODED_ASSET_CACHE.get(oldestKey)!.data.byteLength;
         DECODED_ASSET_CACHE.delete(oldestKey);
       }
       decoded.set(asset.id, { asset, image });
@@ -451,21 +494,19 @@ function drawArtMesh(
   const left = -pose.pivotX * source.width;
   const top = -pose.pivotY * source.height;
   const bounds = { left, top, width: source.width, height: source.height };
+  const project = createSharedWarpProjector(matrix, baseMatrix, sharedWarps);
+  const projected = mesh.vertices.map(vertex => {
+    const local = {x:left+vertex.x,y:top+vertex.y};
+    const warped=hasWarpEffect(warp)?warpPoint(local.x,local.y,bounds,warp):local;
+    const stitched=applyPartGlueStitchOffset(stitchOffsets,vertex.id,project(warped));
+    return {x:stitched.x,y:stitched.y,u:vertex.u,v:vertex.v};
+  });
   for (let index = 0; index < mesh.triangles.length; index += 3) {
-    const first = mesh.vertices[mesh.triangles[index]];
-    const second = mesh.vertices[mesh.triangles[index + 1]];
-    const third = mesh.vertices[mesh.triangles[index + 2]];
+    const first = projected[mesh.triangles[index]];
+    const second = projected[mesh.triangles[index + 1]];
+    const third = projected[mesh.triangles[index + 2]];
     if (!first || !second || !third) continue;
-    const vertices = [first, second, third].map((vertex) => {
-      const local = { x: left + vertex.x, y: top + vertex.y };
-      const warped = hasWarpEffect(warp) ? warpPoint(local.x, local.y, bounds, warp) : local;
-      const screen = projectSharedWarpPoint(warped, matrix, baseMatrix, sharedWarps);
-      // Glue stitches are the last word: they run after warp, skinning and shared warps so a bound
-      // seam vertex lands on its partner no matter how far the pose travelled.
-      const stitched = applyPartGlueStitchOffset(stitchOffsets, vertex.id, screen);
-      return { x: stitched.x, y: stitched.y, u: vertex.u, v: vertex.v };
-    });
-    drawArtMeshTriangle(target, source, vertices, opacity, blendMode);
+    drawArtMeshTriangle(target, source, [first,second,third], opacity, blendMode);
   }
 }
 
@@ -525,6 +566,11 @@ function drawWarpedImage(target: RgbaImage, source: RgbaImage, matrix: Matrix2D,
   const bounds = { left, top, width: source.width, height: source.height };
   const columns = Math.max(1, Math.round(warp?.grid.columns ?? 1), ...(sharedWarps?.filter(hasSharedWarpFieldEffect).map((field) => field.grid.columns) ?? []));
   const rows = Math.max(1, Math.round(warp?.grid.rows ?? 1), ...(sharedWarps?.filter(hasSharedWarpFieldEffect).map((field) => field.grid.rows) ?? []));
+  const project=createSharedWarpProjector(matrix,baseMatrix,sharedWarps);
+  const vertices=Array.from({length:(columns+1)*(rows+1)},(_,index)=>{
+    const x=left+source.width*(index%(columns+1))/columns,y=top+source.height*Math.floor(index/(columns+1))/rows;
+    return project(hasWarpEffect(warp)?warpPoint(x,y,bounds,warp):{x,y});
+  });
 
   for (let row = 0; row < rows; row += 1) {
     for (let column = 0; column < columns; column += 1) {
@@ -532,10 +578,8 @@ function drawWarpedImage(target: RgbaImage, source: RgbaImage, matrix: Matrix2D,
       const x1 = left + (source.width * (column + 1)) / columns;
       const y0 = top + (source.height * row) / rows;
       const y1 = top + (source.height * (row + 1)) / rows;
-      const p00 = projectSharedWarpPoint(hasWarpEffect(warp) ? warpPoint(x0, y0, bounds, warp) : { x: x0, y: y0 }, matrix, baseMatrix, sharedWarps);
-      const p10 = projectSharedWarpPoint(hasWarpEffect(warp) ? warpPoint(x1, y0, bounds, warp) : { x: x1, y: y0 }, matrix, baseMatrix, sharedWarps);
-      const p11 = projectSharedWarpPoint(hasWarpEffect(warp) ? warpPoint(x1, y1, bounds, warp) : { x: x1, y: y1 }, matrix, baseMatrix, sharedWarps);
-      const p01 = projectSharedWarpPoint(hasWarpEffect(warp) ? warpPoint(x0, y1, bounds, warp) : { x: x0, y: y1 }, matrix, baseMatrix, sharedWarps);
+      const i=row*(columns+1)+column;
+      const p00=vertices[i],p10=vertices[i+1],p11=vertices[i+columns+2],p01=vertices[i+columns+1];
       drawWarpedCell(target, source, { x0, y0, x1, y1, left, top }, p00, p10, p11, p01, opacity, blendMode);
     }
   }
@@ -758,15 +802,11 @@ function blendPixel(image: RgbaImage, x: number, y: number, red: number, green: 
     return;
   }
 
-if (blendMode === "multiply" || blendMode === "screen" || blendMode === "additive") {
+  if (blendMode !== 'normal') {
     const source = [red / 255, green / 255, blue / 255];
     const destination = [image.data[offset] / 255, image.data[offset + 1] / 255, image.data[offset + 2] / 255];
     for (let channel = 0; channel < 3; channel += 1) {
-      const blended = blendMode === "multiply"
-        ? source[channel] * destination[channel]
-        : blendMode === "screen"
-          ? 1 - (1 - source[channel]) * (1 - destination[channel])
-          : Math.min(1, source[channel] + destination[channel]);
+      const blended = blendChannel(destination[channel], source[channel], blendMode);
       const premultiplied = source[channel] * alpha * (1 - destinationAlpha) + blended * alpha * destinationAlpha + destination[channel] * destinationAlpha * (1 - alpha);
       image.data[offset + channel] = Math.round(255 * premultiplied / outputAlpha);
     }

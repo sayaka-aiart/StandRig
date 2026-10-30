@@ -14,6 +14,7 @@ import { createPartClipResolver, sameResolvedPartClip } from "@standrig/core/mas
 import { prepareRigBindingOrder } from "@standrig/core/bindingPreparation";
 import { ContourShadeProcessor, validateContourShade } from "@standrig/core/contourShade";
 import { AlphaRevealProcessor, validateAlphaReveal } from "@standrig/core/alphaReveal";
+import { canvasBlendMode, compositeRgba, hasLayerCompositing, layerCompositingPlan, paintLayerPlan } from '@standrig/core/compositing';
 import type { RgbaImage } from "@standrig/core/png";
 import { expandTriangleForCoverage, localCoverageOverlap } from "@standrig/core/triangleCoverage";
 import { alphaMaskHit, triangleUvAtPoint, type AlphaMask, type HitVertex } from "@standrig/core/hitTesting";
@@ -26,6 +27,7 @@ import type {
   RigDocument,
   RigGlue,
   RigPart,
+  RigBlendMode,
   TransformProperty
 } from "@standrig/core/types";
 
@@ -154,6 +156,7 @@ export class RigRuntime {
   private previousPhysicsInputs?: ParameterValues;
   private clippingLayers: Array<HTMLCanvasElement | undefined> = [undefined, undefined];
   private clippingLayerAllocations = 0;
+  private compositeLayers: HTMLCanvasElement[] = [];
   private webglMeshRenderer?: WebGLArtMeshRenderer;
   private webglMeshError?: string;
 
@@ -180,7 +183,18 @@ export class RigRuntime {
   }
 
   async loadAssets() {
-    const pending = this.rig.assets.map((asset) => this.loadAsset(asset));
+    const byId=new Map(this.rig.parts.map(part=>[part.id,part]));
+    const visible=(part:RigPart,seen=new Set<string>()):boolean=>{
+      if(!part.visible||seen.has(part.id))return false;seen.add(part.id);
+      const parent=part.parentId?byId.get(part.parentId):undefined;return !parent||visible(parent,seen);
+    };
+    const needed=new Set(this.rig.parts.filter(part=>visible(part)).map(part=>part.assetId));
+    for(const part of this.rig.parts){
+      if(!visible(part))continue;
+      if(part.rasterMaskPartId)needed.add(byId.get(part.rasterMaskPartId)?.assetId);
+      if(part.clip?.maskOpacity==='ignore')for(const id of [part.clip.maskPartId,...(part.clip.maskPartIds??[])])needed.add(id?byId.get(id)?.assetId:undefined);
+    }
+    const pending = this.rig.assets.filter(asset=>needed.has(asset.id)).map((asset) => this.loadAsset(asset));
     await Promise.all(pending);
   }
 
@@ -267,7 +281,64 @@ export class RigRuntime {
       .sort((left, right) => left.drawOrder - right.drawOrder);
 
     const resolveClip = createPartClipResolver(this.rig);
-    for (let index = 0; index < renderable.length;) {
+    if (hasLayerCompositing(this.rig)) {
+      type Box={x:number;y:number;width:number;height:number};
+      const boxes=new Map<CanvasRenderingContext2D,Box>();
+      boxes.set(ctx,{x:0,y:0,width:canvas.width,height:canvas.height});
+      const union=(a:Box|undefined,b:Box):Box=>a?{x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),width:Math.max(a.x+a.width,b.x+b.width)-Math.min(a.x,b.x),height:Math.max(a.y+a.height,b.y+b.height)-Math.min(a.y,b.y)}:b;
+      const intersection=(a:Box|undefined,b:Box|undefined):Box|undefined=>{
+        if(!a||!b)return undefined;const x=Math.max(a.x,b.x),y=Math.max(a.y,b.y),right=Math.min(a.x+a.width,b.x+b.width),bottom=Math.min(a.y+a.height,b.y+b.height);
+        return right>x&&bottom>y?{x,y,width:right-x,height:bottom-y}:undefined;
+      };
+      const create = () => {
+        const layer=this.compositeLayers.pop()??document.createElement('canvas');
+        if(layer.width!==canvas.width||layer.height!==canvas.height){layer.width=canvas.width;layer.height=canvas.height;}
+        else layer.getContext('2d')!.clearRect(0,0,layer.width,layer.height);
+        const surface=layer.getContext('2d', {willReadFrequently:true})!;boxes.delete(surface);return surface;
+      };
+      const release = (surface:CanvasRenderingContext2D) => {this.compositeLayers.push(surface.canvas as HTMLCanvasElement);};
+      const draw=(surface:CanvasRenderingContext2D,part:RigPart,scale=1,mode?:RigBlendMode,ignore=false)=>{
+        this.drawRenderablePart(surface,part,computed,effectiveParams,view.pixelBaseMatrix,ignore,webglRendererForPart(part),skinningTransforms,glueStitch,scale,mode,box=>{
+          const clipped=intersection(box,{x:0,y:0,width:canvas.width,height:canvas.height});if(clipped)boxes.set(surface,union(boxes.get(surface),clipped));
+        });
+      };
+      const compose = (target:CanvasRenderingContext2D, source:CanvasRenderingContext2D, mode:RigBlendMode, opacity:number, preserveAlpha=false) => {
+        const sourceBox=boxes.get(source);if(!sourceBox)return;
+        if ((preserveAlpha && mode!=='normal') || mode==='additive') {
+          const box=preserveAlpha?intersection(sourceBox,boxes.get(target)):sourceBox;if(!box)return;
+          const {x,y,width,height}=box,destination=target.getImageData(x,y,width,height), content=source.getImageData(x,y,width,height);
+          compositeRgba(destination,content,mode,opacity,preserveAlpha);target.putImageData(destination,x,y);
+        }else{
+          target.save();target.setTransform(1,0,0,1,0,0);target.globalAlpha=opacity;
+          target.globalCompositeOperation=preserveAlpha?'source-atop':canvasBlendMode(mode);
+          target.drawImage(source.canvas,0,0);target.restore();
+        }
+        if(!preserveAlpha)boxes.set(target,union(boxes.get(target),sourceBox));
+      };
+      paintLayerPlan(layerCompositingPlan(this.rig), ctx, {
+        create,release,state:part=>computed.get(part.id),
+        draw:(target,part,scale,mode)=>{
+          const clip=resolveClip(part);
+          if(!clip&&mode!=='additive'){
+            draw(target,part,scale,mode);return;
+          }
+          const content=create();
+          draw(content,part,scale,'normal');
+          if(clip){
+            const mask=create();
+            for(const source of clip.maskParts)draw(mask,source,1,undefined,clip.clip.maskOpacity==='ignore');
+            content.save();content.setTransform(1,0,0,1,0,0);content.globalAlpha=1;content.globalCompositeOperation='destination-in';content.drawImage(mask.canvas,0,0);content.restore();release(mask);
+          }
+          compose(target,content,mode,1);release(content);
+        },compose,
+        mask:(surface,part)=>{
+          const source=this.rig.parts.find(p=>p.id===part.rasterMaskPartId), mask=create();
+          if(source)draw(mask,source,1,undefined,true);
+          surface.save();surface.setTransform(1,0,0,1,0,0);surface.globalAlpha=1;surface.globalCompositeOperation='destination-in';surface.drawImage(mask.canvas,0,0);surface.restore();release(mask);
+        }
+      });
+      if(options.showBounds)for(const part of renderable)this.drawPartDebug(ctx,part,computed,view,options);
+    } else for (let index = 0; index < renderable.length;) {
       const part = renderable[index];
       const clip = resolveClip(part);
       if (!clip) {
@@ -861,7 +932,10 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
     ignoreVisualAlpha = false,
     webglMeshRenderer?: WebGLArtMeshRenderer,
     skinningTransforms?: ReadonlyMap<string, Matrix2D>,
-    glueStitch?: GlueVertexOffsets
+    glueStitch?: GlueVertexOffsets,
+    opacityScale = 1,
+    modeOverride?: RigBlendMode,
+    onBounds?: (bounds:{x:number;y:number;width:number;height:number})=>void
   ) {
     const size = this.partSize(part);
     const partState = computed.get(part.id);
@@ -871,8 +945,8 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
 
     ctx.save();
     ctx.setTransform(partState.matrix.a, partState.matrix.b, partState.matrix.c, partState.matrix.d, partState.matrix.e, partState.matrix.f);
-    ctx.globalAlpha = ignoreVisualAlpha ? 1 : Math.min(1, Math.max(0, partState.opacity));
-    ctx.globalCompositeOperation = ignoreVisualAlpha ? "source-over" : part.blendMode === "multiply" ? "multiply" : part.blendMode === "screen" ? "screen" : part.blendMode === "additive" ? "lighter" : "source-over";
+    ctx.globalAlpha = ignoreVisualAlpha ? 1 : Math.min(1, Math.max(0, partState.opacity * opacityScale));
+    ctx.globalCompositeOperation = ignoreVisualAlpha ? 'source-over' : canvasBlendMode(modeOverride ?? part.blendMode);
     const tintedImage = this.resolveTintedImage(part.id, size.image, part.tint);
     const coloredImage = ignoreVisualAlpha ? tintedImage : this.resolveContourImage(part, tintedImage, size.width, size.height, params);
     const sourceImage = this.resolveRevealImage(part, coloredImage, size.width, size.height, params);
@@ -896,9 +970,12 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
       columns: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.columns)),
       rows: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.rows))
     } : undefined;
-    if (webglMeshRenderer) {
-      const geometry = buildWebGLPartGeometry({ left, top, width: size.width, height: size.height,
-        matrix: partState.matrix, mesh: artMesh, warp, project, sharedGrid, stitchOffsets });
+    const geometry=webglMeshRenderer||onBounds?buildWebGLPartGeometry({left,top,width:size.width,height:size.height,matrix:partState.matrix,mesh:artMesh,warp,project,sharedGrid,stitchOffsets}):undefined;
+    if(onBounds&&geometry?.vertices.length){
+      const xs=geometry.vertices.map(p=>p.x),ys=geometry.vertices.map(p=>p.y),x=Math.floor(Math.min(...xs))-2,y=Math.floor(Math.min(...ys))-2;
+      onBounds({x,y,width:Math.ceil(Math.max(...xs))+2-x,height:Math.ceil(Math.max(...ys))+2-y});
+    }
+    if (webglMeshRenderer && geometry) {
       if (webglMeshRenderer.draw(ctx, sourceImage as HTMLImageElement, geometry.vertices, geometry.triangles, ctx.globalAlpha, ctx.globalCompositeOperation)) {
         drawArtPathsCanvas(ctx, part, params, size.width, size.height, left, top, warp, project);
         ctx.restore();

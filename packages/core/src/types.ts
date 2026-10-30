@@ -50,7 +50,7 @@ export type ParameterValues = Record<string, number>;
 
 export type PartKind = "group" | "image";
 export type DeformerKind = "group" | "rotate" | "warp";
-export type RigBlendMode = "normal" | "multiply" | "screen" | "additive";
+export type RigBlendMode = "normal" | "multiply" | "screen" | "additive" | "color-dodge" | "overlay" | "soft-light";
 export type RigTintMode = "multiply" | "screen";
 export interface RigPartTint { mode: RigTintMode; color: string; opacity: number; }
 export const TRANSFORM_PROPERTIES = ["x", "y", "rotation", "scaleX", "scaleY", "opacity"] as const;
@@ -455,6 +455,12 @@ export interface RigPart {
   parentId: string | null;
   deformerId?: string | null;
   blendMode?: RigBlendMode;
+  /** PSD isolated group versus pass-through group. Omitted preserves legacy rendering. */
+  compositing?: "isolate" | "pass-through";
+  /** Same-parent base of a PSD clipping stack, composited before base opacity. */
+  clippingBaseId?: string;
+  /** Hidden, independently deformed grayscale-to-alpha PSD mask source. */
+  rasterMaskPartId?: string;
   tint?: RigPartTint;
   clip?: RigClip;
   artMesh?: RigArtMesh;

@@ -193,7 +193,7 @@ export function auditModelingRig(rig: RigDocument): ModelingAuditResult {
   }
   const physicsOutputParameters = new Set(physicsChains.flatMap((chain) => chain.parameterOutput ? [chain.parameterOutput.parameter] : []));
   for (const parameter of physicsOutputParameters) {
-    if (countBindingsForParameter(parts, deformers, parameter) === 0) {
+    if (countBindingsForParameter(parts, deformers, parameter) === 0 && !(rig.glue??[]).some(g=>(g.blendShapes??[]).some(s=>s.parameter===parameter))) {
       addIssue({ id: `physics-output-unbound-${parameter}`, severity: "info", category: "physics", title: "Physics output has no model binding", detail: `${parameter} receives physics output but has no part, deformer, ArtMesh, or warp-pin binding.`, recommendation: `During model freeze, add ${parameter} keys only to tail/cloth meshes; do not bind it to structural roots.`, parameterIds: [parameter] });
     }
   }
@@ -619,8 +619,13 @@ function findDeformer(deformers: RigDeformer[], id: string, keywords: readonly s
 }
 
 function countBindingsForParameter(parts: RigPart[], deformers: RigDeformer[], parameter: string): number {
-  const partBindings = parts.filter((part) => (part.bindings ?? []).some((binding) => binding.parameter === parameter)).length;
-  const deformerBindings = deformers.filter((deformer) => (deformer.bindings ?? []).some((binding) => binding.parameter === parameter)).length;
+  const partBindings = parts.filter((part) =>
+    (part.bindings??[]).some(b=>b.parameter===parameter) || (part.multiBindings??[]).some(b=>b.parameters.includes(parameter)) ||
+    (part.blendShapes??[]).some(s=>s.parameter===parameter) ||
+    (part.artMesh?.enabled!==false && ((part.artMesh?.bindings??[]).some(b=>b.parameter===parameter) || (part.artMesh?.multiBindings??[]).some(b=>b.parameters.includes(parameter)) || (part.artMesh?.blendShapes??[]).some(s=>s.parameter===parameter))) ||
+    (part.artPaths??[]).some(p=>p.enabled!==false && ((p.bindings??[]).some(b=>b.parameter===parameter) || (p.blendShapes??[]).some(s=>s.parameter===parameter) || p.points.some(point=>(point.bindings??[]).some(b=>b.parameter===parameter))))
+  ).length;
+  const deformerBindings = deformers.filter((deformer) => (deformer.bindings??[]).some(b=>b.parameter===parameter) || (deformer.multiBindings??[]).some(b=>b.parameters.includes(parameter)) || (deformer.blendShapes??[]).some(s=>s.parameter===parameter)).length;
   const pinBindings = countWarpPinBindingsForParameter(deformers, parameter);
   return partBindings + deformerBindings + pinBindings;
 }
@@ -629,7 +634,7 @@ function countWarpPinBindingsForParameter(deformers: RigDeformer[], parameter: s
   return deformers.reduce(
     (total, deformer) =>
       total +
-      (deformer.warp?.pins ?? []).reduce(
+      [...(deformer.warp?.pins ?? []),...(deformer.sharedWarp?.controlPoints??[])].reduce(
         (pinTotal, pin) => pinTotal + (pin.bindings ?? []).filter((binding) => binding.parameter === parameter).length,
         0
       ),

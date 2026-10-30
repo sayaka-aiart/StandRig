@@ -1,4 +1,7 @@
 import type { RigDocument, RigPart } from "./types.js";
+import { evaluateRigParts, identityMatrix } from './evaluator.js';
+import { defaultParameterValues } from './parameters.js';
+import { projectSharedWarpPoint } from './sharedWarpProjection.js';
 
 export type DetailRegionId = "full" | "face" | "eyes" | "mouth" | "neck" | "shoulders" | "hair-roots" | "hair-tail-left" | "hair-tail-right" | "hair-accessory" | "hair-fringe-seam" | "feet" | "body-lower" | "upper-torso";
 
@@ -286,19 +289,20 @@ function descendantsOf(rig: RigDocument, parentId: string): Set<string> {
 
 function buildPartBoxes(rig: RigDocument): PartBox[] {
   const assetsById = new Map(rig.assets.map((asset) => [asset.id, asset]));
+  const states=evaluateRigParts(rig,defaultParameterValues(rig),identityMatrix());
   return rig.parts.flatMap((part) => {
     if (part.kind !== "image" || !part.assetId) {
       return [];
     }
     const asset = assetsById.get(part.assetId);
-    if (!asset || !asset.width || !asset.height) {
+    const state=states.get(part.id);
+    if (!asset || !asset.width || !asset.height || !state?.visible) {
       return [];
     }
-    const width = Math.max(1, asset.width * Math.abs(part.transform.scaleX || 1));
-    const height = Math.max(1, asset.height * Math.abs(part.transform.scaleY || 1));
-    const x = part.transform.x - part.transform.pivotX * width;
-    const y = part.transform.y - part.transform.pivotY * height;
-    return [{ part, rect: { x, y, width, height } }];
+    const left=-state.pose.pivotX*asset.width,top=-state.pose.pivotY*asset.height;
+    const points=[[left,top],[left+asset.width,top],[left,top+asset.height],[left+asset.width,top+asset.height]].map(([x,y])=>projectSharedWarpPoint({x,y},state.matrix,identityMatrix(),state.sharedWarps));
+    const x=Math.min(...points.map(p=>p.x)),y=Math.min(...points.map(p=>p.y));
+    return [{part,rect:{x,y,width:Math.max(...points.map(p=>p.x))-x,height:Math.max(...points.map(p=>p.y))-y}}];
   });
 }
 

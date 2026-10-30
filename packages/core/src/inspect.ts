@@ -346,8 +346,23 @@ function validateParts(
         });
       }
     }
-    if (part.blendMode !== undefined && part.blendMode !== "normal" && part.blendMode !== "multiply" && part.blendMode !== "screen" && part.blendMode !== "additive") {
+    if (part.blendMode !== undefined && !["normal","multiply","screen","additive","color-dodge","overlay","soft-light"].includes(part.blendMode)) {
       addIssue({ severity: "warning", code: "unsupported-part-blend-mode", message: `Unsupported part blendMode: ${String(part.blendMode)}`, path: `${path}.blendMode`, partId: part.id });
+    }
+    if (part.compositing !== undefined && (part.kind !== 'group' || !['isolate','pass-through'].includes(part.compositing))) {
+      addIssue({severity:'error',code:'invalid-part-compositing',message:'Compositing requires an isolate/pass-through group.',path:`${path}.compositing`,partId:part.id});
+    }
+    if (part.clippingBaseId !== undefined) {
+      const base = partsById.get(part.clippingBaseId);
+      if (!base || base.id === part.id || base.parentId !== part.parentId || base.drawOrder > part.drawOrder || base.clippingBaseId) {
+        addIssue({severity:'error',code:'invalid-clipping-base',message:'Clipping base must be a preceding, non-clipped sibling.',path:`${path}.clippingBaseId`,partId:part.id});
+      }
+    }
+    if (part.rasterMaskPartId !== undefined) {
+      const mask=partsById.get(part.rasterMaskPartId);
+      if(!mask||mask.kind!=='image'||mask.id===part.id||mask.parentId!==part.parentId){
+        addIssue({severity:'error',code:'invalid-raster-mask',message:'Raster mask must reference an image sibling.',path:`${path}.rasterMaskPartId`,partId:part.id});
+      }
     }
     for (const issue of validatePartTint(part.tint)) addIssue({ severity: "warning", code: `part-tint-${issue}`, message: `Invalid part tint: ${issue}`, path: `${path}.tint`, partId: part.id });
     if (part.contourShade && !validateContourShade(part.contourShade)) addIssue({ severity: "error", code: "part-contour-shade-invalid", message: "Invalid contour shade", path: `${path}.contourShade`, partId: part.id });

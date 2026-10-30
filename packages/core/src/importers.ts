@@ -1,6 +1,7 @@
 import { readPsd } from "ag-psd";
 import { DEFAULT_PARAMETERS } from "./parameters.js";
 import { expandTransparentRgb } from "./alphaBleed.js";
+import { psdBlendMode } from './compositing.js';
 import {
   DEFAULT_TRANSFORM,
   RIG_SCHEMA_VERSION,
@@ -24,6 +25,7 @@ interface PsdLikeLayer {
   bottom?: number;
   canvas?: HTMLCanvasElement;
   children?: PsdLikeLayer[];
+  mask?: {canvas?: HTMLCanvasElement; left?: number; top?: number; disabled?: boolean; defaultColor?: number};
 }
 
 interface PsdLikeDocument extends PsdLikeLayer {
@@ -87,6 +89,25 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
     }
   ];
   let order = 0;
+  const importedMaskIds=new Set<string>();
+  const addRasterMask = (layer:PsdLikeLayer,owner:RigPart,layerPath:string) => {
+    const mask=layer.mask;
+    if(!mask||mask.disabled)return;
+    if(!mask.canvas){report.warnings.push(`${layerPath}: raster-mask-pixels-unavailable`);return;}
+    if(mask.defaultColor && mask.defaultColor!==0){report.warnings.push(`${layerPath}: unsupported-white-outside-raster-mask`);return;}
+    const canvas=mask.canvas,context=canvas.getContext('2d',{willReadFrequently:true});
+    if(!context)return;
+    const pixels=context.getImageData(0,0,canvas.width,canvas.height);
+    for(let i=0;i<pixels.data.length;i+=4){const alpha=pixels.data[i]*pixels.data[i+3]/255;pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=255;pixels.data[i+3]=alpha;}
+    context.putImageData(pixels,0,0);
+    const id=uniqueId(`psd-mask-${owner.id}`,parts.map(p=>p.id)),assetId=`${id}-asset`;
+    importedMaskIds.add(id);
+    assets.push({id:assetId,name:`${layer.name} mask`,type:'image',src:canvas.toDataURL('image/png'),width:canvas.width,height:canvas.height});
+    owner.rasterMaskPartId=id;
+    parts.push({id,name:`${layer.name} [raster mask]`,kind:'image',assetId,parentId:owner.parentId,visible:false,drawOrder:owner.drawOrder-.01,transform:{...DEFAULT_TRANSFORM,x:mask.left??0,y:mask.top??0,pivotX:0,pivotY:0},tags:['psd-raster-mask']});
+    let count=0;for(let i=3;i<pixels.data.length;i+=4)if(pixels.data[i]>0)count++;
+    report.layers.push({path:`${layerPath}/[raster mask]`,name:`${layer.name} [raster mask]`,kind:'image',hidden:true,opacity:1,parentId:owner.parentId??'root',partId:id,assetId,hasCanvas:true,hasPixels:count>0,sampledPixels:canvas.width*canvas.height,nonTransparentSamples:count,transparentRatio:1-count/(canvas.width*canvas.height),bounds:{left:mask.left??0,top:mask.top??0,right:(mask.left??0)+canvas.width,bottom:(mask.top??0)+canvas.height,width:canvas.width,height:canvas.height},warnings:[]});
+  };
 
   const visit = (layer: PsdLikeLayer, parentId: string, path: string[]) => {
     const layerName = layer.name || `Layer ${order + 1}`;
@@ -95,7 +116,7 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
     const idBase = slugify(safePath.join("-"));
     const opacity = normalizeLayerOpacity(layer.opacity);
     const rawBlendMode = String(layer.blendMode ?? "").trim().toLowerCase();
-    const blendMode = rawBlendMode === "multiply" ? "multiply" : rawBlendMode === "screen" ? "screen" : ["add", "additive", "linear dodge", "linear dodge (add)"].includes(rawBlendMode) ? "additive" : undefined;
+    const blendMode = psdBlendMode(rawBlendMode);
     const bounds = getLayerBounds(layer);
 
     if (layer.children?.length) {
@@ -106,8 +127,10 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
         kind: "group",
         parentId,
         visible: !layer.hidden,
+        compositing: rawBlendMode === 'pass through' ? 'pass-through' : 'isolate',
+        ...(blendMode ? {blendMode} : {}),
         drawOrder: order,
-        transform: { ...DEFAULT_TRANSFORM, x: 0, y: 0, pivotX: 0, pivotY: 0 }
+        transform: { ...DEFAULT_TRANSFORM, x: 0, y: 0, pivotX: 0, pivotY: 0, opacity }
       });
       report.layers.push({
         path: layerPath,
@@ -127,8 +150,16 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
         bounds,
         warnings: buildLayerWarnings(layer, opacity, bounds, undefined, layer.hidden ? ["hidden-layer"] : [])
       });
+      addRasterMask(layer,parts.find(p=>p.id===groupId)!,layerPath);
+      let clippingBase: string | undefined;
       for (const child of layer.children) {
+        const firstIndex = parts.length;
         visit(child, groupId, safePath);
+        const imported = parts[firstIndex];
+        if (!imported) continue;
+        if (child.clipping && clippingBase) imported.clippingBaseId = clippingBase;
+        else if(child.clipping)report.warnings.push(`${[...safePath,child.name].join('/')}: clipping-base-missing`);
+        else if (!child.clipping) clippingBase = imported.id;
       }
       return;
     }
@@ -210,14 +241,22 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
       },
       warnings: buildLayerWarnings(layer, opacity, bounds, analysis, analysis.warnings, true)
     });
+    addRasterMask(layer,parts.find(p=>p.id===partId)!,layerPath);
     order += 10;
   };
 
+  let clippingBase: string | undefined;
   for (const child of psd.children ?? []) {
+    const firstIndex = parts.length;
     visit(child, "root", []);
+    const imported = parts[firstIndex];
+    if (!imported) continue;
+    if (child.clipping && clippingBase) imported.clippingBaseId = clippingBase;
+    else if(child.clipping)report.warnings.push(`${child.name}: clipping-base-missing`);
+    else if (!child.clipping) clippingBase = imported.id;
   }
 
-  const drawableLayers = report.layers.filter(layer => layer.kind === "image" && layer.hasPixels);
+  const drawableLayers = report.layers.filter(layer => layer.kind === "image" && layer.hasPixels && !importedMaskIds.has(layer.partId??''));
   if (drawableLayers.length < 2) {
     throw new Error("パーツ分け済みPSDのみ対応しています。描画内容のある独立した画像レイヤーを2つ以上用意してください。統合画像・単一レイヤーPSDは読み込めません。");
   }
@@ -322,7 +361,8 @@ function finalizeImportReport(report: RigImportReport) {
     lowOpacityLayers: report.layers.filter((layer) => layer.warnings.includes("low-opacity")).length,
     warnings: report.layers.reduce((total, layer) => total + layer.warnings.length, 0)
   };
-  report.warnings = report.layers.flatMap((layer) => layer.warnings.map((warning) => `${layer.path}: ${warning}`));
+  report.warnings = [...report.warnings,...report.layers.flatMap((layer) => layer.warnings.map((warning) => `${layer.path}: ${warning}`))];
+  report.totals.warnings=report.warnings.length;
 }
 
 function getLayerBounds(layer: PsdLikeLayer): ImportLayerBounds {
@@ -417,14 +457,11 @@ function buildLayerWarnings(
   if (opacity <= 0.01) {
     warnings.push("low-opacity");
   }
-  if (bounds.width <= 0 || bounds.height <= 0) {
+  if (!layer.children?.length && (bounds.width <= 0 || bounds.height <= 0)) {
     warnings.push("zero-size-bounds");
   }
-  if (layer.blendMode && !["normal", "pass through", "multiply", "screen", "add", "additive", "linear dodge", "linear dodge (add)"].includes(String(layer.blendMode).trim().toLowerCase())) {
+  if (layer.blendMode && String(layer.blendMode).trim().toLowerCase() !== 'pass through' && psdBlendMode(layer.blendMode) === undefined) {
     warnings.push("unsupported-blend-mode");
-  }
-  if (layer.clipping) {
-    warnings.push("clipping-layer-not-applied");
   }
   if (analysis && analysis.sampledPixels > 0 && analysis.nonTransparentSamples === 0 && !warnings.includes("fully-transparent-bitmap")) {
     warnings.push("fully-transparent-bitmap");
