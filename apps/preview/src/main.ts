@@ -200,7 +200,8 @@ portableExport.onclick = async () => {
       || !bundle.rig.assets.every((asset: {src?: string}) => typeof asset.src === 'string' && asset.src.startsWith('data:image/png;base64,'))) {
       throw new Error('画像込みモデルを取得できませんでした。PNG素材とモデルを確認してください。');
     }
-    const url = URL.createObjectURL(new Blob([JSON.stringify(bundle.rig, null, 2)], { type: 'application/json' }));
+    // Pretty-printing dense keyform grids can exceed the browser string limit.
+    const url = URL.createObjectURL(new Blob([JSON.stringify(bundle.rig)], { type: 'application/json' }));
     const link = document.createElement('a');
     link.href = url; link.download = 'model.srig'; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
