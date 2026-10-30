@@ -6,6 +6,7 @@ import { renderRigScreenshot, type ScreenshotOptions } from "./serverRenderer.js
 import { previewParameterValuesForRig } from "./parameters.js";
 import { auditRigArtMeshDistortion, type ArtMeshDistortionAudit } from "./artMeshDistortion.js";
 import { auditMotionSweep, type MotionSweepAudit, type MotionSweepRequest } from "./motionSweep.js";
+import { resolvePartAffine } from "./partAffine.js";
 import type { ParameterValues, RigDocument } from "./types.js";
 import type { QaFailureImageRequest } from "./qaFailureImage.js";
 
@@ -55,6 +56,11 @@ export async function runQaCheck(rig: RigDocument, publicDir: string, request: Q
       }
       const audit = auditRgbaImage(image);
       const issues: string[] = [];
+      for (const part of rig.parts) if (part.affineBindings?.length) {
+        const matrix = resolvePartAffine(part, poseValues), determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+        if (!Object.values(matrix).every(Number.isFinite) || Math.abs(determinant) <= 1e-8) issues.push("part-affine-degenerate");
+        else if (determinant < 0) issues.push("part-affine-inverted");
+      }
       const coverage = audit.totalPixelCount ? audit.nonTransparentPixelCount / audit.totalPixelCount : 0;
       const baselineHash = hashImage(image); const expectedHash = request.expectedHashes?.[`${poseId}:${region}`]; const baselineMatch = expectedHash ? expectedHash === baselineHash : undefined;
       if (!audit.nonTransparentPixelCount) issues.push("empty-image");

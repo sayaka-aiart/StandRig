@@ -2,6 +2,8 @@ import { applyParameterInterpolation, normalizeParameterInterpolation } from "./
 import { sortedKeysOrCopy } from "./bindingPreparation.js";
 import { sampleMultiArtMeshBinding } from "./artMeshMulti.js";
 import { sampleArtMeshBlendShape } from "./artMeshBlendShape.js";
+import { applyArtMeshSurface } from "./artMeshSurface.js";
+import { validGridParameters } from "./parameterGrid.js";
 import type { ParameterInterpolation, ParameterValues, RigArtMesh, RigArtMeshBinding, RigArtMeshQuality, RigArtMeshVertex, RigPart } from "./types.js";
 
 export interface ResolvedArtMeshVertex extends RigArtMeshVertex {
@@ -234,27 +236,51 @@ function compactArtMeshVertices(mesh: RigArtMesh): void {
   };
 }
 export function resolveArtMesh(part: RigPart, width: number, height: number, values: ParameterValues): ResolvedArtMesh | undefined {
+  return resolveArtMeshInternal(part, width, height, values);
+}
+
+/** Numeric QA inspects each authored deformation stage independently as well
+ * as retaining the final composed geometry. A closed eyelid's intended
+ * compression must not be counted again as a defect in its yaw surface. */
+export function resolveArtMeshDeformationStages(part: RigPart, width: number, height: number, values: ParameterValues): { mesh: ResolvedArtMesh | undefined; stages: Array<{ stage: string; vertices: ResolvedArtMeshVertex[] }> } {
+  const stages: Array<{ stage: string; vertices: ResolvedArtMeshVertex[] }> = [];
+  const mesh = resolveArtMeshInternal(part, width, height, values, (stage, vertices) => stages.push({ stage, vertices }));
+  return { mesh, stages };
+}
+
+function resolveArtMeshInternal(part: RigPart, width: number, height: number, values: ParameterValues, onStage?: (stage: string, vertices: ResolvedArtMeshVertex[]) => void): ResolvedArtMesh | undefined {
   const mesh = part.artMesh;
   if (!mesh?.enabled || !isValidArtMesh(mesh, width, height)) {
     return undefined;
   }
   const offsets = new Map<string, { x: number; y: number }>();
   for (const binding of mesh.bindings ?? []) {
+    if (binding.composition === "surface") continue;
     applyOffsets(offsets, sampleArtMeshBinding(binding, values[binding.parameter] ?? 0), binding.additive);
   }
   // Apply 2D correction only after the legacy 1D stage. The sampler returns an
   // empty map when its enclosing cell lacks any corner, leaving the 1D pose intact.
   for (const binding of mesh.multiBindings ?? []) {
+    if (binding.composition === "surface") continue;
     applyOffsets(offsets, sampleMultiArtMeshBinding(binding, values), binding.additive);
   }
   for (const shape of mesh.blendShapes ?? []) {
     applyOffsets(offsets, sampleArtMeshBlendShape(shape, values[shape.parameter] ?? shape.neutralInput), shape.additive);
   }
+  const vertices = () => mesh.vertices.map(vertex => { const offset = offsets.get(vertex.id); return { ...vertex, x: vertex.x + (offset?.x ?? 0), y: vertex.y + (offset?.y ?? 0) }; });
+  onStage?.("bindings", vertices());
+  for (const binding of mesh.multiBindings ?? []) {
+    if (binding.composition === "surface") {
+      applyArtMeshSurface(mesh, sampleMultiArtMeshBinding(binding, values), offsets);
+      onStage?.("surface:" + binding.parameters.join("/"), vertices());
+    }
+  }
+  for (const binding of mesh.bindings ?? []) if (binding.composition === "surface") {
+    applyArtMeshSurface(mesh, sampleArtMeshBinding(binding, values[binding.parameter] ?? 0), offsets);
+    onStage?.("surface:" + binding.parameter, vertices());
+  }
   return {
-    vertices: mesh.vertices.map((vertex) => {
-      const offset = offsets.get(vertex.id) ?? { x: 0, y: 0 };
-      return { ...vertex, x: vertex.x + offset.x, y: vertex.y + offset.y };
-    }),
+    vertices: vertices(),
     triangles: [...mesh.triangles],
     topology: mesh.generator.topology === "alpha-contour" ? "alpha-contour" : "rect-grid"
   };
@@ -286,6 +312,7 @@ export function isValidArtMesh(mesh: RigArtMesh | undefined, width?: number, hei
     if (Math.abs(area) < 0.0001) return false;
   }
   for (const binding of mesh.bindings ?? []) {
+    if (binding?.composition !== undefined && binding.composition !== "surface") return false;
     if (!binding || typeof binding.parameter !== "string" || !binding.parameter.trim() || !Array.isArray(binding.keys)) return false;
     for (const key of binding.keys) {
       if (!key || !finite(key.input) || !Array.isArray(key.offsets)) return false;
@@ -295,9 +322,10 @@ export function isValidArtMesh(mesh: RigArtMesh | undefined, width?: number, hei
     }
   }
   for (const binding of mesh.multiBindings ?? []) {
-    if (!binding || !Array.isArray(binding.parameters) || binding.parameters.length !== 2 || !binding.parameters[0]?.trim() || !binding.parameters[1]?.trim() || binding.parameters[0] === binding.parameters[1] || !Array.isArray(binding.keyforms)) return false;
+    if (binding?.composition !== undefined && binding.composition !== "surface") return false;
+    if (!binding || !validGridParameters(binding.parameters) || !Array.isArray(binding.keyforms)) return false;
     for (const keyform of binding.keyforms) {
-      if (!keyform || !keyform.inputs || !finite(keyform.inputs[binding.parameters[0]]) || !finite(keyform.inputs[binding.parameters[1]]) || !Array.isArray(keyform.offsets)) return false;
+      if (!keyform || !keyform.inputs || binding.parameters.some(parameter => !finite(keyform.inputs[parameter])) || !Array.isArray(keyform.offsets)) return false;
       for (const offset of keyform.offsets) {
         if (!offset || !ids.has(offset.vertexId) || !finite(offset.x) || !finite(offset.y)) return false;
       }

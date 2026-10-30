@@ -3,6 +3,7 @@ import { sampleBinding } from "./bindings.js";
 import { sampleMultiParameterBinding } from "./multiBindings.js";
 import { deformerForPart } from "./deformers.js";
 import { defaultParameterValues } from "./parameters.js";
+import { resolvePartAffine } from "./partAffine.js";
 import { isTransformBindingProperty, mergeResolvedWarpDeformers, resolveDeformerWarp, type ResolvedWarpDeformer } from "./warp.js";
 import type { ParameterValues, PhysicsChain, RigDeformer, RigDocument, RigPart, Transform2D, TransformProperty } from "./types.js";
 import type { RigSharedWarpField } from "./types.js";
@@ -208,7 +209,7 @@ function evaluateRigPartsWithDeformers(
 
     const result: EvaluatedPartState = {
       parameterValues: values,
-      matrix: multiplyMatrices(parentMatrix, localMatrix),
+      matrix: multiplyMatrices(parentMatrix, part.affineBindings?.length ? multiplyMatrices(localMatrix, resolvePartAffine(part, values)) : localMatrix),
       parentMatrix,
       opacity: parentComputed.opacity * (deformerComputed?.opacity ?? 1) * pose.opacity,
       visible: parentComputed.visible && (deformerComputed?.visible ?? true) && part.visible,

@@ -1,4 +1,4 @@
-import { resolveArtMesh } from "./artMesh.js";
+import { resolveArtMesh, resolveArtMeshDeformationStages } from "./artMesh.js";
 import type { ParameterValues, RigArtMeshVertex, RigDocument } from "./types.js";
 
 export interface ArtMeshDistortionThresholds {
@@ -8,6 +8,7 @@ export interface ArtMeshDistortionThresholds {
 }
 
 export interface ArtMeshTriangleDistortion {
+  stage?: string;
   partId: string;
   triangleIndex: number;
   stretchRatio: number;
@@ -19,6 +20,10 @@ export interface ArtMeshTriangleDistortion {
 }
 
 export interface ArtMeshDistortionAudit {
+  /** Present for explicit surface composition. Thresholds apply to each
+   * authored stage; raw final/rest measurements remain visible here. */
+  composed?: { maxStretchRatio: number; maxCompressionRatio: number; maxAnisotropy: number; invertedTriangleCount: number; degenerateTriangleCount: number };
+  triangleStageTests?: number;
   partCount: number;
   triangleCount: number;
   maxStretchRatio: number;
@@ -45,6 +50,8 @@ export function auditRigArtMeshDistortion(
     maxAnisotropy: positive(options.maxAnisotropy, 6)
   };
   const triangles: ArtMeshTriangleDistortion[] = [];
+  const composed: ArtMeshTriangleDistortion[] = [];
+  let triangleCount = 0;
   let partCount = 0;
   for (const part of rig.parts) {
     const mesh = part.artMesh;
@@ -52,7 +59,9 @@ export function auditRigArtMeshDistortion(
     const asset = part.assetId ? rig.assets.find((entry) => entry.id === part.assetId) : undefined;
     const width = positive(asset?.width, Math.max(1, mesh.generator.alphaBounds.width));
     const height = positive(asset?.height, Math.max(1, mesh.generator.alphaBounds.height));
-    const resolved = resolveArtMesh(part, width, height, values);
+    const hasSurfaces = mesh.multiBindings?.some(binding => binding.composition === "surface") || mesh.bindings?.some(binding => binding.composition === "surface");
+    const staged = hasSurfaces ? resolveArtMeshDeformationStages(part, width, height, values) : undefined;
+    const resolved = staged?.mesh ?? resolveArtMesh(part, width, height, values);
     if (!resolved) continue;
     partCount += 1;
     for (let offset = 0; offset < mesh.triangles.length; offset += 3) {
@@ -60,7 +69,17 @@ export function auditRigArtMeshDistortion(
       const rest = indices.map((index) => mesh.vertices[index]);
       const posed = indices.map((index) => resolved.vertices[index]);
       if (rest.some((vertex) => !vertex) || posed.some((vertex) => !vertex)) continue;
-      triangles.push(measureTriangle(part.id, offset / 3, rest as [RigArtMeshVertex, RigArtMeshVertex, RigArtMeshVertex], posed as [RigArtMeshVertex, RigArtMeshVertex, RigArtMeshVertex]));
+      triangleCount++;
+      const combined = measureTriangle(part.id, offset / 3, rest as [RigArtMeshVertex, RigArtMeshVertex, RigArtMeshVertex], posed as [RigArtMeshVertex, RigArtMeshVertex, RigArtMeshVertex]);
+      if (staged) {
+        composed.push(combined);
+        let before = rest;
+        for (const stage of staged.stages) {
+          const after = indices.map(index => stage.vertices[index]);
+          triangles.push({ ...measureTriangle(part.id, offset / 3, before as [RigArtMeshVertex, RigArtMeshVertex, RigArtMeshVertex], after as [RigArtMeshVertex, RigArtMeshVertex, RigArtMeshVertex]), stage: stage.stage });
+          before = after;
+        }
+      } else triangles.push(combined);
     }
   }
   const violations = triangles.filter((entry) => entry.degenerate || entry.inverted || entry.stretchRatio > thresholds.maxStretchRatio || entry.compressionRatio > thresholds.maxCompressionRatio || entry.anisotropy > thresholds.maxAnisotropy);
@@ -70,7 +89,14 @@ export function auditRigArtMeshDistortion(
     .slice(0, violations.length ? 8 : 3);
   return {
     partCount,
-    triangleCount: triangles.length,
+    triangleCount,
+    ...(composed.length ? { triangleStageTests: triangles.length, composed: {
+      maxStretchRatio: finiteMaximum(composed.map(entry => entry.stretchRatio), 1),
+      maxCompressionRatio: finiteMaximum(composed.map(entry => entry.compressionRatio), 1),
+      maxAnisotropy: finiteMaximum(composed.map(entry => entry.anisotropy), 1),
+      invertedTriangleCount: composed.filter(entry => entry.inverted).length,
+      degenerateTriangleCount: composed.filter(entry => entry.degenerate).length
+    } } : {}),
     maxStretchRatio: finiteMaximum(triangles.map((entry) => entry.stretchRatio), 1),
     maxCompressionRatio: finiteMaximum(triangles.map((entry) => entry.compressionRatio), 1),
     maxAnisotropy: finiteMaximum(triangles.map((entry) => entry.anisotropy), 1),
@@ -130,5 +156,12 @@ function distortionScore(entry: ArtMeshTriangleDistortion, thresholds: Required<
   if (entry.degenerate || entry.inverted) return Number.POSITIVE_INFINITY;
   return Math.max(entry.stretchRatio / thresholds.maxStretchRatio, entry.compressionRatio / thresholds.maxCompressionRatio, entry.anisotropy / thresholds.maxAnisotropy);
 }
-function finiteMaximum(values: number[], fallback: number) { return values.some((value) => !Number.isFinite(value)) ? Number.POSITIVE_INFINITY : values.length ? Math.max(...values) : fallback; }
+function finiteMaximum(values: number[], fallback: number) {
+  let maximum = fallback;
+  for (const value of values) {
+    if (!Number.isFinite(value)) return Number.POSITIVE_INFINITY;
+    maximum = Math.max(maximum, value);
+  }
+  return maximum;
+}
 function positive(value: unknown, fallback: number) { const numeric = Number(value); return Number.isFinite(numeric) && numeric > 0 ? numeric : fallback; }

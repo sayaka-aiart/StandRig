@@ -131,7 +131,7 @@ export function modelingOperationGateIssues(operations: ModelingOperation[], ope
 export function sendJson(res: import("node:http").ServerResponse, status: number, body: unknown) {
     res.statusCode = status;
     res.setHeader("content-type", "application/json; charset=utf-8");
-    res.end(JSON.stringify(body, null, 2));
+    res.end(JSON.stringify(body));
 }
 export function readBody(req: import("node:http").IncomingMessage): Promise<string> {
     return readBodyLimited(req, MODEL_BODY_LIMIT);
@@ -258,7 +258,10 @@ export async function writeRigFile(rigPath: string, rig: RigDocument) {
 }
 export async function writeJsonFile(filePath: string, value: unknown) {
     const tmpPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
-    await writeFile(tmpPath, `${JSON.stringify(value, null, 2)}
+    // Dense keyform grids can exceed V8's string limit when pretty-printed.
+    const compact = JSON.stringify(value);
+    const serialized = compact.length > 8 * 1024 * 1024 ? compact : JSON.stringify(value, null, 2);
+    await writeFile(tmpPath, `${serialized}
 `, "utf8");
     for (let attempt = 0; attempt < 10; attempt += 1) {
         try {

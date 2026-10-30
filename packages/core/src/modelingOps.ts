@@ -488,7 +488,7 @@ function executeArtMeshMultiKey(part: RigDocument["parts"][number], action: Extr
   const offsets = normalizeArtMeshKeyOffsets(mesh, action.offsets, result, part.id);
   if (!offsets) return;
   mesh.multiBindings ??= [];
-  let binding = mesh.multiBindings.find((entry) => entry.parameters[0] === action.parameters[0] && entry.parameters[1] === action.parameters[1]);
+  let binding = mesh.multiBindings.find((entry) => entry.parameters.length === 2 && entry.parameters[0] === action.parameters[0] && entry.parameters[1] === action.parameters[1]);
   if (!binding) {
     binding = { parameters: action.parameters, additive: action.additive ?? true, interpolation: action.interpolation ?? "smoothstep", curve: action.curve, keyforms: [] };
     mesh.multiBindings.push(binding);

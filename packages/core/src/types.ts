@@ -236,6 +236,8 @@ export interface RigArtMeshSkinning {
 }
 export interface RigArtMeshBinding {
   parameter: string;
+  /** A rooted secondary deformation applied after multi-parameter surfaces. */
+  composition?: "surface";
   additive?: boolean;
   interpolation?: ParameterInterpolation;
   curve?: ParameterCurve;
@@ -246,7 +248,11 @@ export interface RigArtMeshBinding {
 }
 
 export interface RigArtMeshMultiBinding {
-  parameters: [string, string];
+  parameters: [string, string] | [string, string, string];
+  /** Apply this rest-mesh surface to the already resolved expression/physics
+   * position. Omitted retains legacy per-vertex offset addition. Surface stages
+   * run after legacy bindings/blend shapes, in their authored array order. */
+  composition?: "surface";
   additive?: boolean;
   interpolation?: ParameterInterpolation;
   curve?: ParameterCurve;
@@ -345,6 +351,7 @@ export interface RigSharedWarpBounds {
 
 export interface RigSharedWarpControlPoint {
   bindings?: RigWarpPinBinding[];
+  multiBindings?: RigSharedWarpMultiBinding[];
   id: string;
   column: number;
   row: number;
@@ -445,6 +452,9 @@ export interface RigAlphaReveal {
 }
 
 export interface RigPart {
+  /** Pivot-relative local affine stages, evaluated after ArtMesh material
+   * deformation, inside the ordinary part/parent transforms, in array order. */
+  affineBindings?: RigPartAffineBinding[];
   blendShapes?: PartBlendShape[];
   alphaReveal?: RigAlphaReveal;
   contourShade?: RigContourShade;
@@ -476,6 +486,21 @@ export interface RigPart {
   bindings?: ParameterBinding[];
   tags?: string[];
   multiBindings?: MultiParameterBinding[];
+}
+
+export interface RigAffineMatrix { a: number; b: number; c: number; d: number; e: number; f: number; }
+export interface RigPartAffineBinding {
+  parameters: [string, string] | [string, string, string];
+  keyforms: Array<{ inputs: Record<string, number>; matrix: RigAffineMatrix }>;
+}
+
+export interface RigSharedWarpMultiBinding {
+  parameters: [string, string] | [string, string, string];
+  property: "offsetX" | "offsetY";
+  additive?: boolean;
+  interpolation?: ParameterInterpolation;
+  curve?: ParameterCurve;
+  keyforms: Array<{ inputs: Record<string, number>; value: number }>;
 }
 
 export interface PhysicsInput {

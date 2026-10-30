@@ -161,7 +161,7 @@ function executeOperation(rig: RigDocument, operation: ModelingOperation) {
     if (!part.artMesh.bindings.includes(binding)) part.artMesh.bindings.push(binding);
   } else if (action.type === "artmesh-multi-key") {
     part.artMesh.multiBindings ??= [];
-    const binding = part.artMesh.multiBindings.find((entry) => entry.parameters[0] === action.parameters[0] && entry.parameters[1] === action.parameters[1]) ?? { parameters: action.parameters, additive: false, interpolation: action.interpolation, keyforms: [] };
+    const binding = part.artMesh.multiBindings.find((entry) => entry.parameters.length === 2 && entry.parameters[0] === action.parameters[0] && entry.parameters[1] === action.parameters[1]) ?? { parameters: action.parameters, additive: false, interpolation: action.interpolation, keyforms: [] };
     const key = { inputs: action.inputs, offsets: action.offsets };
     const index = binding.keyforms.findIndex((entry) => Math.abs((entry.inputs[action.parameters[0]] ?? 0) - action.inputs[action.parameters[0]]) < 0.0001 && Math.abs((entry.inputs[action.parameters[1]] ?? 0) - action.inputs[action.parameters[1]]) < 0.0001);
     if (index >= 0) binding.keyforms[index] = key; else binding.keyforms.push(key);

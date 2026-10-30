@@ -1,5 +1,6 @@
 import { sampleArtMeshBlendShapeWeight } from './artMeshBlendShape.js';
 import { isParameterInterpolation, sampleBinding } from './bindings.js';
+import { sampleParameterGrid } from './parameterGrid.js';
 import type { BlendWeight, DeformerBlendShape, ExtendedBlendShape, TransformDelta } from './deformTypes.js';
 import type { ParameterValues, RigDocument, RigSharedWarpField, Transform2D } from './types.js';
 export const blendWeight = (shape: BlendWeight, values: ParameterValues) => sampleArtMeshBlendShapeWeight(shape, values[shape.parameter] ?? shape.neutralInput);
@@ -18,7 +19,7 @@ export function applyTransformShapes(pose: Transform2D, shapes: Array<BlendWeigh
     }
 }
 export function resolveSharedShape(field: RigSharedWarpField | undefined, shapes: DeformerBlendShape[] | undefined, values: ParameterValues) {
-    if (!field || (!shapes?.some(s => s.sharedPoints?.length) && !field.controlPoints.some(p=>p.bindings?.length)))
+    if (!field || (!shapes?.some(s => s.sharedPoints?.length) && !field.controlPoints.some(p=>p.bindings?.length || p.multiBindings?.length)))
         return field;
     // Key arrays are immutable during evaluation. Copy only frame-local geometry;
     // cloning thousands of unchanged keyframes dominates live shared-warp frames.
@@ -31,6 +32,12 @@ export function resolveSharedShape(field: RigSharedWarpField | undefined, shapes
     for (const point of result.controlPoints) for(const binding of (point.bindings??[]).slice(0,16)) {
         const value=sampleBinding(binding,values[binding.parameter]??0);
         point[binding.property]=binding.additive===false?value:point[binding.property]+value;
+    }
+    for (const point of result.controlPoints) for (const binding of (point.multiBindings ?? []).slice(0,16)) {
+        const corners = sampleParameterGrid(binding.parameters, binding.keyforms, values, binding.interpolation, binding.curve);
+        if (!corners.length) continue;
+        const value = corners.reduce((sum, corner) => sum + corner.key.value * corner.weight, 0);
+        point[binding.property] = binding.additive === false ? value : point[binding.property] + value;
     }
     // Keep the first matching id, as Array.find did, including malformed input
     // with duplicate ids. One index and one weight per shape replace repeated scans.

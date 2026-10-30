@@ -1,4 +1,6 @@
 import { extendedBlendIssues } from './extendedBlendShape.js';
+import { partAffineIssues } from './partAffine.js';
+import { parameterGridIssues } from './parameterGrid.js';
 import { parseFacialPresets } from './facial.js';
 import {
   PARAMETER_IDS,
@@ -187,6 +189,7 @@ export function validateRig(rig: RigDocument): RigValidationResult {
   const assetIds = new Set(assets.map((asset) => asset.id));
   const parameterIds = new Set(parameters.map((parameter) => parameter.id));
   const deformerIds = new Set(deformers.map((deformer) => deformer.id));
+  for (const part of parts) for (const message of partAffineIssues(part, parameterIds)) addIssue({ severity: "error", code: "invalid-part-affine", message, partId: part.id, path: "parts." + part.id + ".affineBindings" });
 
   if (!Array.isArray(rig.assets)) {
     addIssue({ severity: "error", code: "assets-not-array", message: "assets must be an array.", path: "assets" });
@@ -217,7 +220,20 @@ export function validateRig(rig: RigDocument): RigValidationResult {
   validateParameters(parameters, addIssue);
   validateParts(parts, assetIds, parameterIds, deformerIds, addIssue);
   validateDeformers(deformers, partIds, parameterIds, addIssue);
-  for(const d of deformers)for(const p of d.sharedWarp?.controlPoints??[])if(p.bindings!==undefined)validateWarpPinBindings(p.bindings,`deformers.${d.id}.sharedWarp.${p.id}`,d.id,parameterIds,addIssue);
+  for (const d of deformers) for (const p of d.sharedWarp?.controlPoints ?? []) {
+    const path = `deformers.${d.id}.sharedWarp.${p.id}`;
+    if (p.bindings !== undefined) validateWarpPinBindings(p.bindings, path, d.id, parameterIds, addIssue);
+    if (p.multiBindings !== undefined) {
+      const issues: string[] = [];
+      if (!Array.isArray(p.multiBindings) || p.multiBindings.length > 16) issues.push("Expected at most sixteen shared warp grid bindings");
+      else for (const binding of p.multiBindings) {
+        issues.push(...parameterGridIssues(binding?.parameters, binding?.keyforms, parameterIds));
+        if (!["offsetX", "offsetY"].includes(binding?.property) || !Array.isArray(binding?.keyforms) || binding.keyforms.some(key => !Number.isFinite(key?.value))) issues.push("Shared warp grid values and property must be valid");
+        if (binding?.interpolation !== undefined && !isParameterInterpolation(binding.interpolation)) issues.push("Invalid shared warp grid interpolation");
+      }
+      for (const message of issues) addIssue({ severity: "error", code: "invalid-shared-warp-grid-binding", message, path: path + ".multiBindings", deformerId: d.id });
+    }
+  }
   validateParentGraph(parts, partIds, addIssue);
   validateDeformerParentGraph(deformers, deformerIds, addIssue);
   validateGlueCandidates(glueCandidates, partIds, addIssue);

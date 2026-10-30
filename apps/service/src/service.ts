@@ -82,7 +82,7 @@ export async function createLocalService(options: { dataDir: string; port?: numb
       const dir = path.join(dataDir, 'exports');
       await mkdir(dir, { recursive: true });
       const file = path.join(dir, `model-${randomUUID()}.standrig.json`);
-      await writeFile(file, JSON.stringify(bundle, null, 2), { flag: 'wx' });
+      await writeFile(file, JSON.stringify(bundle), { flag: 'wx' });
       json(res, 201, { ok: true, path: file, format: 'standrig-bundle' }); return;
     }
     if (route === '/api/playback/facial' && req.method === 'GET') { json(res,200,{ok:true,presets:playback.facialCatalog(),playback:playback.snapshot()});return; }

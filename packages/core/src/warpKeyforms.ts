@@ -1,7 +1,7 @@
 import { sampleBinding } from './bindings.js';
 import type { RigDocument, RigWarpPinBinding } from './types.js';
 
-type Point = { offsetX: number; offsetY: number; bindings?: RigWarpPinBinding[]; multiBindings?: Array<{parameters: [string,string];property:string}> };
+type Point = { offsetX: number; offsetY: number; bindings?: RigWarpPinBinding[]; multiBindings?: Array<{parameters: [string,string] | [string,string,string];property:string}> };
 export function keyformParameter(rig: RigDocument, parameter: string, input: number) {
   const definition = rig.parameters.find(p => p.id === parameter);
   if (!definition || !Number.isFinite(input) || input < definition.min || input > definition.max) throw Error('invalid Warp keyform parameter/input');
