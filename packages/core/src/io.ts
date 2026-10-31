@@ -1,5 +1,6 @@
 import type { RigDocument } from "./types.js";
 import { migrateRigDocument } from "./migration.js";
+import { stringifyModelDocument } from "./modelJson.js";
 
 const RIG_DRAFT_STORAGE_KEY = "codex-standrig:draft-rig";
 const RIG_DRAFT_DB_NAME = "codex-standrig";
@@ -33,7 +34,7 @@ export async function saveRigDocument(
   options: { downloadFallback?: boolean } = {}
 ): Promise<"api" | "download" | "failed"> {
   const downloadFallback = options.downloadFallback ?? true;
-  const body = JSON.stringify(rig, null, 2);
+  const body = stringifyModelDocument(rig);
   const response = await fetch("/api/rig?includeAssets=1", {
     method: "PUT",
     headers: { "content-type": "application/json" },
@@ -119,11 +120,11 @@ export async function loadRigDraft(): Promise<RigDocument | undefined> {
 }
 
 export function downloadRigDocument(rig: RigDocument) {
-  downloadJsonDocument(JSON.stringify(rig, null, 2), "rig.json");
+  downloadJsonDocument(stringifyModelDocument(rig), "rig.json");
 }
 
 export async function exportRigDocumentAs(rig: RigDocument): Promise<"saved" | "download" | "cancelled"> {
-  const body = `${JSON.stringify(rig, null, 2)}\n`;
+  const body = `${stringifyModelDocument(rig)}\n`;
   const picker = (window as Window & { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
   if (typeof picker !== "function") {
     downloadJsonDocument(body, "rig.json");

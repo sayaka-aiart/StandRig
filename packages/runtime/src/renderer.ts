@@ -12,6 +12,7 @@ import { applySkinningToVertices } from "@standrig/core/skinning";
 import { glueStitchOffsetToLocal, hasGlueStitches, glueStitchRestScale, projectArtMeshVertex, resolveGlueStitchOffsets, type GlueVertexOffset, type GlueVertexOffsets } from "@standrig/core/glueVertex";
 import { createPartClipResolver, sameResolvedPartClip } from "@standrig/core/mask";
 import { prepareRigBindingOrder } from "@standrig/core/bindingPreparation";
+import { EvaluationCache, withEvaluationCache } from "@standrig/core/evaluationCache";
 import { ContourShadeProcessor, validateContourShade } from "@standrig/core/contourShade";
 import { AlphaRevealProcessor, validateAlphaReveal } from "@standrig/core/alphaReveal";
 import { canvasBlendMode, compositeRgba, hasLayerCompositing, layerCompositingPlan, paintLayerPlan } from '@standrig/core/compositing';
@@ -160,18 +161,23 @@ export class RigRuntime {
   private webglMeshRenderer?: WebGLArtMeshRenderer;
   private webglMeshError?: string;
 
-  constructor(rig: RigDocument) {
+  private evaluationCache?: EvaluationCache;
+
+  /** cacheEvaluation requires a stable owned snapshot; call setRig after any edit. */
+  constructor(rig: RigDocument, private readonly settings: { cacheEvaluation?: boolean } = {}) {
     this.rig = prepareRigBindingOrder(rig);
+    if (settings.cacheEvaluation) this.evaluationCache = new EvaluationCache();
   }
 
   resumeClock() { this.lastFrameTime = performance.now(); this.previousPhysicsInputs = undefined; }
   resetPhysics() { this.physicsState.clear(); this.resumeClock(); }
 
-  dispose() { this.webglMeshRenderer?.dispose(); this.webglMeshRenderer = undefined; }
+  dispose() { this.webglMeshRenderer?.dispose(); this.webglMeshRenderer = undefined; this.evaluationCache = undefined; }
 
   async setRig(rig: RigDocument) {
     this.dispose();
     this.rig = prepareRigBindingOrder(rig);
+    this.evaluationCache = this.settings.cacheEvaluation ? new EvaluationCache() : undefined;
     this.images.clear();
     this.tintedImages.clear();
     this.revealImages.clear();
@@ -233,6 +239,11 @@ export class RigRuntime {
     return { ...compared, physics: "disabled", webglStatus: this.getWebGLMeshStatus() };
   }
   render(canvas: HTMLCanvasElement, params: ParameterValues, options: RenderOptions = {}) {
+    // A mutable runtime nested inside a prepared render must stay uncached too.
+    return withEvaluationCache(this.evaluationCache, () => this.renderFrame(canvas, params, options));
+  }
+
+  private renderFrame(canvas: HTMLCanvasElement, params: ParameterValues, options: RenderOptions) {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       return;

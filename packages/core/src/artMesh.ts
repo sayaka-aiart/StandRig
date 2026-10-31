@@ -4,6 +4,7 @@ import { sampleMultiArtMeshBinding } from "./artMeshMulti.js";
 import { sampleArtMeshBlendShape } from "./artMeshBlendShape.js";
 import { applyArtMeshSurface } from "./artMeshSurface.js";
 import { validGridParameters } from "./parameterGrid.js";
+import { evaluationCache } from "./evaluationCache.js";
 import type { ParameterInterpolation, ParameterValues, RigArtMesh, RigArtMeshBinding, RigArtMeshQuality, RigArtMeshVertex, RigPart } from "./types.js";
 
 export interface ResolvedArtMeshVertex extends RigArtMeshVertex {
@@ -286,6 +287,13 @@ function resolveArtMeshInternal(part: RigPart, width: number, height: number, va
   };
 }
 export function isValidArtMesh(mesh: RigArtMesh | undefined, width?: number, height?: number): mesh is RigArtMesh {
+  const dimensionsValid = width === undefined || height === undefined || (finite(width) && finite(height) && width > 0 && height > 0);
+  if (!dimensionsValid) return false;
+  if (mesh && typeof mesh === "object" && evaluationCache()) return evaluationCache()!.get("valid-artmesh", mesh, () => validateArtMesh(mesh));
+  return validateArtMesh(mesh);
+}
+
+function validateArtMesh(mesh: RigArtMesh | undefined): mesh is RigArtMesh {
   if (!mesh || mesh.version !== 1 || typeof mesh.enabled !== "boolean" || !Array.isArray(mesh.vertices) || mesh.vertices.length < 3 || !Array.isArray(mesh.triangles) || mesh.triangles.length < 3 || mesh.triangles.length % 3 !== 0) {
     return false;
   }
@@ -344,7 +352,6 @@ export function isValidArtMesh(mesh: RigArtMesh | undefined, width?: number, hei
       if (!Array.isArray(weights) || !weights.length || weights.length > 3 || weights.some((entry) => !entry || typeof entry.deformerId !== "string" || !finite(entry.weight) || entry.weight < 0)) return false;
     }
   }
-  if (width !== undefined && height !== undefined && (!finite(width) || !finite(height) || width <= 0 || height <= 0)) return false;
   return true;
 }
 

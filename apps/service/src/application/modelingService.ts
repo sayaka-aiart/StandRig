@@ -70,7 +70,7 @@ export class ModelingService {
         const revisionBefore = fullRigRevision(current);
         if (expectedRevision !== revisionBefore)
             throw new ApplicationError(409, 'revision mismatch', { revisionBefore, summary: summarizeRig(current) });
-        let candidate = structuredClone(current);
+        let candidate: RigDocument;
         const operationResults = [];
         const operationGateIssues: ReturnType<typeof modelingOperationGateIssues> = [];
         let artMeshSampler;
@@ -83,7 +83,8 @@ export class ModelingService {
             candidate = migrateRigDocument(record.bundle.rig);
         }
         else {
-            const samplerRig = structuredClone(current);
+            candidate = structuredClone(current);
+            const samplerRig = operations.some(operation => operation.action.type === 'role-confirm') ? structuredClone(current) : current;
             for (const operation of operations)
                 if (operation.action.type === 'role-confirm')
                     executeModelingOperation(samplerRig, operation, { dryRun: false });

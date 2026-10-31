@@ -20,12 +20,16 @@ export interface ModelBundle {
 }
 
 export function createModelBundle(rig: RigDocument, trackingProfile?: TrackingProfile): ModelBundle {
+  return bundleFromOwnedRig(cloneRig(rig), trackingProfile);
+}
+
+function bundleFromOwnedRig(rig: RigDocument, trackingProfile?: TrackingProfile): ModelBundle {
   return {
     format: MODEL_BUNDLE_FORMAT,
     version: MODEL_BUNDLE_VERSION,
     name: rig.name || "model",
     exportedAt: new Date().toISOString(),
-    rig: cloneRig(rig),
+    rig,
     trackingProfile
   };
 }
@@ -36,7 +40,8 @@ export async function createSelfContainedModelBundle(
   read: (path: string) => Promise<Uint8Array>,
   trackingProfile?: TrackingProfile
 ): Promise<ModelBundle> {
-  return createModelBundle(await hydrateRigAssets(rig, manifest, read), trackingProfile);
+  // hydrateRigAssets already returns an owned deep copy.
+  return bundleFromOwnedRig(await hydrateRigAssets(rig, manifest, read), trackingProfile);
 }
 export function parseModelBundle(value: unknown): { rig: RigDocument; trackingProfile?: TrackingProfile } | undefined {
   if (!value || typeof value !== "object" || Array.isArray(value)) {

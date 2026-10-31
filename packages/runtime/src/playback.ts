@@ -56,7 +56,7 @@ export class StandRigPlayer {
   constructor(private canvas: HTMLCanvasElement, private rig: RigDocument) {
     this.facial = new FacialController(rig);
     this.motion = new MotionController(parameterDefinitionsForRig(rig));
-    this.runtime = new RigRuntime(structuredClone(rig));
+    this.runtime = new RigRuntime(structuredClone(rig), { cacheEvaluation: true });
     this.values = previewParameterValuesForRig(rig);
     this.resize = new ResizeObserver(() => { if (!this.disposed && !this.playing) this.render(); });
     this.resize.observe(canvas);

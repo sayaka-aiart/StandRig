@@ -4,6 +4,7 @@ import { decodeDataUrl } from "@standrig/core/assetManifest";
 import { normalizeDeformer } from "@standrig/core/deformers";
 import { summarizeRig } from "@standrig/core/inspect";
 import { migrateRigDocument } from "@standrig/core/migration";
+import { stringifyModelDocument } from "@standrig/core/modelJson";
 import { evaluateModelFreezeReadiness } from "@standrig/core/modelFreeze";
 import { auditModelingRig } from "@standrig/core/modelingAudit";
 import { executeModelingOperation, type ModelingOperation } from "@standrig/core/modelingOps";
@@ -259,8 +260,7 @@ export async function writeRigFile(rigPath: string, rig: RigDocument) {
 export async function writeJsonFile(filePath: string, value: unknown) {
     const tmpPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
     // Dense keyform grids can exceed V8's string limit when pretty-printed.
-    const compact = JSON.stringify(value);
-    const serialized = compact.length > 8 * 1024 * 1024 ? compact : JSON.stringify(value, null, 2);
+    const serialized = stringifyModelDocument(value);
     await writeFile(tmpPath, `${serialized}
 `, "utf8");
     for (let attempt = 0; attempt < 10; attempt += 1) {

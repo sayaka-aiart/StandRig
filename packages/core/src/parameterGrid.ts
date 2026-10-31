@@ -1,13 +1,12 @@
 import { applyParameterInterpolation, normalizeParameterInterpolation } from "./bindings.js";
 import type { ParameterCurve, ParameterInterpolation, ParameterValues } from "./types.js";
+import { evaluationCache } from "./evaluationCache.js";
 
 export type GridParameters = [string, string] | [string, string, string];
 interface GridKey { inputs: Record<string, number> }
 
-/** Missing cells yield no sample rather than inventing a deformation. */
-export function sampleParameterGrid<T extends GridKey>(parameters: GridParameters, keys: readonly T[], values: ParameterValues,
-  interpolation?: ParameterInterpolation, curve?: ParameterCurve): Array<{ key: T; weight: number }> {
-  if (!validGridParameters(parameters)) return [];
+interface GridIndex<T> { axes: number[][]; points: Map<string, T> }
+function indexGrid<T extends GridKey>(parameters: GridParameters, keys: readonly T[]): GridIndex<T> {
   const axes = parameters.map(() => new Set<number>()), points = new Map<string, T>();
   for (const key of keys ?? []) {
     const coordinates = parameters.map(p => key?.inputs?.[p]);
@@ -15,13 +14,24 @@ export function sampleParameterGrid<T extends GridKey>(parameters: GridParameter
     coordinates.forEach((value, axis) => axes[axis].add(value));
     points.set(coordinates.join("|"), key);
   }
-  const spans = axes.map((axis, i) => {
-    const ordered = [...axis].sort((a, b) => a - b);
+  return { axes: axes.map(axis => [...axis].sort((a, b) => a - b)), points };
+}
+
+/** Missing cells yield no sample rather than inventing a deformation. */
+export function sampleParameterGrid<T extends GridKey>(parameters: GridParameters, keys: readonly T[], values: ParameterValues,
+  interpolation?: ParameterInterpolation, curve?: ParameterCurve): Array<{ key: T; weight: number }> {
+  if (!validGridParameters(parameters)) return [];
+  const indexes = Array.isArray(keys) ? evaluationCache()?.get("parameter-grids", keys, () => new WeakMap<object, GridIndex<T>>()) : undefined;
+  let index = indexes?.get(parameters);
+  if (!index) { index = indexGrid(parameters, keys); indexes?.set(parameters, index); }
+  const { axes, points } = index;
+  const spans = axes.map((ordered, i) => {
     if (ordered.length < 2) return undefined;
     const raw = values[parameters[i]] ?? 0;
     const value = Math.max(ordered[0], Math.min(ordered.at(-1)!, raw));
-    let index = 0; while (index < ordered.length - 2 && ordered[index + 1] < value) index++;
-    const low = ordered[index], high = ordered[index + 1];
+    let lo = 0, hi = ordered.length - 2;
+    while (lo < hi) { const mid = (lo + hi) >>> 1; if (ordered[mid + 1] < value) lo = mid + 1; else hi = mid; }
+    const low = ordered[lo], high = ordered[lo + 1];
     return { low, high, t: applyParameterInterpolation(normalizeParameterInterpolation(interpolation), (value - low) / (high - low), curve) };
   });
   if (spans.some(span => !span)) return [];

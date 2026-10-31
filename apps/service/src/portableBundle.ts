@@ -5,7 +5,8 @@ import type { RigDocument } from '@standrig/core/types';
 
 /** Embed local PNG assets so the exported bundle survives moving to another PC. */
 export async function portableBundle(rig: RigDocument, publicDir: string) {
-  const candidate = structuredClone(rig);
+  const bundle = createModelBundle(rig);
+  const candidate = bundle.rig;
   const root = await realpath(publicDir);
   for (const asset of candidate.assets) {
     if (asset.src.startsWith('data:')) continue;
@@ -18,5 +19,5 @@ export async function portableBundle(rig: RigDocument, publicDir: string) {
     if (!bytes.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) throw new Error('Bundle requires PNG assets: ' + asset.id);
     asset.src = 'data:image/png;base64,' + bytes.toString('base64');
   }
-  return createModelBundle(candidate);
+  return bundle;
 }
