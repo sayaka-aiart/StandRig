@@ -56,11 +56,11 @@ export function runPhysicsSettlingQa(rig: RigDocument, options: PhysicsSettlingQ
 }
 
 function measureChain(rig: RigDocument, chain: PhysicsChain, driveFrames: number, settleFrames: number, dt: number, releaseExternalForces: boolean): PhysicsSettlingChainResult {
-  const drivenRig = structuredClone(rig);
-  drivenRig.physics = { enabled: true, chains: [structuredClone(chain)] };
-  const releaseRig = structuredClone(rig);
   const releaseChain = releaseExternalForces ? structuredClone(chain) : { ...structuredClone(chain), wind: 0, gravity: 0 };
-  releaseRig.physics = { enabled: true, chains: [releaseChain] };
+  // Physics reads the shared rig data; integration state lives in the local Map.
+  // Cloning every mesh twice per chain makes large layered models needlessly slow.
+  const drivenRig: RigDocument = { ...rig, physics: { enabled: true, chains: [structuredClone(chain)] } };
+  const releaseRig: RigDocument = { ...rig, physics: { enabled: true, chains: [releaseChain] } };
   const driven = sourceDrivenValues(drivenRig, chain);
   const neutral = neutralValues(drivenRig);
   const state = new Map<string, PhysicsValue>();

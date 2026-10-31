@@ -622,6 +622,7 @@ function countBindingsForParameter(parts: RigPart[], deformers: RigDeformer[], p
   const partBindings = parts.filter((part) =>
     (part.bindings??[]).some(b=>b.parameter===parameter) || (part.multiBindings??[]).some(b=>b.parameters.includes(parameter)) ||
     (part.blendShapes??[]).some(s=>s.parameter===parameter) ||
+    (part.affineBindings??[]).some(b=>b.parameters.includes(parameter)) ||
     (part.artMesh?.enabled!==false && ((part.artMesh?.bindings??[]).some(b=>b.parameter===parameter) || (part.artMesh?.multiBindings??[]).some(b=>b.parameters.includes(parameter)) || (part.artMesh?.blendShapes??[]).some(s=>s.parameter===parameter))) ||
     (part.artPaths??[]).some(p=>p.enabled!==false && ((p.bindings??[]).some(b=>b.parameter===parameter) || (p.blendShapes??[]).some(s=>s.parameter===parameter) || p.points.some(point=>(point.bindings??[]).some(b=>b.parameter===parameter))))
   ).length;

@@ -122,6 +122,7 @@ export function auditPhysicsSafety(rig: RigDocument, options: PhysicsSafetyOptio
           || (rig.glue??[]).some(g=>(g.partAId===part.id||g.partBId===part.id)&&(g.blendShapes??[]).some(s=>s.parameter===parameter))
           || (part.bindings ?? []).some((binding) => binding.parameter === parameter)
           || (part.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))
+          || (part.affineBindings ?? []).some((binding) => binding.parameters.includes(parameter))
           || (part.artMesh?.bindings ?? []).some((binding) => binding.parameter === parameter)
           || (part.artMesh?.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))
           || (part.artMesh?.blendShapes ?? []).some((shape) => shape.parameter === parameter)) {
