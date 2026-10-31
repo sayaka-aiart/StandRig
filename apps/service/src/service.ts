@@ -52,10 +52,12 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     ws: { send() { changeVersion++; } }
   };
   const context = registerModelingApi(dataDir, apiHost, {allowLegacyWrites:options.allowLegacyWrites,qaOptions:{workers:options.qaWorkers,memoryMiB:options.qaMemoryMiB},checkpointOptions:{limit:options.checkpointLimit,memoryMiB:options.checkpointMiB}});
-  const application = new ModelingService(context, () => { changeVersion++; });
   const modelResponses = new ModelResponseCache(context);
   const playback = new PlaybackSession(await readRig());
-  const jobs = new ModelingJobs(application, run=>scheduleWrite(run), async()=>playback.reload(await readRig()));
+  // Publish the validated, owned generation before any successful commit
+  // response. Parallel reads must not observe stale facial/motion metadata.
+  const application = new ModelingService(context, rig => playback.reload(rig));
+  const jobs = new ModelingJobs(application, run=>scheduleWrite(run), async()=>{});
   transactionRoutes(application, apiHost);
   // Exact route boundaries avoid accidental dispatch into a parent route.
   handlers.sort((a, b) => b.prefix.length - a.prefix.length);
@@ -131,7 +133,6 @@ export async function createLocalService(options: { dataDir: string; port?: numb
       const input = await body(req);
       if (typeof input.id !== 'string' || !/^[a-f0-9-]{36}$/.test(input.id)) throw new Error('invalid checkpoint id');
       const result = await application.execute({kind:'restore',checkpointId:input.id,expectedRevision:input.expectedRevision,commit:true});
-      playback.reload(await readRig());
       json(res,200,{...result,restored:input.id,revision:result.revisionAfter,rollback:result.rollbackCheckpoint}); return;
     }
     if (route.startsWith('/api/playback') || route.startsWith('/api/checkpoints')) { json(res, 405, { ok: false, error: 'method_or_route_not_supported' }); return; }

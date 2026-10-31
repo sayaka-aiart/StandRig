@@ -22,7 +22,7 @@ export class ApplicationError extends Error {
 /** Owns model persistence for the default API: validate -> QA -> CAS -> checkpoint -> atomic replace. */
 export class ModelingService {
     private queue: Promise<unknown> = Promise.resolve();
-    constructor(readonly context: ModelingContext, private onCommit: () => void) { }
+    constructor(readonly context: ModelingContext, private onCommit: (rig: RigDocument) => void) { }
     async checkpoint(rig?: RigDocument) {
         const current = rig ?? await readRigFile(this.context.rigPath);
         return this.context.checkpoints.create(current,fullRigRevision(current),{owned:rig===undefined});
@@ -136,7 +136,7 @@ export class ModelingService {
             this.context.journal.push({ id: randomUUID(), appliedAt: new Date().toISOString(), revisionBefore, revisionAfter, operationIds: kind === 'operations' ? operations.map(o => o.id) : [String(kind)] });
             if (this.context.journal.length > 30)
                 this.context.journal.shift();
-            this.onCommit();
+            this.onCommit(candidate);
         }
         const transactionResult = normalizeModelingTransactionResult({ committed: commit && passed, dryRun: !commit, revisionBefore, revisionAfter, operationResults, operationGateIssues });
         return { ok: passed, kind, committed: commit && passed, dryRun: !commit, ...evidence, revisionAfter, transactionResult, noWrite: transactionResult.noWrite, rollbackCheckpoint, history: { scope: 'server-memory', persisted: false } };

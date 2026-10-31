@@ -113,6 +113,23 @@ test('service combines live tracking/motion with facial layers without baking th
  }finally{session.close();}
 });
 
+test('commit publishes facial playback before sending success and reloads only once',async()=>{
+ const dir=await mkdtemp(path.join(os.tmpdir(),'standrig-facial-publish-'));let service;
+ try{
+  service=await createLocalService({dataDir:dir,port:0});
+  const revision=(await (await fetch(service.url+'/api/context')).json()).context.revision;
+  const initialVersion=service.playback.snapshot().modelVersion;
+  let published;
+  service.httpServer.on('request',(req,res)=>{
+   if(req.method==='POST'&&req.url==='/api/modeling/transaction')res.once('finish',()=>{published={presets:service.playback.facialCatalog(),version:service.playback.snapshot().modelVersion};});
+  });
+  const response=await fetch(service.url+'/api/modeling/transaction',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind:'import',expectedRevision:revision,rig:fixture(),commit:true,qa})});
+  assert.equal(response.status,200,JSON.stringify(await response.json()));
+  assert.deepEqual(published,{presets,version:initialVersion+1});
+  const immediate=await (await fetch(service.url+'/api/playback/facial')).json();assert.deepEqual(immediate.presets,presets);assert.equal(immediate.playback.modelVersion,initialVersion+1);
+ }finally{await service?.close();assert.equal(path.dirname(dir),path.resolve(os.tmpdir()));await rm(dir,{recursive:true,force:true});}
+});
+
 test('HTTP/MCP register, play and export facial presets through CAS transactions only',async()=>{
  const dir=await mkdtemp(path.join(os.tmpdir(),'standrig-facial-'));let service,client,transport;
  try{
