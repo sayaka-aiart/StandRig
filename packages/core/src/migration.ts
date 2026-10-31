@@ -1,4 +1,5 @@
 import { RIG_SCHEMA_VERSION, type RigDocument } from "./types.js";
+import { unpackRigDocument } from './packedRig.js';
 
 export const CURRENT_RIG_SCHEMA_VERSION = RIG_SCHEMA_VERSION;
 
@@ -18,6 +19,7 @@ export class RigMigrationError extends Error {
  * not silently normalize or rewrite a model that is already current.
  */
 export function migrateRigDocument(value: unknown): RigDocument {
+  value=unpackRigDocument(value);
   if (!isRecord(value)) {
     throw invalid("Rig document must be an object");
   }

@@ -7,12 +7,15 @@ import { modelingRoutes } from './routes/modelingRoutes.js';
 import { rigRoutes } from './routes/rigRoutes.js';
 import { createModelingContext } from './application/context.js';
 import { sendJson } from './application/modelingSupport.js';
+import type { QaOptions } from './qaRunner.js';
 export { fullRigRevision } from './application/modelingSupport.js';
 // Only handlers audited as read-only may accept request bodies by default.
 export function registerModelingApi(rootDir: string, server: ApiHost, options: {
     allowLegacyWrites?: boolean;
+    qaOptions?: QaOptions;
+    checkpointOptions?: {limit?:number;memoryMiB?:number};
 } = {}) {
-    const context = createModelingContext(rootDir);
+    const context = createModelingContext(rootDir, options.qaOptions, options.checkpointOptions);
     const guarded: ApiHost = { ws: server.ws, middlewares: { use(route, handler) {
                 server.middlewares.use(route, async (req, res) => {
                     const method = req.method ?? 'GET';

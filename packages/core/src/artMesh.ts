@@ -5,6 +5,7 @@ import { sampleArtMeshBlendShape } from "./artMeshBlendShape.js";
 import { applyArtMeshSurface } from "./artMeshSurface.js";
 import { validGridParameters } from "./parameterGrid.js";
 import { evaluationCache } from "./evaluationCache.js";
+import { sampleDenseMulti } from './denseOffsets.js';
 import type { ParameterInterpolation, ParameterValues, RigArtMesh, RigArtMeshBinding, RigArtMeshQuality, RigArtMeshVertex, RigPart } from "./types.js";
 
 export interface ResolvedArtMeshVertex extends RigArtMeshVertex {
@@ -263,7 +264,7 @@ function resolveArtMeshInternal(part: RigPart, width: number, height: number, va
   // empty map when its enclosing cell lacks any corner, leaving the 1D pose intact.
   for (const binding of mesh.multiBindings ?? []) {
     if (binding.composition === "surface") continue;
-    applyOffsets(offsets, sampleMultiArtMeshBinding(binding, values), binding.additive);
+    applyOffsets(offsets, sampleDenseMulti(mesh, binding, values), binding.additive);
   }
   for (const shape of mesh.blendShapes ?? []) {
     applyOffsets(offsets, sampleArtMeshBlendShape(shape, values[shape.parameter] ?? shape.neutralInput), shape.additive);
@@ -272,7 +273,7 @@ function resolveArtMeshInternal(part: RigPart, width: number, height: number, va
   onStage?.("bindings", vertices());
   for (const binding of mesh.multiBindings ?? []) {
     if (binding.composition === "surface") {
-      applyArtMeshSurface(mesh, sampleMultiArtMeshBinding(binding, values), offsets);
+      applyArtMeshSurface(mesh, sampleDenseMulti(mesh, binding, values), offsets);
       onStage?.("surface:" + binding.parameters.join("/"), vertices());
     }
   }

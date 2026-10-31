@@ -134,6 +134,9 @@
               }
             }
           },
+          "304": {
+            "description": "Model representation unchanged; no response body."
+          },
           "400": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -222,7 +225,8 @@
               }
             }
           }
-        }
+        },
+        "description": "ETag revalidation and gzip/brotli negotiated compression. Vary: Accept-Encoding."
       }
     },
     "/api/parts": {
@@ -2197,6 +2201,9 @@
               }
             }
           },
+          "304": {
+            "description": "Model representation unchanged; no response body."
+          },
           "400": {
             "description": "Request, revision, validation, or server error",
             "content": {
@@ -2292,10 +2299,19 @@
             "in": "query",
             "required": false,
             "schema": {
-              "type": "string"
+              "type": "integer"
+            }
+          },
+          {
+            "name": "packed",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
             }
           }
-        ]
+        ],
+        "description": "ETag revalidation and gzip/brotli negotiated compression. Vary: Accept-Encoding."
       },
       "put": {
         "summary": "Import/restore full RigDocument; replaces active model",
@@ -3321,6 +3337,126 @@
                   }
                 },
                 "description": "Pass a failureRegions[].imageRequest returned by QA, preserving sampled values and physics settings. Panels compare two poses of the same stored model."
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/modeling/jobs": {
+      "post": {
+        "summary": "Local service /api/modeling/jobs",
+        "operationId": "post__api_modeling_jobs",
+        "responses": {
+          "202": {
+            "description": "Job accepted; poll Location for progress and terminal result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Bounded job queue is full"
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionRequest"
               }
             }
           }
@@ -5645,7 +5781,17 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "delta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
       }
     },
     "/api/playback": {
@@ -7217,6 +7363,240 @@
             }
           }
         }
+      }
+    },
+    "/api/modeling/jobs/{id}": {
+      "get": {
+        "summary": "Read modeling job progress/result",
+        "operationId": "get__api_modeling_jobs_id_",
+        "responses": {
+          "200": {
+            "description": "JSON result. Inspect ok, errors and commit/QA fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Cancel a job before atomic commit",
+        "operationId": "delete__api_modeling_jobs_id_",
+        "responses": {
+          "200": {
+            "description": "JSON result. Inspect ok, errors and commit/QA fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Request, revision, validation, or server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     }
   },

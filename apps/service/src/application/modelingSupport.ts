@@ -5,6 +5,9 @@ import { normalizeDeformer } from "@standrig/core/deformers";
 import { summarizeRig } from "@standrig/core/inspect";
 import { migrateRigDocument } from "@standrig/core/migration";
 import { stringifyModelDocument } from "@standrig/core/modelJson";
+import { readRequestBody } from '../httpBody.js';
+import { packRigDocument } from '@standrig/core/packedRig';
+import { fileStamp } from '../fileStamp.js';
 import { evaluateModelFreezeReadiness } from "@standrig/core/modelFreeze";
 import { auditModelingRig } from "@standrig/core/modelingAudit";
 import { executeModelingOperation, type ModelingOperation } from "@standrig/core/modelingOps";
@@ -130,6 +133,7 @@ export function modelingOperationGateIssues(operations: ModelingOperation[], ope
     return issues;
 }
 export function sendJson(res: import("node:http").ServerResponse, status: number, body: unknown) {
+    if(res.destroyed||res.writableEnded)return;
     res.statusCode = status;
     res.setHeader("content-type", "application/json; charset=utf-8");
     res.end(JSON.stringify(body));
@@ -138,32 +142,7 @@ export function readBody(req: import("node:http").IncomingMessage): Promise<stri
     return readBodyLimited(req, MODEL_BODY_LIMIT);
 }
 export function readBodyLimited(req: import("node:http").IncomingMessage, limit: number): Promise<string> {
-    return new Promise((resolve, reject) => {
-        let body = "";
-        let size = 0;
-        let settled = false;
-        req.setEncoding("utf8");
-        req.on("data", (chunk: string) => {
-            if (settled)
-                return;
-            size += Buffer.byteLength(chunk, "utf8");
-            if (size > limit) {
-                settled = true;
-                reject(new Error(`request_body_too_large:${limit}`));
-                req.destroy();
-                return;
-            }
-            body += chunk;
-        });
-        req.on("end", () => { if (!settled) {
-            settled = true;
-            resolve(body);
-        } });
-        req.on("error", (error) => { if (!settled) {
-            settled = true;
-            reject(error);
-        } });
-    });
+    return readRequestBody(req, limit);
 }
 export function geometryAssistLocalPolicy(req: import("node:http").IncomingMessage): {
     allowed: boolean;
@@ -191,7 +170,11 @@ export function geometryAssistLocalPolicy(req: import("node:http").IncomingMessa
 export async function readRigFile(rigPath: string): Promise<RigDocument> {
     return migrateRigDocument(JSON.parse(await readFile(rigPath, "utf8")));
 }
-export function compactContextForRig(rig: RigDocument, SERVER_TRANSACTION_JOURNAL: ServerTransactionJournalEntry[] = []) {
+export async function readRigSnapshot(file:string) {
+    for(let i=0;i<3;i++){const before=await fileStamp(file),rig=await readRigFile(file);if(await fileStamp(file)===before)return {rig,stamp:before};}
+    throw Error('Model changed repeatedly while reading');
+}
+export function compactContextForRig(rig: RigDocument, SERVER_TRANSACTION_JOURNAL: ServerTransactionJournalEntry[] = [], knownRevision?:string) {
     const audit = auditModelingRig(rig);
     const physicsSafety = auditPhysicsSafety(rig);
     const physicsSettling = runPhysicsSettlingQa(rig);
@@ -199,7 +182,7 @@ export function compactContextForRig(rig: RigDocument, SERVER_TRANSACTION_JOURNA
     const semanticSource = JSON.stringify({ schemaVersion: rig.schemaVersion, name: rig.name, parts: rig.parts.map((part) => ({ id: part.id, parentId: part.parentId, role: part.role, bindings: part.bindings?.length ?? 0, blendMode: part.blendMode ?? "normal", tint: part.tint ?? null, artMesh: Boolean(part.artMesh), artPaths: (part.artPaths ?? []).map((path) => ({ id: path.id, points: path.points?.length ?? 0, bindings: path.bindings?.length ?? 0, strokeWidth: path.strokeWidth, opacity: path.opacity, enabled: path.enabled })) })), deformers: rig.deformers?.map((deformer) => ({ id: deformer.id, parentId: deformer.parentId, bindings: deformer.bindings?.length ?? 0 })), physics: rig.physics, symmetry: rig.symmetry });
     return {
         semanticHash: fnv1a(semanticSource),
-        revision: fullRigRevision(rig),
+        revision: knownRevision ?? fullRigRevision(rig),
         summary: summarizeRig(rig),
         modelFreeze: evaluateModelFreezeReadiness(rig),
         unresolvedIssues: audit.issues.filter((issue) => issue.severity === "error" || issue.severity === "warning").slice(0, 24),
@@ -255,7 +238,7 @@ export function mouthPhonemeTargetsWithUrls(rig: RigDocument) {
     });
 }
 export async function writeRigFile(rigPath: string, rig: RigDocument) {
-    await writeJsonFile(rigPath, rig);
+    await writeJsonFile(rigPath, packRigDocument(rig));
 }
 export async function writeJsonFile(filePath: string, value: unknown) {
     const tmpPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;

@@ -1,4 +1,7 @@
 import { PoseInput } from './poseInput';
+import { playbackEvents } from './playbackEvents.js';
+import { jsonRequest } from '@standrig/core/httpTransport';
+import { packModelBundle } from '@standrig/core/bundle';
 import { createFacialPanel } from './facialPanel';
 import { parseModelFile } from './modelFile';
 import './styles.css';
@@ -85,7 +88,31 @@ function render() {
 }
 new ResizeObserver(render).observe(canvas.parentElement!);
 async function post(url: string, body: unknown) {
-  const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  if (url === '/api/modeling/transaction') {
+    const request = await jsonRequest(body);
+    const response = await fetch('/api/modeling/jobs',{method:'POST',...request,headers:{...request.headers,'idempotency-key':crypto.randomUUID()}});
+    const accepted = await response.json();
+    if([404,405].includes(response.status)||response.status===403&&accepted.error==='legacy_write_api_disabled') {
+      const legacy=await fetch(url,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}),result=await legacy.json();if(!legacy.ok||result.ok===false)throw Error(JSON.stringify(result));return result;
+    }
+    if (!response.ok || !accepted.ok) throw Error(JSON.stringify(accepted));
+    const cancel=document.createElement('button');cancel.textContent='処理を中断';status.after(cancel);
+    cancel.onclick=()=>{cancel.disabled=true;void fetch(`/api/modeling/jobs/${accepted.job.id}`,{method:'DELETE'}).then(async r=>{if(!r.ok)status.textContent=(await r.json()).error??'保存が始まっているため中断できません。';}).catch(report);};
+    let delay=500;
+    try { for (;;) {
+      await new Promise(resolve=>setTimeout(resolve,delay));
+      let reply:Response;
+      try{reply=await fetch(`/api/modeling/jobs/${accepted.job.id}`,{cache:'no-store'});}catch{delay=Math.min(5000,delay*2);status.textContent='処理結果への接続を確認しています…';continue;}
+      if(reply.status>=500){delay=Math.min(5000,delay*2);continue;}delay=500;
+      const {job,error}=await reply.json();if(!reply.ok)throw Error(error??'処理の状態を確認できません。保存済みモデルを確認してください。');
+      if(job.status==='completed') { if(job.result?.ok===false)throw Error(JSON.stringify(job.result));if(job.error?.playbackReload)throw Error('モデルは保存済みですが、再生サービスの更新に失敗しました。StandRigを再起動してください。');return job.result; }
+      if(job.status==='cancelled')throw Error('処理を中断しました。');
+      if(job.status==='failed')throw Error(JSON.stringify(job.error??job.status));
+      cancel.disabled=job.progress.stage==='committing';
+      status.textContent=job.progress.stage==='qa'?`モデルを検査しています… ${job.progress.completed??0}/${job.progress.total??0}`:'モデルを処理しています…';
+    }}finally{cancel.remove();}
+  }
+  const response = await fetch(url, { method: 'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(body) });
   const result = await response.json();
   if (!response.ok || result.ok === false) throw new Error(JSON.stringify(result));
   return result;
@@ -201,7 +228,7 @@ portableExport.onclick = async () => {
       throw new Error('画像込みモデルを取得できませんでした。PNG素材とモデルを確認してください。');
     }
     // Pretty-printing dense keyform grids can exceed the browser string limit.
-    const url = URL.createObjectURL(new Blob([JSON.stringify(bundle.rig)], { type: 'application/json' }));
+    const url = URL.createObjectURL(new Blob([JSON.stringify(packModelBundle(bundle))], { type: 'application/json' }));
     const link = document.createElement('a');
     link.href = url; link.download = 'model.srig'; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -232,7 +259,7 @@ function updateMotion() {
 motionFile.onchange = async () => {
   try {
     const file = motionFile.files?.[0]; if (!file) return;
-    if (file.size > 1024*1024) throw new Error('モーションJSONは1 MiB以下にしてください。');
+    if (file.size > 16*1024*1024 - 1024) throw new Error('モーションJSONは16 MiB未満にしてください。');
     await post('/api/playback/motion', {action:'load',clip:JSON.parse(await file.text())});
     status.textContent = 'モーションを読み込みました。再生ボタンで開始します。';
   } catch (error) { report(error); } finally { motionFile.value = ''; }
@@ -249,18 +276,15 @@ document.querySelector<HTMLButtonElement>('#motion-export')!.onclick = async () 
     const link = document.createElement('a'); link.href=url; link.download='motion.standrig-motion.json'; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   } catch (error) { report(error); }
 };
-const events = new EventSource('/api/playback/events');
-events.addEventListener('playback', event => {
+const events = playbackEvents(incoming => {
   const previousVersion = latest?.modelVersion;
   const previousSession = latest?.sessionId;
-  const incoming: PlaybackSnapshot = JSON.parse((event as MessageEvent).data);
   if (incoming.sessionId === latest?.sessionId && incoming.revision < latest.revision) return;
   if (incoming.sessionId !== latest?.sessionId || incoming.modelVersion !== latest?.modelVersion) poseInput.reset();
   latest = incoming;
   if (previousVersion !== latest?.modelVersion || previousSession !== latest?.sessionId) void reload().catch(report);
   else applyState();
-});
-events.onerror = () => { status.textContent = '再生サービスへ再接続しています…'; };
+}, () => { status.textContent = '再生サービスへ再接続しています…'; });
 window.addEventListener('pagehide', () => { events.close(); poseInput.reset(); if (renderFrame !== undefined) cancelAnimationFrame(renderFrame); runtime?.dispose(); clearInterval(pointerTimer); });
 
 document.querySelector<HTMLButtonElement>("#bridge-check")!.onclick = async () => {

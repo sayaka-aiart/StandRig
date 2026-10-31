@@ -12,7 +12,11 @@ export function transactionRoutes(application: ModelingService, server: ApiHost)
             return;
         }
         try {
-            sendJson(res, 200, await application.execute(parseJsonObject(await readBody(req))));
+            const controller = new AbortController();
+            const abort = () => controller.abort();
+            res.once('close',abort);
+            try { sendJson(res, 200, await application.execute(parseJsonObject(await readBody(req)),{owned:true,signal:controller.signal})); }
+            finally { res.off('close',abort); }
         }
         catch (error) {
             sendJson(res, error instanceof ApplicationError ? error.status : 400, { ok: false, committed: false, error: error instanceof Error ? error.message : String(error), ...(error instanceof ApplicationError ? error.details : {}) });

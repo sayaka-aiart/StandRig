@@ -62,6 +62,7 @@
     "/api/params",
     "/api/rig",
     "/api/modeling/transaction",
+    "/api/modeling/jobs",
     "/api/bridge/status",
     "/api/bridge/read",
     "/api/bridge/pose",
@@ -75,7 +76,8 @@
     "/api/playback/control",
     "/api/playback/reload",
     "/api/checkpoints",
-    "/api/checkpoints/restore"
+    "/api/checkpoints/restore",
+    "/api/modeling/jobs/{id}"
   ],
   "endpoints": [
     {
@@ -88,7 +90,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 18,
+      "line": 19,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -101,7 +103,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 33,
+      "line": 34,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -114,7 +116,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 48,
+      "line": 51,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -127,7 +129,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 70,
+      "line": 73,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -140,7 +142,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 84,
+      "line": 87,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -153,7 +155,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 99,
+      "line": 102,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -166,7 +168,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 116,
+      "line": 119,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -179,7 +181,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 140,
+      "line": 143,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -192,7 +194,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 154,
+      "line": 157,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -205,7 +207,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 177,
+      "line": 180,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -219,7 +221,7 @@
       ],
       "legacyWriteOptIn": true,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 197,
+      "line": 200,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -232,7 +234,7 @@
       ],
       "legacyWriteOptIn": false,
       "source": "apps/service/src/routes/analysisRoutes.ts",
-      "line": 294,
+      "line": 297,
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
@@ -878,12 +880,21 @@
       "methodNotes": "Legacy writes require explicit --allow-legacy-writes; defaultMethods is the supported default boundary."
     },
     {
+      "path": "/api/modeling/jobs",
+      "methods": [
+        "POST"
+      ],
+      "source": "apps/service/src/service.ts",
+      "line": 83,
+      "methodNotes": "Exact local service route."
+    },
+    {
       "path": "/api/bridge/status",
       "methods": [
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 74,
+      "line": 100,
       "methodNotes": "Exact local service route."
     },
     {
@@ -892,7 +903,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 75,
+      "line": 101,
       "methodNotes": "Exact local service route."
     },
     {
@@ -901,7 +912,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 76,
+      "line": 102,
       "methodNotes": "Exact local service route."
     },
     {
@@ -910,7 +921,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 77,
+      "line": 103,
       "methodNotes": "Exact local service route."
     },
     {
@@ -919,7 +930,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 80,
+      "line": 106,
       "methodNotes": "Exact local service route."
     },
     {
@@ -929,7 +940,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 88,
+      "line": 114,
       "methodNotes": "Exact local service route."
     },
     {
@@ -939,7 +950,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 90,
+      "line": 116,
       "methodNotes": "Exact local service route."
     },
     {
@@ -948,7 +959,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 92,
+      "line": 118,
       "methodNotes": "Exact local service route."
     },
     {
@@ -957,7 +968,7 @@
         "GET"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 93,
+      "line": 119,
       "methodNotes": "Exact local service route."
     },
     {
@@ -966,7 +977,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 94,
+      "line": 120,
       "methodNotes": "Exact local service route."
     },
     {
@@ -975,7 +986,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 95,
+      "line": 121,
       "methodNotes": "Exact local service route."
     },
     {
@@ -984,7 +995,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 96,
+      "line": 122,
       "methodNotes": "Exact local service route."
     },
     {
@@ -994,7 +1005,7 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 99,
+      "line": 125,
       "methodNotes": "Exact local service route."
     },
     {
@@ -1003,8 +1014,21 @@
         "POST"
       ],
       "source": "apps/service/src/service.ts",
-      "line": 108,
+      "line": 130,
       "methodNotes": "Exact local service route."
+    },
+    {
+      "path": "/api/modeling/jobs/{id}",
+      "methods": [
+        "GET",
+        "DELETE"
+      ],
+      "defaultMethods": [
+        "GET",
+        "DELETE"
+      ],
+      "source": "apps/service/src/service.ts",
+      "methodNotes": "Progress/result and cancellation before atomic commit."
     }
   ]
 }

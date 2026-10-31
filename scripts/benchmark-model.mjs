@@ -5,11 +5,12 @@ import {performance} from 'node:perf_hooks';
 import {resolveArtMesh} from '@standrig/core/artMesh';
 import {defaultParameterValues} from '@standrig/core/parameters';
 import {portableBundle} from '../apps/service/dist/portableBundle.js';
+import {migrateRigDocument} from '@standrig/core/migration';
 
 // Owner-local files are explicit inputs and are never copied into the repository.
 const args=process.argv.slice(2),arg=(name,fallback)=>{const i=args.indexOf(name);return i<0?fallback:args[i+1];};
 const file=arg('--model');if(!file)throw Error('Use --model PATH [--poses PATH] [--mode geometry|bundle] [--prepared] [--output PATH]');
-const mode=arg('--mode','geometry'),start=performance.now(),raw=await fs.readFile(file,'utf8'),doc=JSON.parse(raw.replace(/^\uFEFF/,'')),rig=doc.rig??doc;
+const mode=arg('--mode','geometry'),start=performance.now(),raw=await fs.readFile(file,'utf8'),doc=JSON.parse(raw.replace(/^\uFEFF/,'')),rig=migrateRigDocument(doc.format==='standrig-packed'?doc:doc.rig??doc);
 const result={mode,bytes:Buffer.byteLength(raw),parseMs:performance.now()-start,parts:rig.parts.length,assets:rig.assets.length,prepared:args.includes('--prepared')};
 global.gc?.();const before=process.memoryUsage();
 if(mode==='bundle'){

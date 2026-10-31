@@ -76,7 +76,7 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     client=new Client({name:'standrig-integration',version:'1.0.0'});
     await client.connect(transport);
     const tools=await client.listTools();
-    assert.equal(tools.tools.length,18);
+    assert.equal(tools.tools.length,21);
     const actionSchema=tools.tools.find(tool=>tool.name==='standrig_modeling_transaction').inputSchema.properties.operations.items.properties.action;
     assert.equal(actionSchema.oneOf.length,36);
     assert.ok(actionSchema.oneOf.every(schema=>schema.additionalProperties===false));
@@ -118,6 +118,11 @@ test('real stdio MCP, transaction rollback, transient input and SSE', async () =
     assert.equal(context.summary.counts.assets,4);
     assert.equal((await invoke('standrig_render',{kind:'snapshot'})).isError,true);
     const input={expectedRevision:context.revision,commit:false,operations:[{id:'move',name:'Move demo body',target:{partIds:['body']},action:{type:'transform',property:'x',operator:'add',value:2}}],qa:{poses:['neutral'],regions:['full'],width:240,height:240,physics:false}};
+    const acceptedJob=(await invoke('standrig_modeling_job_submit',input)).structuredContent.job;
+    let completedJob;
+    for(let i=0;i<100;i++){completedJob=(await invoke('standrig_job_status',{id:acceptedJob.id})).structuredContent.job;if(completedJob.status==='completed'||completedJob.status==='failed')break;await new Promise(r=>setTimeout(r,20));}
+    assert.equal(completedJob.status,'completed');assert.deepEqual(completedJob.result.noWrite,{rigWriteCount:0,transactionCount:0,commitCount:0});
+    assert.equal((await invoke('standrig_job_cancel',{id:acceptedJob.id})).structuredContent.job.status,'completed');
     let transactionRequests=0;
     const observeRequest=req=>{if(req.url==='/api/modeling/transaction')transactionRequests++;};
     service.httpServer.on('request',observeRequest);

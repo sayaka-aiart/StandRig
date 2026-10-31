@@ -142,7 +142,7 @@ New playback inputs are atomically rejected with 400 on invalid values or stale 
 
 `demo-stop` restores the starting values, playing flag and input source. Play/pause/reset or a valid parameter frame first stops the demo, then applies the requested change to the restored state. Invalid input leaves the demo running. Model reload/import/restore and service shutdown also stop it. Demos are transient and never edit the saved rig; closing a browser tab does not stop the service's demo.
 
-Checkpoint creation and bundle export return **201**; restore returns **200**. Model imports and legacy handlers allow up to 128 MiB request bodies, including chunked requests; playback/checkpoint control bodies retain a 1 MiB limit. Errors must be inspected even when HTTP status is 200. The checkpoint/export files stay on the service host; returned paths are not download URLs.
+Checkpoint creation and bundle export return **201**; restore returns **200**. Model imports and legacy handlers allow up to 384 MiB request bodies, including chunked requests. Motion requests allow 16 MiB; other playback/checkpoint controls retain a 1 MiB limit. gzip/brotli request bodies must fit both the wire and decompressed route limit. Errors must be inspected even when HTTP status is 200. The checkpoint/export files stay on the service host; returned paths are not download URLs.
 
 PSD-derived parts can carry `compositing:"isolate"|"pass-through"` on groups, `clippingBaseId` naming a preceding non-clipped sibling, and `rasterMaskPartId` naming a hidden image sibling. These are exposed by compact part reads and retained by model/bundle export. Mask pixels encode grayscale as alpha. Rendering uses the same layer plan for Canvas/GPU and server QA. Existing models without these fields retain their original flat draw order and alpha-clip pipeline. Separable blend formulas follow [W3C Compositing](https://www.w3.org/TR/compositing-1/#blending); this does not certify Photoshop parity.
 
@@ -172,7 +172,7 @@ See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/rea
 
 ### Embedded-image file extension
 
-The preview exports the embedded `rig` from `/api/bundle` as `model.srig`. Its content remains the same RigDocument JSON, not the bundle envelope. The preview accepts `.srig` and existing `.json` model files through the same validated import transaction. HTTP JSON bodies, bundle format/version and ordinary `rig.json` exports are unchanged.
+The preview exports the embedded `rig` from `/api/bundle` as `model.srig`. Small files contain ordinary RigDocument JSON; dense files may use the versioned `standrig-packed` envelope described in [PERFORMANCE.md](PERFORMANCE.md). Both forms and existing `.json` models import through the same validated transaction. `/api/bundle` retains its existing bundle format/version. Packed envelopes require a reader supporting this version; older model files remain readable.
 
 ## Optional Cubism connection
 
@@ -181,3 +181,12 @@ See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for /api/bridge/status, /api/bridge/rea
 ## Expressions and visemes
 
 GET/POST `/api/playback/facial` discovers and previews registered facial presets. Persistent catalogs use `facial-presets-set` in `/api/modeling/transaction`. See [FACIAL.md](FACIAL.md) for schemas, composition, `.exp3.json` interchange and limitations.
+
+## Large models and asynchronous work
+
+`POST /api/modeling/jobs` accepts the transaction envelope and returns **202** with
+a job ID and `Location`. Poll `GET /api/modeling/jobs/{id}` for progress and the
+terminal transaction result; `DELETE` cancels before atomic commit starts.
+Synchronous transactions remain available. See [PERFORMANCE.md](PERFORMANCE.md)
+for resource limits, idempotency/restart semantics, compressed requests, response
+ETags, delta SSE, packed offsets and checkpoint retention.

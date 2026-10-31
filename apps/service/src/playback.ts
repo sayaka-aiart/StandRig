@@ -9,25 +9,30 @@ import type { RigDocument } from '@standrig/core/types';
 import { validateParameterPatch, type PlaybackSnapshot } from '@standrig/runtime/playback';
 import { demoParameters, sampleDemo } from '@standrig/runtime/demo';
 import { MOTION_PREVIEW_MODES, type MotionPreviewMode } from '@standrig/runtime/motionPreview';
+import { PlaybackEncoder } from '@standrig/runtime/playbackWire';
+import { startFrameTimer, type FrameTimer } from './frameTimer.js';
 
 export class PlaybackSession {
   private facial:FacialController;
-  private facialTimer:ReturnType<typeof setInterval>|undefined;
+  private facialTimer:FrameTimer|undefined;
   private baseValues:PlaybackSnapshot["values"];
   private motion:MotionController;
-  private motionTimer:ReturnType<typeof setInterval>|undefined;
+  private motionTimer:FrameTimer|undefined;
   private sequences = new Map<string, number>();
   private streams = new Set<ServerResponse>();
+  private encoders = new Map<ServerResponse, PlaybackEncoder>();
   /** Backed-up outputs waiting for 'drain'; the value records whether a frame was skipped meanwhile. */
   private congested = new Map<ServerResponse, boolean>();
   private state: PlaybackSnapshot;
-  private demoTimer: ReturnType<typeof setInterval> | undefined;
+  private demoTimer: FrameTimer | undefined;
   private demoBase: { values: PlaybackSnapshot['values']; playing: boolean; lastSource: string | null } | undefined;
   private demoDefinitions: ReturnType<typeof demoParameters>;
+  private parameterCatalogue: ReturnType<typeof parameterDefinitionsForRig>;
   private demoMode: MotionPreviewMode = 'showcase-active';
   private pointer = { x: 0, y: 0 };
   private smoothedPointer = { x: 0, y: 0 };
   constructor(private rig: RigDocument) {
+    this.parameterCatalogue=parameterDefinitionsForRig(rig);
     this.facial=new FacialController(rig);
     this.baseValues=previewParameterValuesForRig(rig);
     this.motion=new MotionController(parameterDefinitionsForRig(rig));
@@ -35,12 +40,12 @@ export class PlaybackSession {
     this.state = { version: 1, sessionId: randomUUID(), revision: 0, modelVersion: 0, playing: false,
       physicsEpoch:0,values: previewParameterValuesForRig(rig), lastSource: null };
   }
-  snapshot() { const now=performance.now();return { ...this.state, values:this.facial.evaluate(this.baseValues,now),baseValues:{...this.baseValues},facial:this.facial.snapshot(now), connectedOutputs: this.streams.size,
-    parameters: parameterDefinitionsForRig(this.rig), outputAcknowledged: false,
+  snapshot(ownedMetadata=false) { const now=performance.now();return { ...this.state, values:this.facial.evaluate(this.baseValues,now),baseValues:{...this.baseValues},facial:this.facial.snapshot(now), connectedOutputs: this.streams.size,
+    parameters: ownedMetadata?this.parameterCatalogue:structuredClone(this.parameterCatalogue), outputAcknowledged: false,
     motion:this.motion.snapshot(), inputContractVersion:2,
     demo: { active: !!this.demoTimer, parameterIds: this.demoDefinitions.map(p => p.id), mode: this.demoMode } }; }
   private stopDemo() {
-    if (this.demoTimer) clearInterval(this.demoTimer);
+    this.demoTimer?.stop();
     this.demoTimer = undefined;
     if (this.demoBase) {this.baseValues={...this.demoBase.values};this.state.playing=this.demoBase.playing;this.state.lastSource=this.demoBase.lastSource;}
     this.demoBase = undefined;
@@ -54,41 +59,42 @@ export class PlaybackSession {
     const started = performance.now();
     this.state.playing = true;
     this.state.lastSource = 'standrig_demo';
-    this.demoTimer = setInterval(() => {
+    this.demoTimer = startFrameTimer(() => {
       this.smoothedPointer.x += (this.pointer.x - this.smoothedPointer.x) * 0.82;
       this.smoothedPointer.y += (this.pointer.y - this.smoothedPointer.y) * 0.82;
-      this.baseValues = sampleDemo(parameterDefinitionsForRig(this.rig), base, this.demoMode, (performance.now() - started) / 1000, this.smoothedPointer);
+      this.baseValues = sampleDemo(this.parameterCatalogue, base, this.demoMode, (performance.now() - started) / 1000, this.smoothedPointer);
       this.broadcast();
-    }, 1000 / 30);
+    });
     this.demoTimer.unref();
   }
   private broadcast() {
     this.state.revision++;
-    const message = this.playbackEvent();
-    for (const stream of this.streams) this.send(stream, message);
+    const snapshot = this.snapshot(true);
+    for (const stream of this.streams) this.send(stream, snapshot);
   }
-  private playbackEvent() { return `event: playback\ndata: ${JSON.stringify(this.snapshot())}\n\n`; }
   // A slow output must not accumulate an unbounded queue of frames, but it must not be dropped either: every
   // snapshot carries the whole state (and the parameter catalogue), so a few queued frames of a large model reach
   // the high-water mark during normal playback. While a stream is backed up, skip frames; once it drains, send the
   // current state so a skipped final frame (stop, pause, model change) is never lost.
-  private send(stream: ServerResponse, message: string) {
+  private send(stream: ServerResponse, snapshot: ReturnType<PlaybackSession['snapshot']>) {
     if (stream.destroyed) { this.streams.delete(stream); this.congested.delete(stream); return; }
     if (this.congested.has(stream)) { this.congested.set(stream, true); return; }
-    if (stream.write(message)) return;
+    const payload = this.encoders.get(stream)?.encode(snapshot) ?? snapshot;
+    if (stream.write(`event: playback\ndata: ${JSON.stringify(payload)}\n\n`)) return;
     this.congested.set(stream, false);
     stream.once('drain', () => {
       const skipped = this.congested.get(stream);
       this.congested.delete(stream);
-      if (skipped && this.streams.has(stream)) this.send(stream, this.playbackEvent());
+      if (skipped && this.streams.has(stream)) this.send(stream, this.snapshot(true));
     });
   }
-  subscribe(res: ServerResponse) {
+  subscribe(res: ServerResponse, delta = false) {
     res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', 'connection': 'keep-alive' });
     this.streams.add(res);
-    this.send(res, this.playbackEvent());
-    const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 15000);
-    res.on('close', () => { clearInterval(heartbeat); this.streams.delete(res); this.congested.delete(res); });
+    if (delta) this.encoders.set(res, new PlaybackEncoder());
+    this.send(res, this.snapshot(true));
+    const heartbeat = setInterval(() => {if(!res.destroyed&&!res.writableLength&&!this.congested.has(res))res.write(': heartbeat\n\n');}, 15000);
+    res.on('close', () => { clearInterval(heartbeat); this.streams.delete(res); this.congested.delete(res); this.encoders.delete(res); });
   }
   input(body: Record<string, unknown>) {
     const { source, sequence, values } = body;
@@ -135,14 +141,14 @@ export class PlaybackSession {
     return this.snapshot();
   }
   private syncMotionTimer() {
-    if(!this.motion.snapshot().running){if(this.motionTimer)clearInterval(this.motionTimer);this.motionTimer=undefined;return;}
+    if(!this.motion.snapshot().running){this.motionTimer?.stop();this.motionTimer=undefined;return;}
     if(this.motionTimer)return;
-    this.motionTimer=setInterval(()=>{Object.assign(this.baseValues,this.motion.tick(performance.now()));this.syncMotionTimer();this.broadcast();},1000/30);this.motionTimer.unref();
+    this.motionTimer=startFrameTimer(()=>{Object.assign(this.baseValues,this.motion.tick(performance.now()));this.syncMotionTimer();this.broadcast();});this.motionTimer.unref();
   }
   private syncFacialTimer(){
-    if(!this.facial.snapshot(performance.now()).transitioning){if(this.facialTimer)clearInterval(this.facialTimer);this.facialTimer=undefined;return;}
+    if(!this.facial.snapshot(performance.now()).transitioning){this.facialTimer?.stop();this.facialTimer=undefined;return;}
     if(this.facialTimer)return;
-    this.facialTimer=setInterval(()=>{this.broadcast();this.syncFacialTimer();},1000/30);this.facialTimer.unref();
+    this.facialTimer=startFrameTimer(()=>{this.broadcast();this.syncFacialTimer();});this.facialTimer.unref();
   }
   facialCatalog(){return this.facial.catalog();}
   facialCommand(request:FacialRequest){this.facial.command(request,performance.now());this.syncFacialTimer();this.broadcast();return this.snapshot();}
@@ -161,6 +167,7 @@ export class PlaybackSession {
     this.syncMotionTimer();this.broadcast();return this.snapshot();
   }
   reload(rig: RigDocument) {
+    this.parameterCatalogue=parameterDefinitionsForRig(rig);
     this.facial.reset();this.syncFacialTimer();this.facial=new FacialController(rig);
     this.motion.clear();this.syncMotionTimer();this.motion=new MotionController(parameterDefinitionsForRig(rig));
     this.state.physicsEpoch=(this.state.physicsEpoch??0)+1;
@@ -169,5 +176,5 @@ export class PlaybackSession {
     this.baseValues = previewParameterValuesForRig(rig); this.state.lastSource = null;
     this.broadcast();
   }
-  close() { this.facial.reset();this.syncFacialTimer();this.motion.clear();this.syncMotionTimer();this.stopDemo(); for (const stream of this.streams) stream.end(); this.streams.clear(); this.congested.clear(); }
+  close() { this.facial.reset();this.syncFacialTimer();this.motion.clear();this.syncMotionTimer();this.stopDemo(); for (const stream of this.streams) stream.end(); this.streams.clear(); this.congested.clear(); this.encoders.clear(); }
 }

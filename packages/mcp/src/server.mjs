@@ -68,6 +68,11 @@ export function createStandRigMcp(baseUrl = 'http://127.0.0.1:5180') {
     if (input.commit) qaEvidence = undefined;
     return result;
   });
+  tool('standrig_modeling_job_submit', 'Submit a long modeling transaction and return its job ID immediately. Poll standrig_job_status. Visual-reference and QA gates are identical to a synchronous transaction.', transactionSchema, false, async input => {
+    const result=await request('/api/modeling/jobs','POST',input);if(input.commit)qaEvidence=undefined;return result;
+  });
+  tool('standrig_job_status', 'Read progress and the terminal transaction result. A missing job after restart has an unknown outcome; inspect the stored revision before resubmitting.', z.object({id:z.string().uuid()}), true, input=>request('/api/modeling/jobs/'+input.id));
+  tool('standrig_job_cancel', 'Cancel queued work or interrupt QA. Cancellation is refused once atomic commit has started.', z.object({id:z.string().uuid()}), false, input=>request('/api/modeling/jobs/'+input.id,'DELETE'));
   tool('standrig_qa_check', 'Run numeric QA before requesting images; maximum-pose visual review is still required.', qa, true, async input => {
     const result = await request('/api/qa/check', 'POST', input);
     qaEvidence = { revision: result.structuredContent?.revision, failed: result.structuredContent?.failed ?? [], failureRegions: result.structuredContent?.failureRegions ?? [], ok: !result.isError };

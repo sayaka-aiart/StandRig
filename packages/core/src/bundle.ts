@@ -1,6 +1,7 @@
 import { parseTrackingProfile, type TrackingProfile } from "./trackingProfile.js";
 import { cloneRig, type RigDocument } from "./types.js";
 import { hydrateRigAssets, type RigAssetManifest } from "./assetManifest.js";
+import { packRigDocument, unpackRigDocument, type PackedRig } from './packedRig.js';
 
 /**
  * Self-contained model bundle: rig (with data-URL assets) plus the tracking
@@ -17,6 +18,11 @@ export interface ModelBundle {
   exportedAt: string;
   rig: RigDocument;
   trackingProfile?: TrackingProfile;
+}
+
+/** Preserve the bundle metadata and tracking profile when compacting its rig. */
+export function packModelBundle(bundle: ModelBundle): Omit<ModelBundle, 'rig'> & { rig: RigDocument | PackedRig } {
+  return { ...bundle, rig: packRigDocument(bundle.rig) };
 }
 
 export function createModelBundle(rig: RigDocument, trackingProfile?: TrackingProfile): ModelBundle {
@@ -51,7 +57,7 @@ export function parseModelBundle(value: unknown): { rig: RigDocument; trackingPr
   if (record.format !== MODEL_BUNDLE_FORMAT || record.version !== MODEL_BUNDLE_VERSION) {
     return undefined;
   }
-  const rig = record.rig as RigDocument | undefined;
+  const rig = unpackRigDocument(record.rig) as RigDocument | undefined;
   if (!rig || typeof rig !== "object" || typeof rig.schemaVersion !== "string" || !Array.isArray(rig.parts)) {
     return undefined;
   }

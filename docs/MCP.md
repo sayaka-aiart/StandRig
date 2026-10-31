@@ -82,3 +82,14 @@ MCP clients can read this guide directly at `standrig://docs/deform`.
 ## Optional Cubism connection
 
 See [CUBISM-BRIDGE.md](CUBISM-BRIDGE.md) for the separate HTTP adapter, connection status, read queries and transient pose tools.
+
+## Long modeling jobs
+
+`standrig_modeling_job_submit` accepts the same operations/CAS/QA envelope as
+`standrig_modeling_transaction`, returning an accepted job ID. Poll
+`standrig_job_status` until completed/failed/cancelled; only its terminal
+transaction result establishes whether a write committed. `standrig_job_cancel`
+can stop queued work or QA, but refuses cancellation after atomic commit starts.
+Jobs are transient on this service instance. After a restart or unknown outcome,
+inspect the stored revision before submitting a write again. The synchronous
+transaction tool remains supported. See [PERFORMANCE.md](PERFORMANCE.md).

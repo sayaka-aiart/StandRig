@@ -32,6 +32,7 @@ for(const match of serviceSource.matchAll(/route === '(\/api\/[^']+)' && req\.me
   else serviceRoutes.set(match[1],{path:match[1],methods:[match[2]],source:serviceSourcePath,line:serviceSource.slice(0,match.index).split('\n').length,methodNotes:'Exact local service route.'});
 }
 endpoints.push(...serviceRoutes.values());
+endpoints.push({path:'/api/modeling/jobs/{id}',methods:['GET','DELETE'],defaultMethods:['GET','DELETE'],source:serviceSourcePath,methodNotes:'Progress/result and cancellation before atomic commit.'});
 await fs.writeFile('docs/api-routes.json',JSON.stringify({format:'standrig-route-inventory-v1',routes:endpoints.map(e=>e.path),endpoints},null,2)+'\n');
 const operationSource=await fs.readFile('packages/core/src/operationRegistry.ts','utf8');
 const operationAst=ts.createSourceFile('operationRegistry.ts',operationSource,ts.ScriptTarget.Latest,true);
@@ -65,6 +66,17 @@ for(const route of serviceRoutes.values()) for(const method of route.methods) {
   endpoint(route.path,method.toLowerCase(),'Local service '+route.path,method==='POST'?object:undefined);
 }
 paths['/api/playback/events'].get.responses[200]={description:'SSE latest playback state',content:{'text/event-stream':{schema:{type:'string'}}}};
+paths['/api/playback/events'].get.parameters=[query('delta','integer')];
+paths['/api/rig'].get.parameters=[query('includeAssets','integer'),query('packed','integer')];
+for(const route of ['/api/rig','/api/context']) {
+  paths[route].get.responses[304]={description:'Model representation unchanged; no response body.'};
+  paths[route].get.description='ETag revalidation and gzip/brotli negotiated compression. Vary: Accept-Encoding.';
+}
+endpoint('/api/modeling/jobs/{id}','get','Read modeling job progress/result',undefined,[{name:'id',in:'path',required:true,schema:{type:'string',format:'uuid'}}]);
+endpoint('/api/modeling/jobs/{id}','delete','Cancel a job before atomic commit',undefined,[{name:'id',in:'path',required:true,schema:{type:'string',format:'uuid'}}]);
+paths['/api/modeling/jobs'].post.responses[202]={description:'Job accepted; poll Location for progress and terminal result.',content:{'application/json':{schema:object}}};
+paths['/api/modeling/jobs'].post.responses[429]={description:'Bounded job queue is full'};
+delete paths['/api/modeling/jobs'].post.responses[200];
 const numericValues={type:'object',additionalProperties:{type:'number'},description:'Finite model parameter values. Playback also requires known IDs and values within their declared ranges.'};
 const bodySchema=(route,schema)=>{ paths[route].post.requestBody.content['application/json'].schema=schema; };
 bodySchema('/api/playback/motion',z.toJSONSchema(motionRequestSchema));
@@ -88,6 +100,7 @@ const spec={openapi:'3.1.0',info:{title:'StandRig Modeling Tools - core API',ver
 const strictTransaction=z.toJSONSchema(transactionSchema);
 spec.components.schemas.ModelingOperation=operation;
 spec.components.schemas.TransactionRequest={oneOf:[strictTransaction,{type:'object',additionalProperties:false,required:['kind','expectedRevision','rig','qa'],properties:{kind:{const:'import'},expectedRevision:{type:'string',minLength:1},commit:{type:'boolean',default:false},rig:object,qa:{$ref:'#/components/schemas/QaCheckRequest'}}},{type:'object',additionalProperties:false,required:['kind','expectedRevision','checkpointId'],properties:{kind:{const:'restore'},expectedRevision:{type:'string',minLength:1},commit:{type:'boolean',default:false},checkpointId:{type:'string',format:'uuid'}}}]};
+bodySchema('/api/modeling/jobs',{$ref:'#/components/schemas/TransactionRequest'});
 for(const endpoint of endpoints)if(endpoint.legacyWriteOptIn)for(const method of endpoint.methods)if(!endpoint.defaultMethods.includes(method)&&paths[endpoint.path]?.[method.toLowerCase()])Object.assign(paths[endpoint.path][method.toLowerCase()],{deprecated:true,description:'Disabled by default (403 legacy_write_api_disabled). Prefer /api/modeling/transaction. Explicit --allow-legacy-writes enables the legacy bypass.'});
 for (const [route,schema] of [['/api/bridge/read',bridgeReadSchema],['/api/bridge/pose',bridgePoseSchema]]) paths[route]={post:{summary:'Optional Cubism Bridge; requires idle API 1.1.0 server',requestBody:{required:true,content:{'application/json':{schema:toJSONSchema(schema)}}},responses:{200:{description:'Bridge result'},400:{description:'Invalid request or Bridge unavailable'}}}};
 paths['/api/bridge/status']={get:{summary:'Optional Bridge connection status',responses:{200:{description:'Configured, connected, state and API compatibility; no credentials'}}}};

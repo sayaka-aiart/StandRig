@@ -1,6 +1,7 @@
 import type { RigDocument } from "./types.js";
 import { migrateRigDocument } from "./migration.js";
 import { stringifyModelDocument } from "./modelJson.js";
+import { packRigDocument } from './packedRig.js';
 
 const RIG_DRAFT_STORAGE_KEY = "codex-standrig:draft-rig";
 const RIG_DRAFT_DB_NAME = "codex-standrig";
@@ -16,13 +17,19 @@ export interface RigDraftSaveResult {
   error?: string;
 }
 
-export async function fetchRigDocument(): Promise<RigDocument> {
-  const apiResponse = await fetch("/api/rig?includeAssets=1", { cache: "no-store" }).catch(() => null);
+let rigFetch: Promise<RigDocument> | undefined;
+export function fetchRigDocument(): Promise<RigDocument> {
+  if (!rigFetch) rigFetch = loadRigDocument().finally(() => { rigFetch = undefined; });
+  return rigFetch;
+}
+async function loadRigDocument(): Promise<RigDocument> {
+  const apiResponse = await fetch("/api/rig?includeAssets=1", { cache: "no-cache" }).catch(() => null);
   if (apiResponse?.ok) {
     return migrateRigDocument(await apiResponse.json());
   }
 
-  const staticResponse = await fetch("/rig.json", { cache: "no-store" });
+  if (apiResponse && ![404,405].includes(apiResponse.status)) throw Error(`Unable to load model: ${apiResponse.status}`);
+  const staticResponse = await fetch("/rig.json", { cache: "no-cache" });
   if (!staticResponse.ok) {
     throw new Error(`Unable to load rig.json: ${staticResponse.status}`);
   }
@@ -34,7 +41,7 @@ export async function saveRigDocument(
   options: { downloadFallback?: boolean } = {}
 ): Promise<"api" | "download" | "failed"> {
   const downloadFallback = options.downloadFallback ?? true;
-  const body = stringifyModelDocument(rig);
+  const body = stringifyModelDocument(packRigDocument(rig));
   const response = await fetch("/api/rig?includeAssets=1", {
     method: "PUT",
     headers: { "content-type": "application/json" },
@@ -120,11 +127,11 @@ export async function loadRigDraft(): Promise<RigDocument | undefined> {
 }
 
 export function downloadRigDocument(rig: RigDocument) {
-  downloadJsonDocument(stringifyModelDocument(rig), "rig.json");
+  downloadJsonDocument(stringifyModelDocument(packRigDocument(rig)), "rig.json");
 }
 
 export async function exportRigDocumentAs(rig: RigDocument): Promise<"saved" | "download" | "cancelled"> {
-  const body = `${stringifyModelDocument(rig)}\n`;
+  const body = `${stringifyModelDocument(packRigDocument(rig))}\n`;
   const picker = (window as Window & { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
   if (typeof picker !== "function") {
     downloadJsonDocument(body, "rig.json");

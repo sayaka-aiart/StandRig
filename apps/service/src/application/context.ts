@@ -3,10 +3,12 @@ import type { RigDocument } from '@standrig/core/types';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { ServerTransactionJournalEntry } from './modelingSupport.js';
-export function createModelingContext(rootDir: string) {
+import type { QaOptions } from '../qaRunner.js';
+import { CheckpointStore } from '../checkpointStore.js';
+export function createModelingContext(rootDir: string, qaOptions: QaOptions = {}, checkpointOptions: {limit?:number;memoryMiB?:number} = {}) {
     const publicDir = path.resolve(rootDir, 'public');
     const trackingProfilePath = path.join(publicDir, 'tracking-profile.json');
-    return { rootDir, publicDir, rigPath: path.join(publicDir, 'rig.json'), schemaPath: path.join(publicDir, 'rig.schema.json'), trackingProfilePath,
+    return { rootDir, publicDir, qaOptions, checkpoints:new CheckpointStore(rootDir,publicDir,checkpointOptions.limit,(checkpointOptions.memoryMiB??256)*1048576), rigPath: path.join(publicDir, 'rig.json'), schemaPath: path.join(publicDir, 'rig.schema.json'), trackingProfilePath,
         trackingRecordingsDir: path.join(publicDir, 'tracking-recordings'), trackingRunsDir: path.join(rootDir, 'tracking-runs'),
         assetManifestPath: path.join(publicDir, 'assets-manifest.json'), assetsDir: path.join(publicDir, 'assets'), goldenRoot: path.join(publicDir, 'goldens'),
         journal: [] as ServerTransactionJournalEntry[],

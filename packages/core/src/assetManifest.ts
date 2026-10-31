@@ -4,8 +4,8 @@ export interface RigAssetManifestEntry { assetId: string; path: string; sha256: 
 export interface RigAssetManifest { format: typeof ASSET_MANIFEST_FORMAT; version: 1; entries: RigAssetManifestEntry[] }
 export interface ExternalizedRigAssets { rig: RigDocument; manifest: RigAssetManifest; files: Map<string, Uint8Array> }
 
-export async function externalizeRigAssets(source: RigDocument, basePath = "/assets"): Promise<ExternalizedRigAssets> {
-  const rig=cloneRig(source); const entries:RigAssetManifestEntry[]=[]; const files=new Map<string,Uint8Array>();
+export async function externalizeRigAssets(source: RigDocument, basePath = "/assets", options: { owned?: boolean } = {}): Promise<ExternalizedRigAssets> {
+  const rig=options.owned?source:cloneRig(source); const entries:RigAssetManifestEntry[]=[]; const files=new Map<string,Uint8Array>();
   for(const asset of rig.assets){ const decoded=decodeDataUrl(asset.src); if(!decoded) continue; const sha256=await hashBytes(decoded.bytes); const ext=extensionForMediaType(decoded.mediaType); const path=`${basePath.replace(/\/$/,"")}/${sha256}.${ext}`; files.set(path,decoded.bytes); asset.src=path; asset.sha256=sha256; entries.push({assetId:asset.id,path,sha256,mediaType:decoded.mediaType,bytes:decoded.bytes.byteLength}); }
   return {rig,manifest:{format:ASSET_MANIFEST_FORMAT,version:1,entries},files};
 }

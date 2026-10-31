@@ -2,7 +2,8 @@ import { runArtPathQa, type ArtPathQaRequest } from "@standrig/core/artPathQa";
 import { runExposureSweep, type ExposureSweepRequest } from "@standrig/core/exposureQa";
 import { runJoinQa, type JoinQaRequest } from "@standrig/core/joinQa";
 import { runL2ReadinessQa } from "@standrig/core/l2ReadinessQa";
-import { runQaCheck, type QaCheckRequest } from "@standrig/core/qaCheck";
+import type { QaCheckRequest } from "@standrig/core/qaCheck";
+import { runServiceQa } from '../qaRunner.js';
 import { renderQaFailureComparison, type QaFailureImageRequest } from "@standrig/core/qaFailureImage";
 import { evaluateRigReadiness, type ReadinessLevel } from "@standrig/core/readiness";
 import { calibrateRigReadiness } from "@standrig/core/readinessCalibration";
@@ -37,8 +38,10 @@ export function analysisRoutes(ctx: ModelingContext, server: ApiHost) {
                 return;
             }
             const body = parseJsonObject(await readBody(req)) as QaCheckRequest;
-            const rig = await readRigFile(rigPath);
-            const result = await runQaCheck(rig, publicDir, body);
+            const controller=new AbortController(),abort=()=>controller.abort();res.once('close',abort);
+            let rig:Awaited<ReturnType<typeof readRigFile>>|undefined;
+            let result;try{result=await runServiceQa(async()=>rig=await readRigFile(rigPath),publicDir,body,ctx.qaOptions,undefined,controller.signal);}finally{res.off('close',abort);}
+            if(!rig)throw Error('QA snapshot was not loaded');
             sendJson(res, 200, { ...result, revision: fullRigRevision(rig) });
         }
         catch (error) {
@@ -226,7 +229,7 @@ export function analysisRoutes(ctx: ModelingContext, server: ApiHost) {
                     sendJson(res, 409, { ok: false, action, error: "revision mismatch", revision, expectedRevision });
                     return;
                 }
-                const qa = await runQaCheck(rig, publicDir, qaRequest);
+                const qa = await runServiceQa(rig, publicDir, qaRequest, ctx.qaOptions);
                 if (!qa.ok) {
                     sendJson(res, 422, { ok: false, action, error: "cannot propose a failed QA result", revision, qa: { ok: qa.ok, failed: qa.failed.map((entry) => ({ poseId: entry.poseId, region: entry.region, issues: entry.issues })) } });
                     return;
@@ -247,7 +250,7 @@ export function analysisRoutes(ctx: ModelingContext, server: ApiHost) {
                     sendJson(res, 409, { ok: false, action, committed: false, dryRun: false, error: "revision mismatch", expectedRevision, revision });
                     return;
                 }
-                const qa = await runQaCheck(rig, publicDir, qaRequest);
+                const qa = await runServiceQa(rig, publicDir, qaRequest, ctx.qaOptions);
                 if (!qa.ok) {
                     sendJson(res, 422, { ok: false, action, committed: false, dryRun: false, error: "cannot register a failed QA result", revision, qa: { ok: qa.ok, failed: qa.failed } });
                     return;
@@ -284,7 +287,7 @@ export function analysisRoutes(ctx: ModelingContext, server: ApiHost) {
             const expectedHashes: Record<string, string> = {};
             for (const entry of goldenChecks)
                 expectedHashes[`${entry.poseId}:${entry.region}`] = entry.baselineHash;
-            const qa = await runQaCheck(await readRigFile(rigPath), publicDir, { ...qaRequest, poses: qaRequest.poses ?? goldenChecks.map((entry) => entry.poseId), regions: qaRequest.regions ?? goldenChecks.map((entry) => entry.region), expectedHashes });
+            const qa = await runServiceQa(await readRigFile(rigPath), publicDir, { ...qaRequest, poses: qaRequest.poses ?? goldenChecks.map((entry) => entry.poseId), regions: qaRequest.regions ?? goldenChecks.map((entry) => entry.region), expectedHashes }, ctx.qaOptions);
             sendJson(res, 200, { ok: qa.ok, action, name, goldenRevision: manifest.revision, currentRevision: fullRigRevision(await readRigFile(rigPath)), mismatches: qa.failed.filter((entry) => entry.issues.includes("baseline-mismatch")).map((entry) => ({ poseId: entry.poseId, region: entry.region, expectedHash: entry.expectedHash, actualHash: entry.baselineHash })), qa: { ok: qa.ok, entries: qa.entries.map((entry) => ({ poseId: entry.poseId, region: entry.region, pass: entry.pass, issues: entry.issues, motionDiffPixelRatio: entry.motionDiffPixelRatio })), failureRegions: qa.failureRegions } });
         }
         catch (error) {

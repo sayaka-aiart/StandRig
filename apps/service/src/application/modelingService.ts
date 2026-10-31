@@ -3,15 +3,19 @@ import { summarizeRig, validateRig } from '@standrig/core/inspect';
 import { migrateRigDocument } from '@standrig/core/migration';
 import { executeModelingOperation, type ModelingOperation } from '@standrig/core/modelingOps';
 import { auditPhysicsSafety } from '@standrig/core/physicsSafety';
-import { runQaCheck } from '@standrig/core/qaCheck';
 import type { RigDocument } from '@standrig/core/types';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { normalizeModelingTransactionResult } from '../modelingTransactionResult.js';
-import { portableBundle } from '../portableBundle.js';
 import type { ModelingContext } from './context.js';
 import { fullRigRevision, loadArtMeshAlphaSamplers, modelingOperationGateIssues, readRigFile, writeRigFile } from './modelingSupport.js';
+import { runServiceQa, type QaProgress } from '../qaRunner.js';
+import { externalizeRigAssets, type RigAssetManifest } from '@standrig/core/assetManifest';
+import { pngBytes, putAsset } from '../assetStorage.js';
+import { writeJsonFile } from './modelingSupport.js';
+import { readRigSnapshot } from './modelingSupport.js';
+import { fileStamp } from '../fileStamp.js';
 export class ApplicationError extends Error {
     constructor(public status: number, message: string, public details: Record<string, unknown> = {}) { super(message); }
 }
@@ -21,19 +25,15 @@ export class ModelingService {
     constructor(readonly context: ModelingContext, private onCommit: () => void) { }
     async checkpoint(rig?: RigDocument) {
         const current = rig ?? await readRigFile(this.context.rigPath);
-        const dir = path.join(this.context.rootDir, 'checkpoints');
-        const bundle = await portableBundle(current, this.context.publicDir);
-        const record = { id: randomUUID(), createdAt: new Date().toISOString(), revision: fullRigRevision(current), bundle };
-        await mkdir(dir, { recursive: true });
-        await writeFile(path.join(dir, record.id + '.json'), JSON.stringify(record), { flag: 'wx' });
-        return { id: record.id, createdAt: record.createdAt, revision: record.revision };
+        return this.context.checkpoints.create(current,fullRigRevision(current),{owned:rig===undefined});
     }
-    execute(input: unknown) {
-        const result = this.queue.catch(() => { }).then(() => this.apply(input));
+    execute(input: unknown, options: { owned?: boolean; signal?: AbortSignal; progress?: (value: QaProgress) => void } = {}) {
+        const result = this.queue.catch(() => { }).then(() => { options.signal?.throwIfAborted(); return this.apply(input, options); });
         this.queue = result;
         return result;
     }
-    private async apply(raw: unknown) {
+    private async apply(raw: unknown, options: { owned?: boolean; signal?: AbortSignal; progress?: (value: QaProgress) => void }) {
+        options.progress?.({stage:'validating'});
         if (!raw || typeof raw !== 'object' || Array.isArray(raw))
             throw new ApplicationError(400, 'expected an object');
         const body = raw as Record<string, unknown>;
@@ -66,7 +66,8 @@ export class ModelingService {
                     throw new ApplicationError(400, 'import requires rig');
             }
         }
-        const current = await readRigFile(this.context.rigPath);
+        const currentSnapshot = await readRigSnapshot(this.context.rigPath);
+        const current = currentSnapshot.rig;
         const revisionBefore = fullRigRevision(current);
         if (expectedRevision !== revisionBefore)
             throw new ApplicationError(409, 'revision mismatch', { revisionBefore, summary: summarizeRig(current) });
@@ -74,13 +75,14 @@ export class ModelingService {
         const operationResults = [];
         const operationGateIssues: ReturnType<typeof modelingOperationGateIssues> = [];
         let artMeshSampler;
-        if (kind === 'import')
-            candidate = migrateRigDocument(structuredClone(body.rig) as RigDocument);
+        if (kind === 'import') {
+            candidate = migrateRigDocument((options.owned ? body.rig : structuredClone(body.rig)) as RigDocument);
+            if(options.owned)delete body.rig;
+        }
         else if (kind === 'restore') {
             if (typeof body.checkpointId !== 'string' || !/^[a-f0-9-]{36}$/.test(body.checkpointId))
                 throw new ApplicationError(400, 'invalid checkpoint id');
-            const record = JSON.parse(await readFile(path.join(this.context.rootDir, 'checkpoints', body.checkpointId + '.json'), 'utf8'));
-            candidate = migrateRigDocument(record.bundle.rig);
+            candidate = migrateRigDocument(await this.context.checkpoints.restore(body.checkpointId));
         }
         else {
             candidate = structuredClone(current);
@@ -96,28 +98,46 @@ export class ModelingService {
         }
         const validation = validateRig(candidate);
         const physicsSafety = auditPhysicsSafety(candidate);
-        const qa = qaRequest ? await runQaCheck(candidate, this.context.publicDir, qaRequest) : undefined;
+        options.signal?.throwIfAborted();
+        const qa = validation.ok && qaRequest ? await runServiceQa(candidate, this.context.publicDir, qaRequest, this.context.qaOptions, options.progress, options.signal) : undefined;
         // Restoring a known checkpoint may intentionally return to an empty/unrigged model.
         const passed = validation.ok && (kind === 'restore' || physicsSafety.pass) && (qa?.ok ?? true) && !(artMeshSampler?.skipped.length) && !operationGateIssues.length;
+        // Prepare deterministic external references for both dry-run and commit; no files yet.
+        const importedAssets = (kind==='import'||kind==='restore') && passed ? await externalizeRigAssets(candidate,'/assets',{owned:true}) : undefined;
         const evidence = { revisionBefore, operationResults, operationGateIssues, validation, physicsSafety, qa, artMeshSampler, summary: summarizeRig(candidate) };
         if (commit && !passed)
             throw new ApplicationError(422, 'transaction gate failed', { ...evidence, committed: false });
         let rollbackCheckpoint;
+        const revisionAfter = fullRigRevision(candidate);
         if (commit) {
             // Check all external assets before committing an imported/restored document.
-            if (kind !== 'operations')
-                await portableBundle(candidate, this.context.publicDir);
-            const latest = await readRigFile(this.context.rigPath);
-            if (fullRigRevision(latest) !== revisionBefore)
-                throw new ApplicationError(409, 'revision changed during transaction', { revisionBefore, currentRevision: fullRigRevision(latest) });
-            rollbackCheckpoint = await this.checkpoint(current);
+            if (kind !== 'operations') for(const asset of candidate.assets) {
+                const prepared=importedAssets?.files.get(asset.src);
+                await pngBytes(prepared?{...asset,src:'data:image/png;base64,'+Buffer.from(prepared).toString('base64')}:asset,this.context.publicDir);
+            }
+            const assertRevision = async()=>{
+                if(await fileStamp(this.context.rigPath)===currentSnapshot.stamp)return;
+                const latest=await readRigSnapshot(this.context.rigPath),revision=fullRigRevision(latest.rig);
+                if(revision!==revisionBefore)throw new ApplicationError(409,'revision changed during transaction',{revisionBefore,currentRevision:revision});
+            };
+            await assertRevision();
+            options.signal?.throwIfAborted();
+            options.progress?.({stage:'committing'});
+            rollbackCheckpoint = await this.context.checkpoints.create(current,revisionBefore,{owned:true});
+            if(importedAssets){
+                for(const [url,bytes] of importedAssets.files)await putAsset(this.context.assetsDir,path.basename(url,'.png'),bytes);
+                const manifest:RigAssetManifest=await readFile(this.context.assetManifestPath,'utf8').then(raw=>JSON.parse(raw)).catch(error=>{if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;return {format:'standrig-assets',version:1,entries:[]};});
+                if(manifest.format!=='standrig-assets'||manifest.version!==1||!Array.isArray(manifest.entries))throw Error('Invalid asset manifest');
+                const entries=new Map(manifest.entries.map(entry=>[entry.assetId,entry]));for(const entry of importedAssets.manifest.entries)entries.set(entry.assetId,entry);
+                await writeJsonFile(this.context.assetManifestPath,{...manifest,entries:[...entries.values()]});
+            }
+            await assertRevision();
             await writeRigFile(this.context.rigPath, candidate);
-            this.context.journal.push({ id: randomUUID(), appliedAt: new Date().toISOString(), revisionBefore, revisionAfter: fullRigRevision(candidate), operationIds: kind === 'operations' ? operations.map(o => o.id) : [String(kind)] });
+            this.context.journal.push({ id: randomUUID(), appliedAt: new Date().toISOString(), revisionBefore, revisionAfter, operationIds: kind === 'operations' ? operations.map(o => o.id) : [String(kind)] });
             if (this.context.journal.length > 30)
                 this.context.journal.shift();
             this.onCommit();
         }
-        const revisionAfter = fullRigRevision(candidate);
         const transactionResult = normalizeModelingTransactionResult({ committed: commit && passed, dryRun: !commit, revisionBefore, revisionAfter, operationResults, operationGateIssues });
         return { ok: passed, kind, committed: commit && passed, dryRun: !commit, ...evidence, revisionAfter, transactionResult, noWrite: transactionResult.noWrite, rollbackCheckpoint, history: { scope: 'server-memory', persisted: false } };
     }
