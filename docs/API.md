@@ -80,7 +80,7 @@ The server clones the current rig, applies operations to the clone, runs validat
 | `artMeshSampler` | Alpha-contour asset loading results |
 | `transactionResult` / `noWrite` | Normalized mutation evidence |
 
-`expectedRevision` and `qa` are required for operations/import, including dry-run. Typed operation objects reject unknown keys. Successful commit gates create a persistent `rollbackCheckpoint` immediately before atomic model replacement. Visual judgment and reference-manifest enforcement remain operator obligations.
+`expectedRevision` and `qa` are required for operations/import, including dry-run. Import and restore decode every referenced PNG, including hidden layers. Each decoded RGBA texture can occupy up to 1 GiB. A damaged image is reported by asset ID in `validation.issues`. A failed import dry-run returns `ok:false` and a failed commit returns 422. Typed operation objects reject unknown keys. Successful commit gates create a persistent `rollbackCheckpoint` immediately before atomic model replacement. Visual judgment and reference-manifest enforcement remain operator obligations.
 
 Revisions are opaque `rig-sha256-` plus 64 hexadecimal characters: SHA-256 of the JSON-serialized complete migrated rig, including assets. Fetch fresh context after upgrading from FNV revisions; do not calculate revisions in clients. `semanticHash` remains a non-security compact hint and cannot be used for concurrency checks.
 

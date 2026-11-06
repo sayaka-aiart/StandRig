@@ -5,7 +5,8 @@
   "type": "module",
   "dependencies": {
     "ag-psd": "31.0.2",
-    "pako": "2.1.0"
+    "pako": "2.1.0",
+    "pngjs": "7.0.0"
   },
   "exports": {
     ".": {
@@ -20,5 +21,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/pngjs": "6.0.5"
+  }
 }

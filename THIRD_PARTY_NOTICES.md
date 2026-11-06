@@ -32,6 +32,7 @@ StandRig original code is licensed under Apache-2.0. Third-party components reta
 | @rolldown/pluginutils | 1.0.1 | MIT |
 | @tybys/wasm-util | 0.10.3 | MIT |
 | @types/node | 24.13.2 | MIT |
+| @types/pngjs | 6.0.5 | MIT |
 | ag-psd | 31.0.2 | MIT |
 | base64-js | 1.5.1 | MIT |
 | cross-spawn | 7.0.6 | MIT |
@@ -60,6 +61,7 @@ StandRig original code is licensed under Apache-2.0. Third-party components reta
 | picocolors | 1.1.1 | ISC |
 | picomatch | 4.0.5 | MIT |
 | pkce-challenge | 5.0.1 | MIT |
+| pngjs | 7.0.0 | MIT |
 | postcss | 8.5.28 | MIT |
 | rolldown | 1.1.4 | MIT |
 | shebang-command | 2.0.0 | MIT |

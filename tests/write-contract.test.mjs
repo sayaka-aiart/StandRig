@@ -8,6 +8,8 @@ import * as z from 'zod';
 import {operationSchema,actionSchema,actionSchemas,READ_ONLY_BODY_ROUTES} from '@standrig/contracts';
 import {createLocalService} from '../apps/service/dist/service.js';
 import {fullRigRevision} from '../apps/service/dist/rigApiPlugin.js';
+import {createRectArtMesh} from '@standrig/core/artMesh';
+import {decodeTexturePng} from '@standrig/core/serverPng';
 const sample=JSON.parse(await readFile(new URL('../examples/sample.standrig.json',import.meta.url),'utf8'));
 const qa={poses:['neutral'],regions:['full'],width:240,height:240,physics:false};
 const move={id:'move',name:'Move body',target:{partIds:['body']},action:{type:'transform',property:'x',operator:'add',value:2}};
@@ -18,6 +20,63 @@ test('revisions use SHA-256 across the full model document',()=>{
  assert.equal(fullRigRevision(sample),'rig-sha256-'+createHash('sha256').update(JSON.stringify(sample)).digest('hex'));
  for(const change of [r=>r.name+=' changed',r=>r.assets[0].src+='x',r=>r.parts[0].visible=!r.parts[0].visible]){const rig=structuredClone(sample);change(rig);assert.notEqual(fullRigRevision(rig),fullRigRevision(sample));}
 });
+
+test('an invalid texture fails dry-run and commit without replacing a working model',()=>harness(async(call,dir)=>{
+ const initial=(await call('/api/context')).data.context.revision;
+ const saved=await call('/api/modeling/transaction','POST',{kind:'import',rig:sample,qa,expectedRevision:initial,commit:true});
+ assert.equal(saved.data.committed,true);
+ const revision=saved.data.revisionAfter,before=await files(dir);
+ for(const visible of [true,false]){
+   const bad=structuredClone(sample);
+   bad.assets.find(a=>a.id==='head').src='data:image/png;base64,iVBORw0KGgo=';
+   bad.parts.find(p=>p.id==='head').visible=visible;
+   for(const commit of [false,true]){
+     const response=await call('/api/modeling/transaction','POST',{kind:'import',rig:bad,qa,expectedRevision:revision,commit});
+     assert.equal(response.status,commit?422:200);
+     assert.equal(response.data.ok,false);
+     assert.equal(response.data.committed,false);
+     assert.ok(response.data.validation.issues.some(i=>i.code==='invalid-png-asset'&&i.message.includes('head')));
+   }
+ }
+ assert.deepEqual(await files(dir),before);
+ assert.equal((await call('/api/context')).data.context.revision,revision);
+}));
+
+test('texture validation and QA accept interlaced indexed PNGs and reject damaged chunks',()=>harness(async(call)=>{
+ // Two diagonally opposite green pixels. The rest are transparent palette entries.
+ const base64='iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAAE/f6/xAAAABlBMVEUAAAAotFqYLn3BAAAAAnRSTlMA/1uRIrUAAAAOSURBVHicY2hgYGBwAAACxgDBD114GgAAAABJRU5ErkJggg==';
+ const bytes=Buffer.from(base64,'base64');
+ const {data}=decodeTexturePng(bytes);
+ assert.deepEqual([data[3],data[7],data[11],data[15]],[255,0,0,255]);
+ assert.throws(()=>decodeTexturePng(bytes.subarray(0,-12))); // missing IEND
+ const bad=Buffer.from(bytes);bad[29]^=1;assert.throws(()=>decodeTexturePng(bad)); // invalid IHDR checksum
+ const oversized=Buffer.from(bytes);oversized.writeUInt32BE(0x7fffffff,16);
+ assert.throws(()=>decodeTexturePng(oversized),/texture limit/);
+ const rig=structuredClone(sample),asset=rig.assets.find(a=>a.id==='head');
+ Object.assign(asset,{src:'data:image/png;base64,'+base64,width:2,height:2});
+ const expectedRevision=(await call('/api/context')).data.context.revision;
+ const result=await call('/api/modeling/transaction','POST',{kind:'import',rig,qa,expectedRevision,commit:true});
+ assert.equal(result.data.committed,true,JSON.stringify(result.data.error));
+ assert.equal(result.data.qa.ok,true);
+}));
+
+test('dense differently ordered offsets keep the acknowledged revision usable',()=>harness(async(call)=>{
+ const revision=(await call('/api/context')).data.context.revision;
+ const rig=structuredClone(sample),part=rig.parts.find(p=>p.id==='head');
+ const mesh=part.artMesh=createRectArtMesh(112,104,{columns:10,rows:10,preset:'face-feature'});
+ mesh.bindings=[{parameter:'ParamAngleX',keys:Array.from({length:45},(_,i)=>({
+   input:i-22,offsets:mesh.vertices.map(v=>({x:0,y:0,vertexId:v.id}))
+ }))}];
+ // A mixed-field-order key must also round-trip exactly.
+ const first=mesh.bindings[0].keys[0].offsets[0];
+ mesh.bindings[0].keys[0].offsets[0]={y:first.y,vertexId:first.vertexId,x:first.x};
+ const result=await call('/api/modeling/transaction','POST',{kind:'import',rig,qa,expectedRevision:revision,commit:true});
+ assert.equal(result.data.committed,true,JSON.stringify(result.data.error));
+ assert.equal((await call('/api/context')).data.context.revision,result.data.revisionAfter);
+ const edit=await call('/api/modeling/transaction','POST',{operations:[move],expectedRevision:result.data.revisionAfter,qa,commit:true});
+ assert.equal(edit.status,200);
+ assert.equal(edit.data.committed,true);
+}));
 
 test('every legacy write route is denied by default without filesystem changes',()=>harness(async(call,dir)=>{
  const before=await files(dir);

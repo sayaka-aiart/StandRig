@@ -3,6 +3,7 @@ import { summarizeRig, validateRig } from '@standrig/core/inspect';
 import { migrateRigDocument } from '@standrig/core/migration';
 import { executeModelingOperation, type ModelingOperation } from '@standrig/core/modelingOps';
 import { auditPhysicsSafety } from '@standrig/core/physicsSafety';
+import { decodeTexturePng } from '@standrig/core/serverPng';
 import type { RigDocument } from '@standrig/core/types';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -12,7 +13,7 @@ import type { ModelingContext } from './context.js';
 import { fullRigRevision, loadArtMeshAlphaSamplers, modelingOperationGateIssues, readRigFile, writeRigFile } from './modelingSupport.js';
 import { runServiceQa, type QaProgress } from '../qaRunner.js';
 import { externalizeRigAssets, type RigAssetManifest } from '@standrig/core/assetManifest';
-import { pngBytes, putAsset } from '../assetStorage.js';
+import { assetHash, pngBytes, putAsset } from '../assetStorage.js';
 import { writeJsonFile } from './modelingSupport.js';
 import { readRigSnapshot } from './modelingSupport.js';
 import { fileStamp } from '../fileStamp.js';
@@ -97,6 +98,22 @@ export class ModelingService {
             operationGateIssues.push(...modelingOperationGateIssues(operations, operationResults));
         }
         const validation = validateRig(candidate);
+        const externalHashes = new Map<string, string>();
+        if (validation.ok && kind !== 'operations') {
+            for (const [index, asset] of candidate.assets.entries()) {
+                options.signal?.throwIfAborted();
+                try {
+                    const bytes = await pngBytes(asset, this.context.publicDir);
+                    decodeTexturePng(bytes);
+                    if (!asset.src.startsWith('data:')) externalHashes.set(asset.id, assetHash(bytes));
+                } catch (error) {
+                    validation.issues.push({ severity:'error', code:'invalid-png-asset', path:`assets[${index}].src`, message:`Asset ${asset.id}: ${String(error)}` });
+                    validation.errorCount++;
+                    validation.issueCount++;
+                    validation.ok = false;
+                }
+            }
+        }
         const physicsSafety = auditPhysicsSafety(candidate);
         options.signal?.throwIfAborted();
         const qa = validation.ok && qaRequest ? await runServiceQa(candidate, this.context.publicDir, qaRequest, this.context.qaOptions, options.progress, options.signal) : undefined;
@@ -110,10 +127,10 @@ export class ModelingService {
         let rollbackCheckpoint;
         const revisionAfter = fullRigRevision(candidate);
         if (commit) {
-            // Check all external assets before committing an imported/restored document.
-            if (kind !== 'operations') for(const asset of candidate.assets) {
-                const prepared=importedAssets?.files.get(asset.src);
-                await pngBytes(prepared?{...asset,src:'data:image/png;base64,'+Buffer.from(prepared).toString('base64')}:asset,this.context.publicDir);
+            for (const asset of candidate.assets) {
+                const checked = externalHashes.get(asset.id);
+                if (checked && assetHash(await pngBytes(asset, this.context.publicDir)) !== checked)
+                    throw new ApplicationError(409, 'Asset changed during validation: ' + asset.id);
             }
             const assertRevision = async()=>{
                 if(await fileStamp(this.context.rigPath)===currentSnapshot.stamp)return;

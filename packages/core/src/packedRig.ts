@@ -1,6 +1,8 @@
 import type { RigDocument, RigArtMesh, RigArtMeshVertexOffset } from './types.js';
 export type OffsetEncoding = 'lossless'|'f32'|'i16';
-interface PackedOffsets { version:1; encoding:'f64'|'f32'|'i16'; vertexCount:number; order:string; indices?:number[]; data:string }
+type OffsetField = keyof RigArtMeshVertexOffset;
+const defaultFields: OffsetField[] = ['vertexId', 'x', 'y'];
+interface PackedOffsets { version:1; encoding:'f64'|'f32'|'i16'; vertexCount:number; order:string; indices?:number[]; fields?:OffsetField[]; data:string }
 export interface PackedRig { format:'standrig-packed';version:1;rig:unknown }
 function orderFor(mesh:RigArtMesh) {
   let a=2166136261,b=3339675911;
@@ -24,7 +26,15 @@ export function packRigDocument(rig:RigDocument,encoding:OffsetEncoding='lossles
   const packed=mapRig(rig,(key,mesh,order,ids)=>{
     const offsets:RigArtMeshVertexOffset[]=key.offsets;if(!Array.isArray(offsets)||!offsets.length||key.packedOffsets!==undefined)return key;
     const seen=new Set<string>();
-    if(offsets.some(o=>!o||!ids.has(o.vertexId)||seen.has(o.vertexId)||!Number.isFinite(o.x)||!Number.isFinite(o.y)||Object.keys(o).some(k=>!['vertexId','x','y'].includes(k))||(seen.add(o.vertexId),false)))return key;
+    const fields = Object.keys(offsets[0] ?? {}) as OffsetField[];
+    if (fields.length !== 3 || !defaultFields.every(name => fields.includes(name))) return key;
+    for (const offset of offsets) {
+      if (!offset || !ids.has(offset.vertexId) || seen.has(offset.vertexId) || !Number.isFinite(offset.x) || !Number.isFinite(offset.y)) return key;
+      const names = Object.keys(offset);
+      // Mixed object layouts stay in ordinary JSON so even their serialized revisions round-trip.
+      if (names.length !== 3 || names.some((name, index) => name !== fields[index])) return key;
+      seen.add(offset.vertexId);
+    }
     // Preserve authoring order on decode too; sparse/reordered keys carry integer indices.
     const indices=offsets.map(o=>ids.get(o.vertexId)!);
     const dense=indices.length===mesh.vertices.length&&indices.every((v,i)=>v===i);
@@ -34,6 +44,7 @@ export function packRigDocument(rig:RigDocument,encoding:OffsetEncoding='lossles
     const width=selected==='i16'?2:selected==='f32'?4:8,bytes=new Uint8Array(values.length*width),view=new DataView(bytes.buffer);
     values.forEach((v,i)=>selected==='i16'?view.setInt16(i*width,Math.round(v*32),true):selected==='f32'?view.setFloat32(i*width,v,true):view.setFloat64(i*width,v,true));
     const block:PackedOffsets={version:1,encoding:selected,vertexCount:mesh.vertices.length,order,...(dense?{}:{indices}),data:base64(bytes)};
+    if (defaultFields.some((name, i) => fields[i] !== name)) block.fields = fields;
     return Object.fromEntries(Object.entries(key).map(([name,value])=>name==='offsets'?['packedOffsets',block]:[name,value]));
   });
   return {format:'standrig-packed',version:1,rig:packed};
@@ -54,7 +65,14 @@ export function unpackRigDocument(value:unknown):unknown {
     expanded+=indices.length;if(expanded>8_000_000)throw Error('Packed model expansion limit exceeded');
     const bytes=decode(block.data,indices.length*2*width),view=new DataView(bytes.buffer);
     const read=(i:number)=>block.encoding==='i16'?view.getInt16(i*width,true)/32:block.encoding==='f32'?view.getFloat32(i*width,true):view.getFloat64(i*width,true);
-    const offsets=indices.map((index,i)=>{const x=read(i*2),y=read(i*2+1);if(!Number.isFinite(x)||!Number.isFinite(y))throw Error('Non-finite packed offsets');return {vertexId:mesh.vertices[index].id,x,y};});
+    const fields = block.fields;
+    if (fields !== undefined && (!Array.isArray(fields) || fields.length !== 3 || !defaultFields.every(name => fields.includes(name)))) throw Error('Invalid packed offset fields');
+    const offsets=indices.map((index,i)=>{
+      const x=read(i*2),y=read(i*2+1);
+      if(!Number.isFinite(x)||!Number.isFinite(y))throw Error('Non-finite packed offsets');
+      const offset = {vertexId:mesh.vertices[index].id,x,y};
+      return fields ? Object.fromEntries(fields.map(name => [name,offset[name]])) : offset;
+    });
     return Object.fromEntries(Object.entries(key).map(([name,value])=>name==='packedOffsets'?['offsets',offsets]:[name,value]));
   });
 }

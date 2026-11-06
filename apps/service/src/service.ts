@@ -79,8 +79,7 @@ export async function createLocalService(options: { dataDir: string; port?: numb
     res.writeHead(200, { 'content-type': types[path.extname(resolved)] ?? 'application/octet-stream', 'content-length': String(metadata.size) });
     res.end(bytes);
   }
-  async function dispatch(req: IncomingMessage, res: ServerResponse) {
-    const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+  async function dispatch(req: IncomingMessage, res: ServerResponse, url: URL) {
     const route = url.pathname;
     if (route === '/api/modeling/jobs' && req.method === 'POST') {
       if (!jobs.capacity()&&!jobs.hasKey(req.headers['idempotency-key'])) { json(res,429,{ok:false,error:'Modeling job queue is full'});return; }
@@ -167,12 +166,17 @@ export async function createLocalService(options: { dataDir: string; port?: numb
       json(res, 403, { ok: false, error: 'origin_not_allowed' }); return;
     }
     if (Number(req.headers['content-length'] ?? 0) > MODEL_BODY_LIMIT) { json(res, 413, { ok: false, error: 'body_too_large' }); return; }
+    const origin = new URL('http://' + req.headers.host).origin;
+    let url: URL;
+    try { url = new URL(req.url ?? '/', origin); }
+    catch { json(res, 400, { ok: false, error: 'invalid_request_url' }); return; }
+    if (url.origin !== origin) { json(res, 400, { ok: false, error: 'invalid_request_url' }); return; }
     const run = async () => {
       if (req.aborted || res.destroyed) return;
-      try { await dispatch(req, res); }
+      try { await dispatch(req, res, url); }
       catch (error) { if (!res.headersSent) json(res, error instanceof ApplicationError ? error.status : 400, { ok: false, error: String(error), ...(error instanceof ApplicationError ? error.details : {}) }); }
     };
-    const route = new URL(req.url ?? '/', 'http://localhost').pathname;
+    const route = url.pathname;
     if (['GET','HEAD'].includes(req.method ?? '') || (req.method === 'POST' && READ_ONLY_BODY_ROUTES.has(route)) || route.startsWith('/api/playback') || route==='/api/modeling/jobs' || route.startsWith('/api/modeling/jobs/')) { void run(); }
     else { void scheduleWrite(run); }
   });

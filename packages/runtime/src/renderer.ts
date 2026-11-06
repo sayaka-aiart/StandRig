@@ -1408,13 +1408,8 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
     const image = new Image();
     image.decoding = "async";
     image.src = asset.src;
-    await image.decode().catch(
-      () =>
-        new Promise<void>((resolve) => {
-          image.onload = () => resolve();
-          image.onerror = () => resolve();
-        })
-    );
+    try { await image.decode(); }
+    catch { throw new Error(`画像を読み込めません: ${asset.name} (${asset.id})`); }
     this.images.set(asset.id, image);
     const width = image.naturalWidth || image.width;
     const height = image.naturalHeight || image.height;

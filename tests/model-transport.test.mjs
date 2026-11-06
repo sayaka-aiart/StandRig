@@ -23,6 +23,8 @@ test('model responses negotiate compression, revalidate, isolate views and inval
   const file=path.join(dir,'public/rig.json'),rig=JSON.parse(await readFile(file));rig.name='external replacement';await writeFile(file,JSON.stringify(rig));
   const next=await request(url,{headers:{'if-none-match':plain.headers.etag}});assert.equal(next.status,200);assert.equal(JSON.parse(next.bytes).name,rig.name);assert.notEqual(next.headers.etag,plain.headers.etag);
   const context=await request(service.url+'/api/context');assert.equal((await request(service.url+'/api/context',{headers:{'if-none-match':context.headers.etag}})).status,304);
+  assert.equal((await request(service.url+'//')).status,400);
+  assert.equal((await request(service.url+'/api/context')).status,200);
   const good=await request(service.url+'/api/playback/parameters',{method:'POST',headers:{'content-encoding':'gzip'},body:gzipSync(JSON.stringify({source:'transport',sequence:1,values:{}}))});assert.equal(good.status,200);
   const bomb=await request(service.url+'/api/playback/parameters',{method:'POST',headers:{'content-encoding':'gzip'},body:gzipSync(JSON.stringify({padding:'a'.repeat(2*1024*1024)}))});assert.equal(bomb.status,400);
  }finally{await service?.close();await rm(dir,{recursive:true,force:true});}

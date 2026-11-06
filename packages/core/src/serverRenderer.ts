@@ -1,4 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { decodeTexturePng, MAX_DECODED_TEXTURE_BYTES } from "./serverPng.js";
 import path from "node:path";
 import { detailRegionForRig, isDetailRegionId, type DetailRegionId } from "./detailRegions.js";
 import { invertMatrix, multiplyMatrices, resolveRigFrame, scaleMatrix, transformMatrixPoint, translateMatrix, type Matrix2D } from "./evaluator.js";
@@ -73,7 +75,7 @@ interface PartDrawGeometry {
 // Reusing decoded PNGs keeps repeated numeric QA (part x pose) bounded in memory and time.
 const DECODED_ASSET_CACHE = new Map<string, RgbaImage>();
 const DECODED_ASSET_CACHE_LIMIT = 512;
-const DECODED_ASSET_CACHE_BYTES = 1024 * 1024 * 1024;
+const DECODED_ASSET_CACHE_BYTES = MAX_DECODED_TEXTURE_BYTES;
 let decodedAssetBytes = 0;
 
 const MIN_SCALE = 0.001;
@@ -438,7 +440,8 @@ async function loadAssets(assets: AssetDefinition[], publicDir: string): Promise
   const decoded = new Map<string, DecodedAsset>();
   for (const asset of assets) {
     try {
-      const cacheKey = asset.id + "|" + asset.src + "|" + asset.width + "|" + asset.height;
+      const external = asset.src.startsWith("data:") ? undefined : await readAssetBytes(asset, publicDir);
+      const cacheKey = external ? createHash("sha256").update(external).digest("hex") : asset.src;
       const cachedImage = DECODED_ASSET_CACHE.get(cacheKey);
       if (cachedImage) {
         DECODED_ASSET_CACHE.delete(cacheKey);
@@ -446,8 +449,8 @@ async function loadAssets(assets: AssetDefinition[], publicDir: string): Promise
         decoded.set(asset.id, { asset, image: cachedImage });
         continue;
       }
-      const bytes = await readAssetBytes(asset, publicDir);
-      const image = decodePng(bytes);
+      const bytes = external ?? await readAssetBytes(asset, publicDir);
+      const image = decodeTexturePng(bytes);
       DECODED_ASSET_CACHE.set(cacheKey, image);
       decodedAssetBytes += image.data.byteLength;
       while (DECODED_ASSET_CACHE.size > DECODED_ASSET_CACHE_LIMIT || decodedAssetBytes > DECODED_ASSET_CACHE_BYTES) {
@@ -457,8 +460,8 @@ async function loadAssets(assets: AssetDefinition[], publicDir: string): Promise
         DECODED_ASSET_CACHE.delete(oldestKey);
       }
       decoded.set(asset.id, { asset, image });
-    } catch {
-      // Unsupported or missing assets are skipped so one bad layer does not block comparison output.
+    } catch (error) {
+      throw new Error(`Cannot render PNG asset ${asset.id}: ${String(error)}`);
     }
   }
   return decoded;
@@ -474,7 +477,10 @@ async function readAssetBytes(asset: AssetDefinition, publicDir: string): Promis
     throw new Error(`Remote image assets are not supported by /api/screenshot yet: ${asset.name}`);
   }
 
-  const assetPath = path.resolve(publicDir, asset.src.replace(/^\/+/, ""));
+  const root = await realpath(publicDir);
+  const assetPath = await realpath(path.resolve(root, asset.src.replace(/^\/+/, "")));
+  const relative = path.relative(root, assetPath);
+  if (!relative || relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) throw Error("Asset path escaped public directory");
   return new Uint8Array(await readFile(assetPath));
 }
 
