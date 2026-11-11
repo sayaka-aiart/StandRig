@@ -28,7 +28,7 @@ The API runs with `npm start` after `npm run build`. `npm run dev` starts only t
 | POST | `/api/qa/failure-image` | Returned failure imageRequest → PNG comparison |
 | POST | `/api/qa/exposure` | Source coverage/exposure diagnosis; `packages/core/src/exposureQa.ts` |
 | POST | `/api/qa/joins` | Connection QA; `packages/core/src/joinQa.ts` |
-| GET | `/api/modeling/physics-safety` | Structural/temporal safety; `packages/core/src/physicsSafety.ts` |
+| GET | `/api/modeling/physics-safety` | Structural/temporal safety. Physics output is accepted on confirmed hair, soft-tissue, clothing, accessory, eye and brow roles; face, neck and torso are structural; `packages/core/src/physicsSafety.ts` |
 | GET | `/api/qa/golden` | List existing golden sets |
 | POST | `/api/qa/golden` | Legacy POST actions disabled by default (403), including check/propose |
 | GET | `/api/reference` | Available sheet IDs, detail IDs, URLs |

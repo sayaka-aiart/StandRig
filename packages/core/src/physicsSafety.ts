@@ -5,8 +5,16 @@ import type { RigDeformer, RigDocument, RigPart, RigPartRole } from "./types.js"
 /** Parts that are treated as a fixed skeleton during secondary motion. */
 export const PHYSICS_STRUCTURAL_ROLES: ReadonlySet<RigPartRole> = new Set(["face", "neck", "torso"]);
 
-/** Only these confirmed roles may receive direct secondary-motion output. */
+/**
+ * Only these confirmed roles may receive direct secondary-motion output.
+ * Eyes and brows are included for follow-through (iris squash, lash and brow overshoot after a blink or an expression change);
+ * the face, neck and torso stay structural, and mouth / face-feature parts stay excluded.
+ */
 export const PHYSICS_ALLOWED_ROLES: ReadonlySet<RigPartRole> = new Set([
+  "eye-left",
+  "eye-right",
+  "brow-left",
+  "brow-right",
   "hair-front",
   "hair-back",
   "hair-side",
