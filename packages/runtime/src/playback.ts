@@ -95,6 +95,6 @@ export class StandRigPlayer {
     this.frameId = requestAnimationFrame(tick);
   }
   pause() { if(this.motion.snapshot().loaded)Object.assign(this.values,this.motion.pause(performance.now()));if (this.frameId !== undefined) cancelAnimationFrame(this.frameId); this.frameId = undefined; this.render(); }
-  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.facial.evaluate(this.values,performance.now()), { transparent: true, webglWarp: this.renderer === 'webgl' }); }
+  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.facial.evaluate(this.values,performance.now()), { transparent: true, webglWarp: this.renderer === 'webgl', webglFrame: this.renderer === 'webgl' }); }
   dispose() { this.pause(); this.disposed = true; this.resize.disconnect(); this.runtime.dispose(); }
 }

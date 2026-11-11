@@ -1,6 +1,7 @@
 import { createArtMeshAlphaSampler, type ArtMeshAlphaSampler } from "@standrig/core/artMeshAsset";
 import { MODEL_BODY_LIMIT } from '../httpLimits.js';
 import { decodeDataUrl } from "@standrig/core/assetManifest";
+import { MAX_CLIP_MASK_PARTS } from "@standrig/core/mask";
 import { normalizeDeformer } from "@standrig/core/deformers";
 import { summarizeRig } from "@standrig/core/inspect";
 import { migrateRigDocument } from "@standrig/core/migration";
@@ -464,21 +465,22 @@ export function patchPart(part: RigPart, rawPatch: Record<string, unknown>) {
                 maskPartId?: unknown;
                 maskPartIds?: unknown;
                 maskOpacity?: unknown;
+                invert?: unknown;
             };
             const hasSingleSource = typeof clip.maskPartId === "string" && clip.maskPartId.trim().length > 0;
             const rawMaskPartIds = Array.isArray(clip.maskPartIds) ? clip.maskPartIds : clip.maskPartIds === undefined ? undefined : null;
             const hasArraySource = rawMaskPartIds !== undefined;
-            const validMultipleSources = Array.isArray(rawMaskPartIds) && rawMaskPartIds.length >= 1 && rawMaskPartIds.length <= 8 && rawMaskPartIds.every((id): id is string => typeof id === "string" && id.trim().length > 0 && id === id.trim()) && new Set(rawMaskPartIds).size === rawMaskPartIds.length;
+            const validMultipleSources = Array.isArray(rawMaskPartIds) && rawMaskPartIds.length >= 1 && rawMaskPartIds.length <= MAX_CLIP_MASK_PARTS && rawMaskPartIds.every((id): id is string => typeof id === "string" && id.trim().length > 0 && id === id.trim()) && new Set(rawMaskPartIds).size === rawMaskPartIds.length;
             const maskPartIds = validMultipleSources ? rawMaskPartIds : undefined;
             const validMaskOpacity = clip.maskOpacity === undefined || clip.maskOpacity === "rendered" || clip.maskOpacity === "ignore";
-            if (clip.mode !== "alpha" || hasSingleSource === hasArraySource || (hasArraySource && !validMultipleSources) || !validMaskOpacity) {
-                throw new Error("clip must use exactly one of maskPartId or 1-8 unique trimmed maskPartIds; maskOpacity is rendered or ignore.");
+            if (clip.mode !== "alpha" || hasSingleSource === hasArraySource || (hasArraySource && !validMultipleSources) || !validMaskOpacity || (clip.invert !== undefined && typeof clip.invert !== "boolean")) {
+                throw new Error(`clip must use exactly one of maskPartId or 1-${MAX_CLIP_MASK_PARTS} unique trimmed maskPartIds; maskOpacity is rendered or ignore; invert is a boolean.`);
             }
             if (hasSingleSource) {
-                part.clip = { mode: "alpha", maskPartId: clip.maskPartId as string, ...(clip.maskOpacity ? { maskOpacity: clip.maskOpacity as "rendered" | "ignore" } : {}) };
+                part.clip = { mode: "alpha", maskPartId: clip.maskPartId as string, ...(clip.maskOpacity ? { maskOpacity: clip.maskOpacity as "rendered" | "ignore" } : {}), ...(clip.invert === true ? { invert: true } : {}) };
             }
             else {
-                part.clip = { mode: "alpha", maskPartIds: maskPartIds!.map((id) => id), ...(clip.maskOpacity ? { maskOpacity: clip.maskOpacity as "rendered" | "ignore" } : {}) };
+                part.clip = { mode: "alpha", maskPartIds: maskPartIds!.map((id) => id), ...(clip.maskOpacity ? { maskOpacity: clip.maskOpacity as "rendered" | "ignore" } : {}), ...(clip.invert === true ? { invert: true } : {}) };
             }
         }
         else {

@@ -23,6 +23,10 @@ import { isParameterInterpolation } from "./bindings.js";
 import { inspectArtMeshQuality, isValidArtMesh } from "./artMesh.js";
 import { validateArtPath } from "./artPath.js";
 import { validatePartTint } from "./tint.js";
+import { MAX_CLIP_MASK_PARTS } from "./mask.js";
+import { drawOrderBindingIssues } from "./drawOrder.js";
+import { blendColorIssues } from "./blendColors.js";
+import { pendulumPhysicsIssues } from "./pendulumPhysics.js";
 import { validateContourShade } from "./contourShade.js";
 import { validateAlphaReveal } from "./alphaReveal.js";
 
@@ -380,13 +384,16 @@ function validateParts(
         addIssue({severity:'error',code:'invalid-raster-mask',message:'Raster mask must reference an image sibling.',path:`${path}.rasterMaskPartId`,partId:part.id});
       }
     }
+    if (part.drawOrderGroup !== undefined && (typeof part.drawOrderGroup !== "boolean" || part.kind !== "group")) addIssue({ severity: "warning", code: "invalid-draw-order-group", message: "drawOrderGroup is a boolean on group parts.", path: `${path}.drawOrderGroup`, partId: part.id });
+    for (const message of drawOrderBindingIssues(part.drawOrderBinding, parameterIds)) addIssue({ severity: "error", code: "invalid-draw-order-binding", message, path: `${path}.drawOrderBinding`, partId: part.id });
+    for (const message of blendColorIssues(part.blendColors, parameterIds)) addIssue({ severity: "error", code: "invalid-blend-colors", message, path: `${path}.blendColors`, partId: part.id });
     for (const issue of validatePartTint(part.tint)) addIssue({ severity: "warning", code: `part-tint-${issue}`, message: `Invalid part tint: ${issue}`, path: `${path}.tint`, partId: part.id });
     if (part.contourShade && !validateContourShade(part.contourShade)) addIssue({ severity: "error", code: "part-contour-shade-invalid", message: "Invalid contour shade", path: `${path}.contourShade`, partId: part.id });
     if (part.alphaReveal && (!validateAlphaReveal(part.alphaReveal) || !parameterIds.has(part.alphaReveal.parameter))) addIssue({ severity: "error", code: "part-alpha-reveal-invalid", message: "Invalid alpha aperture or missing parameter", path: `${path}.alphaReveal`, partId: part.id });
     if (part.contourShade && [part.contourShade.yawParameter, part.contourShade.pitchParameter].some(id => !parameterIds.has(id))) addIssue({ severity: "error", code: "part-contour-shade-parameter", message: "Contour shade parameter is missing", path: `${path}.contourShade`, partId: part.id });
     if (part.clip) {
       const clipPath = `${path}.clip`;
-      const rawClip = part.clip as { mode?: unknown; maskPartId?: unknown; maskPartIds?: unknown; maskOpacity?: unknown };
+      const rawClip = part.clip as { mode?: unknown; maskPartId?: unknown; maskPartIds?: unknown; maskOpacity?: unknown; invert?: unknown };
       if (rawClip.mode !== "alpha") {
         addIssue({ severity: "error", code: "unsupported-clip-mode", message: `Unsupported clip mode: ${String(rawClip.mode)}`, path: `${clipPath}.mode`, partId: part.id });
       }
@@ -394,17 +401,20 @@ function validateParts(
       const rawMaskPartIds = rawClip.maskPartIds;
       const hasSingleMaskSource = typeof rawMaskPartId === "string" && rawMaskPartId.trim().length > 0;
       const hasArrayMaskSource = rawMaskPartIds !== undefined;
-      const validArrayMaskSources = Array.isArray(rawMaskPartIds) && rawMaskPartIds.length >= 1 && rawMaskPartIds.length <= 8 && rawMaskPartIds.every((id): id is string => typeof id === "string" && id.trim().length > 0 && id === id.trim()) && new Set(rawMaskPartIds).size === rawMaskPartIds.length;
+      const validArrayMaskSources = Array.isArray(rawMaskPartIds) && rawMaskPartIds.length >= 1 && rawMaskPartIds.length <= MAX_CLIP_MASK_PARTS && rawMaskPartIds.every((id): id is string => typeof id === "string" && id.trim().length > 0 && id === id.trim()) && new Set(rawMaskPartIds).size === rawMaskPartIds.length;
       if (!hasSingleMaskSource && !hasArrayMaskSource) {
         addIssue({ severity: "error", code: "clip-missing-mask-part", message: "Clip requires maskPartId or maskPartIds.", path: clipPath, partId: part.id });
       } else if (hasSingleMaskSource && hasArrayMaskSource) {
         addIssue({ severity: "error", code: "clip-ambiguous-mask-source", message: "Use either maskPartId or maskPartIds, not both.", path: clipPath, partId: part.id });
       }
       if (hasArrayMaskSource && !validArrayMaskSources) {
-        addIssue({ severity: "error", code: "invalid-clip-mask-parts", message: "clip.maskPartIds must contain 1 to 8 unique, trimmed string ids.", path: `${clipPath}.maskPartIds`, partId: part.id });
+        addIssue({ severity: "error", code: "invalid-clip-mask-parts", message: `clip.maskPartIds must contain 1 to ${MAX_CLIP_MASK_PARTS} unique, trimmed string ids.`, path: `${clipPath}.maskPartIds`, partId: part.id });
       }
       if (rawClip.maskOpacity !== undefined && rawClip.maskOpacity !== "rendered" && rawClip.maskOpacity !== "ignore") {
         addIssue({ severity: "error", code: "invalid-clip-mask-opacity", message: "clip.maskOpacity must be rendered or ignore.", path: `${clipPath}.maskOpacity`, partId: part.id });
+      }
+      if (rawClip.invert !== undefined && typeof rawClip.invert !== "boolean") {
+        addIssue({ severity: "error", code: "invalid-clip-invert", message: "clip.invert must be a boolean.", path: `${clipPath}.invert`, partId: part.id });
       }
       const maskPartIds = hasSingleMaskSource && !hasArrayMaskSource ? [rawMaskPartId] : validArrayMaskSources ? rawMaskPartIds : [];
       for (const maskPartId of maskPartIds) {
@@ -419,7 +429,8 @@ function validateParts(
         } else if (maskIsDescendant(maskPart.id, part.id)) {
           addIssue({ severity: "error", code: "clip-mask-descendant", message: "A clip mask cannot be inside the clipped part subtree.", path: maskPath, partId: part.id });
         } else if (maskPart.clip) {
-          addIssue({ severity: "error", code: "clip-mask-nested", message: "A clip mask cannot itself be clipped.", path: maskPath, partId: part.id });
+          // A mask contributes its own shape; its own clip is not applied while it masks.
+          addIssue({ severity: "warning", code: "clip-mask-nested", message: "This clip mask is itself clipped; its own clip is ignored while it masks.", path: maskPath, partId: part.id });
         } else if (maskClipAncestorId(maskPart.id)) {
           addIssue({ severity: "error", code: "clip-mask-inherits-clip", message: "A clip mask cannot inherit another clip because mask rendering uses its raw evaluated alpha.", path: maskPath, partId: part.id });
         }
@@ -950,6 +961,7 @@ function validatePhysics(
     return;
   }
 
+  for (const message of pendulumPhysicsIssues(rig.physics.pendulum, parameterIds)) addIssue({ severity: "error", code: "invalid-pendulum-physics", message, path: "physics.pendulum" });
   const chains = Array.isArray(rig.physics.chains) ? rig.physics.chains : [];
   validateDuplicateIds("physics-chain", chains, "physics.chains", addIssue);
 

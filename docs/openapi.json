@@ -4279,6 +4279,13 @@
                                 "null"
                               ]
                             },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
+                            },
                             "expressionWeights": {
                               "type": "object",
                               "additionalProperties": {
@@ -4557,6 +4564,13 @@
                                 "null"
                               ]
                             },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
+                            },
                             "expressionWeights": {
                               "type": "object",
                               "additionalProperties": {
@@ -4720,6 +4734,18 @@
                         "type": "number",
                         "minimum": 0,
                         "maximum": 1
+                      },
+                      "stack": {
+                        "anyOf": [
+                          {
+                            "type": "boolean",
+                            "const": false
+                          },
+                          {
+                            "type": "boolean",
+                            "const": true
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -5005,6 +5031,13 @@
                                 "null"
                               ]
                             },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
+                            },
                             "expressionWeights": {
                               "type": "object",
                               "additionalProperties": {
@@ -5288,6 +5321,13 @@
                                 "string",
                                 "null"
                               ]
+                            },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
                             },
                             "expressionWeights": {
                               "type": "object",
@@ -5930,6 +5970,13 @@
                                 "null"
                               ]
                             },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
+                            },
                             "expressionWeights": {
                               "type": "object",
                               "additionalProperties": {
@@ -6209,6 +6256,13 @@
                                 "string",
                                 "null"
                               ]
+                            },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
                             },
                             "expressionWeights": {
                               "type": "object",
@@ -6531,6 +6585,13 @@
                                 "string",
                                 "null"
                               ]
+                            },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
                             },
                             "expressionWeights": {
                               "type": "object",
@@ -6855,6 +6916,13 @@
                                 "string",
                                 "null"
                               ]
+                            },
+                            "activeExpressions": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Expressions that are on, in the order they were turned on (stacked expressions)."
                             },
                             "expressionWeights": {
                               "type": "object",
@@ -9388,6 +9456,18 @@
                                 "const": "ignore"
                               }
                             ]
+                          },
+                          "invert": {
+                            "anyOf": [
+                              {
+                                "type": "boolean",
+                                "const": false
+                              },
+                              {
+                                "type": "boolean",
+                                "const": true
+                              }
+                            ]
                           }
                         },
                         "required": [
@@ -10200,6 +10280,9 @@
                                           },
                                           {
                                             "type": "string"
+                                          },
+                                          {
+                                            "type": "string"
                                           }
                                         ]
                                       },
@@ -10873,6 +10956,9 @@
                                 },
                                 {
                                   "type": "string"
+                                },
+                                {
+                                  "type": "string"
                                 }
                               ]
                             },
@@ -11385,6 +11471,9 @@
                                   "parameters": {
                                     "type": "array",
                                     "prefixItems": [
+                                      {
+                                        "type": "string"
+                                      },
                                       {
                                         "type": "string"
                                       },
@@ -14919,6 +15008,18 @@
                                           "const": "ignore"
                                         }
                                       ]
+                                    },
+                                    "invert": {
+                                      "anyOf": [
+                                        {
+                                          "type": "boolean",
+                                          "const": false
+                                        },
+                                        {
+                                          "type": "boolean",
+                                          "const": true
+                                        }
+                                      ]
                                     }
                                   },
                                   "required": [
@@ -15731,6 +15832,9 @@
                                                     },
                                                     {
                                                       "type": "string"
+                                                    },
+                                                    {
+                                                      "type": "string"
                                                     }
                                                   ]
                                                 },
@@ -16404,6 +16508,9 @@
                                           },
                                           {
                                             "type": "string"
+                                          },
+                                          {
+                                            "type": "string"
                                           }
                                         ]
                                       },
@@ -16916,6 +17023,9 @@
                                             "parameters": {
                                               "type": "array",
                                               "prefixItems": [
+                                                {
+                                                  "type": "string"
+                                                },
                                                 {
                                                   "type": "string"
                                                 },
@@ -19439,6 +19549,18 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 1
+              },
+              "stack": {
+                "anyOf": [
+                  {
+                    "type": "boolean",
+                    "const": false
+                  },
+                  {
+                    "type": "boolean",
+                    "const": true
+                  }
+                ]
               }
             },
             "required": [

@@ -17,20 +17,31 @@ export class FacialController {
   private clock(now:number){if(!Number.isFinite(now))throw Error('facial clock must be finite');}
   private fades(map:Map<string,Fade>,now:number){for(const [id,f] of map)if(f.to===0&&weight(f,now)===0)map.delete(id);}
   snapshot(now:number):FacialState {this.clock(now);this.fades(this.expressions,now);this.fades(this.visemes,now);
-    return {expressionId:this.expressionId,expressionWeights:Object.fromEntries([...this.expressions].map(([id,f])=>[id,weight(f,now)])),visemeWeights:Object.fromEntries([...this.visemes].map(([id,f])=>[id,weight(f,now)])),transitioning:[...this.expressions.values(),...this.visemes.values()].some(f=>now<f.start+f.duration)};
+    return {expressionId:this.expressionId,activeExpressions:this.activeExpressions(),expressionWeights:Object.fromEntries([...this.expressions].map(([id,f])=>[id,weight(f,now)])),visemeWeights:Object.fromEntries([...this.visemes].map(([id,f])=>[id,weight(f,now)])),transitioning:[...this.expressions.values(),...this.visemes.values()].some(f=>now<f.start+f.duration)};
   }
+  /** Expressions whose fade heads to a nonzero weight, oldest first (re-activation moves one to the end). */
+  private activeExpressions(){return [...this.expressions].filter(([,f])=>f.to>0).map(([id])=>id);}
   private strength(value:number|undefined){if(value!==undefined&&(!Number.isFinite(value)||value<0||value>1))throw Error('facial strength must be in [0,1]');return value??1;}
   private transition<K extends string>(map:Map<K,Fade>,targets:Map<K,number>,now:number,inSeconds:number,outSeconds:(id:K)=>number,immediate=false){
     for(const id of new Set([...map.keys(),...targets.keys()])){const from=map.has(id)?weight(map.get(id)!,now):0,to=targets.get(id)??0,duration=immediate?0:1000*(to>from?inSeconds:outSeconds(id));if(from!==0||to!==0)map.set(id,{from,to,start:now,duration});else map.delete(id);}
   }
   command(request:FacialRequest,now:number):FacialState {
     this.clock(now);if(!request||typeof request!=='object'||Array.isArray(request))throw Error('invalid facial command');
-    const allowed=request.action==='expression'||request.action==='viseme'?['action','id','strength']:request.action==='visemes'?['action','weights']:['action','layer','immediate'];
+    const allowed=request.action==='expression'?['action','id','strength','stack']:request.action==='viseme'?['action','id','strength']:request.action==='visemes'?['action','weights']:['action','layer','immediate'];
     if(Object.keys(request).some(k=>!allowed.includes(k)))throw Error('unknown facial command field');
     const outExpression=(id:string)=>this.presets.expressions.find(e=>e.id===id)?.document.FadeOutTime??.2;
     if(request.action==='expression'){
       const entry=this.presets.expressions.find(e=>e.id===request.id);if(!entry)throw Error('unknown expression ID');const strength=this.strength(request.strength);
-      this.transition(this.expressions,new Map([[entry.id,strength]]),now,entry.document.FadeInTime??.2,outExpression);this.expressionId=strength?entry.id:null;
+      if(request.stack!==undefined&&typeof request.stack!=='boolean')throw Error('expression stack must be boolean');
+      if(request.stack){
+        // Only this expression's fade changes; the others keep fading or holding as they were.
+        const current=this.expressions.get(entry.id),from=current?weight(current,now):0,inSeconds=entry.document.FadeInTime??.2;
+        this.expressions.delete(entry.id);
+        if(from!==0||strength!==0)this.expressions.set(entry.id,{from,to:strength,start:now,duration:1000*(strength>from?inSeconds:outExpression(entry.id))});
+        this.expressionId=strength?entry.id:this.activeExpressions().at(-1)??null;
+      }else{
+        this.transition(this.expressions,new Map([[entry.id,strength]]),now,entry.document.FadeInTime??.2,outExpression);this.expressionId=strength?entry.id:null;
+      }
     }else if(request.action==='viseme'||request.action==='visemes'){
       const bank=this.presets.visemes;if(!bank)throw Error('no viseme bank');
       const values=request.action==='viseme'?{[request.id]:this.strength(request.strength)}:request.weights;

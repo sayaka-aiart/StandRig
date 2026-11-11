@@ -69,6 +69,31 @@ test('expressions preserve live blinking, fades release to the current base and 
  assert.equal(fade.snapshot(2000).transitioning,false);
 });
 
+test('stacked expressions layer like toggles and come off one at a time',()=>{
+ const rig=fixture(),f=new FacialController(rig),base=defaultParameterValues(rig);
+ f.command({action:'expression',id:'smile'},0);
+ f.command({action:'expression',id:'half',stack:true},10);
+ let state=f.snapshot(10);
+ assert.deepEqual(state.activeExpressions,['smile','half']);assert.equal(state.expressionId,'half');
+ // Both apply: the smile adds, the half eyes multiply.
+ let values=f.evaluate({...base,ParamEyeLOpen:1},10);near(values.ParamMouthSmile,.4);near(values.ParamEyeLOpen,.5);
+ // Turning the smile on again moves it to the end; strength 0 with stack removes only that expression.
+ f.command({action:'expression',id:'smile',stack:true},20);assert.deepEqual(f.snapshot(20).activeExpressions,['half','smile']);
+ f.command({action:'expression',id:'smile',strength:0,stack:true},30);
+ state=f.snapshot(30);assert.deepEqual(state.activeExpressions,['half']);assert.equal(state.expressionId,'half');
+ values=f.evaluate({...base,ParamEyeLOpen:1},30);near(values.ParamMouthSmile,base.ParamMouthSmile);near(values.ParamEyeLOpen,.5);
+ // A plain (unstacked) expression still replaces everything.
+ f.command({action:'expression',id:'smile',stack:true},40);f.command({action:'expression',id:'fixed'},50);
+ assert.deepEqual(f.snapshot(50).activeExpressions,['fixed']);near(f.evaluate(base,50).ParamMouthSmile,base.ParamMouthSmile);
+ // Stacking keeps the other expressions' fades untouched.
+ const fadeRig=fixture();fadeRig.facialPresets.expressions[0].document.FadeInTime=1;
+ const fade=new FacialController(fadeRig);fade.command({action:'expression',id:'smile'},0);fade.command({action:'expression',id:'half',stack:true},500);
+ near(fade.evaluate(base,750).ParamMouthSmile,.3);
+ assert.throws(()=>f.command({action:'expression',id:'half',stack:'yes'},60));
+ assert.equal(facialRequestSchema.safeParse({action:'expression',id:'half',stack:true}).success,true);
+ assert.equal(facialRequestSchema.safeParse({action:'viseme',id:'A',stack:true}).success,false);
+});
+
 test('vowel poses mix with expressions, normalized inputs, Silence, partial strength and restoration',()=>{
  const rig=fixture(),f=new FacialController(rig),base={...defaultParameterValues(rig),ParamMouthOpen:.2};
  f.command({action:'expression',id:'half'},0);f.command({action:'visemes',weights:{A:1,I:1}},0);

@@ -46,6 +46,20 @@ export function deformerForPart(part: RigPart, deformers: RigDeformer[]): RigDef
   return deformers.find((deformer) => deformer.targetPartIds?.includes(part.id));
 }
 
+/**
+ * `deformerForPart` for many parts of one deformer list: the same answers (the first deformer with the
+ * part's deformerId, else the first that targets the part) from maps built once instead of a scan per part.
+ */
+export function createDeformerForPartLookup(deformers: readonly RigDeformer[]): (part: RigPart) => RigDeformer | undefined {
+  const byId = new Map<string, RigDeformer>();
+  const byTarget = new Map<string, RigDeformer>();
+  for (const deformer of deformers) {
+    if (!byId.has(deformer.id)) byId.set(deformer.id, deformer);
+    for (const partId of deformer.targetPartIds ?? []) if (!byTarget.has(partId)) byTarget.set(partId, deformer);
+  }
+  return (part) => (part.deformerId ? byId.get(part.deformerId) : byTarget.get(part.id));
+}
+
 export function normalizeDeformer(deformer: RigDeformer, rig: RigDocument): RigDeformer {
   const ids = new Set(deformerDefinitionsForRig(rig).map((entry) => entry.id));
   if (deformer.parentId === deformer.id || (deformer.parentId && !ids.has(deformer.parentId))) {

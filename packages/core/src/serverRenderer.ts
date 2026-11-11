@@ -23,6 +23,8 @@ import { applyTintChannel, parseTintColor } from "./tint.js";
 import { applyContourShade } from "./contourShade.js";
 import { applyAlphaReveal } from "./alphaReveal.js";
 import { blendChannel, compositeRgba, hasLayerCompositing, layerCompositingPlan, paintLayerPlan } from './compositing.js';
+import { sortPartsForPaint } from './drawOrder.js';
+import { applyBlendColorsToRgba, blendColorsCacheKey, resolvePartBlendColors, type ResolvedBlendColors } from './blendColors.js';
 import type { AssetDefinition, ParameterValues, RigDocument, RigPart, RigPartTint, RigSharedWarpField, Transform2D, RigBlendMode } from "./types.js";
 
 export interface ScreenshotOptions {
@@ -294,10 +296,10 @@ function renderRigToImage(
   const effectiveValues = frame.values;
   const computed = frame.parts;
   const tintedAssetCache = new Map<string, RgbaImage>();
-  const renderable = [...rig.parts]
+  const renderableParts = rig.parts
     .filter((part) => part.kind === "image" && part.assetId)
-    .filter((part) => !allowedPartIds || allowedPartIds.has(part.id))
-    .sort((left, right) => left.drawOrder - right.drawOrder);
+    .filter((part) => !allowedPartIds || allowedPartIds.has(part.id));
+  const renderable = sortPartsForPaint(rig.parts, renderableParts, effectiveValues);
 
   // Geometry a part needs both for drawing and for the glue solver. Resolving it once keeps the
   // stitch solved against exactly the vertices that get drawn.
@@ -313,7 +315,9 @@ function renderRigToImage(
       partGeometryCache.set(part.id, undefined);
       return undefined;
     }
-    const sourceImage = resolveTintedAsset(asset.image, part.tint, tintedAssetCache, part.id);
+    const blendColors = resolvePartBlendColors(part, effectiveValues);
+    const colorKey = blendColorsCacheKey(blendColors);
+    const sourceImage = resolveTintedAsset(resolveBlendColoredAsset(asset.image, blendColors, colorKey, tintedAssetCache, part.id), part.tint, tintedAssetCache, colorKey ? `${part.id}:${colorKey}` : part.id);
     const warp = resolveGlueWarpForPart(rig, part, state, { width: asset.image.width, height: asset.image.height }, computed, (entry) => {
       const entryAsset = entry.assetId ? assets.get(entry.assetId) : undefined;
       return entryAsset ? { width: entryAsset.image.width, height: entryAsset.image.height } : undefined;
@@ -386,7 +390,7 @@ function renderRigToImage(
   if (hasLayerCompositing(rig)) {
     const included = new Set(renderable.map(part=>part.id));
     const pool: RgbaImage[] = [];
-    paintLayerPlan(layerCompositingPlan(rig), output, {
+    paintLayerPlan(layerCompositingPlan(rig, effectiveValues), output, {
       create: () => {const image=pool.pop()??createBlankRgba(options.width,options.height);image.data.fill(0);return image;},
       release: image => { pool.push(image); },
       state: part => {
@@ -399,7 +403,7 @@ function renderRigToImage(
         const content=createBlankRgba(options.width,options.height),mask=createBlankRgba(options.width,options.height);
         drawPartTo(content,part,options.forceParts,false,scale,'normal');
         for(const source of clip.maskParts)drawPartTo(mask,source,false,clip.clip.maskOpacity==='ignore');
-        applyAlphaMask(content,mask);compositeRgba(target,content,mode);
+        applyAlphaMask(content,mask,clip.clip.invert===true);compositeRgba(target,content,mode);
       },
       compose: compositeRgba,
       mask: (surface,part) => {
@@ -430,7 +434,7 @@ function renderRigToImage(
     }
     const mask = createBlankRgba(options.width, options.height);
     for (const maskPart of clip.maskParts) drawPartTo(mask, maskPart, false, clip.clip.maskOpacity === "ignore");
-    applyAlphaMask(content, mask);
+    applyAlphaMask(content, mask, clip.clip.invert === true);
     pasteImage(output, content, 0, 0);
   }
   return output;
@@ -737,12 +741,14 @@ function drawImage(target: RgbaImage, source: RgbaImage, matrix: Matrix2D, pose:
   }
 }
 
-function applyAlphaMask(target: RgbaImage, mask: RgbaImage) {
+/** Multiplies the target's alpha by the mask's, or by its complement for an inverted clip. */
+function applyAlphaMask(target: RgbaImage, mask: RgbaImage, invert = false) {
   if (target.width !== mask.width || target.height !== mask.height) {
     throw new Error("Alpha-mask image dimensions must match the clipped content.");
   }
   for (let offset = 3; offset < target.data.length; offset += 4) {
-    target.data[offset] = Math.round((target.data[offset] * mask.data[offset]) / 255);
+    const coverage = invert ? 255 - mask.data[offset] : mask.data[offset];
+    target.data[offset] = Math.round((target.data[offset] * coverage) / 255);
   }
 }
 function pasteImage(target: RgbaImage, source: RgbaImage, x: number, y: number) {
@@ -770,6 +776,15 @@ function pasteImage(target: RgbaImage, source: RgbaImage, x: number, y: number) 
   }
 }
 
+function resolveBlendColoredAsset(source: RgbaImage, colors: ResolvedBlendColors | undefined, colorKey: string, cache: Map<string, RgbaImage>, partId: string): RgbaImage {
+  if (!colors) return source;
+  const key = `${partId}:blend:${colorKey}`;
+  const cached = cache.get(key);
+  if (cached) return cached;
+  const colored = { width: source.width, height: source.height, data: applyBlendColorsToRgba(source.data, colors) };
+  cache.set(key, colored);
+  return colored;
+}
 function resolveTintedAsset(source: RgbaImage, tint: RigPartTint | undefined, cache: Map<string, RgbaImage>, partId: string): RgbaImage {
   if (!tint || !/^#[0-9a-fA-F]{6}$/.test(tint.color) || (tint.mode !== "multiply" && tint.mode !== "screen") || !Number.isFinite(tint.opacity) || tint.opacity <= 0) return source;
   const opacity = Math.min(1, Math.max(0, tint.opacity));

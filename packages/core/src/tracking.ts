@@ -1,5 +1,6 @@
 import { clampParameterValue, parameterDefinitionsForRig } from "./parameters.js";
-import type { OneEuroFilterOptions, ParameterValues, RigDocument, RigTracking, TrackingEyeSync, TrackingInputValues, TrackingMapping, TrackingResponseCurve } from "./types.js";
+import { pendulumSettingsOverwriting, pendulumSettledGain } from "./pendulumPhysics.js";
+import type { OneEuroFilterOptions, ParameterDefinition, ParameterValues, RigDocument, RigTracking, TrackingEyeSync, TrackingInputValues, TrackingMapping, TrackingResponseCurve } from "./types.js";
 
 export interface TrackingInputDefinition {
   id: string;
@@ -79,13 +80,81 @@ export function defaultTrackingInputValues(): TrackingInputValues {
 }
 
 export function createDefaultTracking(rig: RigDocument): RigTracking {
+  const context = defaultMappingContext(rig);
   return {
     enabled: false,
     provider: "manual",
     inputSmoothing: 0.25,
-    mappings: DEFAULT_MAPPING_SPECS.map((mapping, index) => normalizeTrackingMapping({ id: `tracking-map-${index + 1}`, enabled: true, ...mapping }, rig, index)),
+    mappings: DEFAULT_MAPPING_SPECS.map((mapping, index) => normalizeTrackingMapping({ id: `tracking-map-${index + 1}`, enabled: true, ...defaultMappingForRig(mapping, context) }, rig, index)),
     eyeSync: { ...DEFAULT_TRACKING_EYE_SYNC }
   };
+}
+
+/** A common alternative name for a standard parameter, used when a rig authors only the alternative. */
+const ALTERNATE_PARAMETER_NAMES: Record<string, string> = { ParamMouthOpen: "ParamMouthOpenY" };
+
+interface DefaultMappingContext {
+  rig: RigDocument;
+  authored: Map<string, ParameterDefinition>;
+  ranges: Map<string, ParameterDefinition>;
+  /** Parameters that earlier default mappings already write. */
+  claimed: Set<string>;
+}
+
+function defaultMappingContext(rig: RigDocument): DefaultMappingContext {
+  return {
+    rig,
+    authored: new Map((rig.parameters ?? []).map((parameter) => [parameter.id, parameter])),
+    ranges: new Map(parameterDefinitionsForRig(rig).map((parameter) => [parameter.id, parameter])),
+    claimed: new Set()
+  };
+}
+
+/** Gains below this do not move the output enough to drive it through the input. */
+const MINIMUM_PENDULUM_GAIN = 1e-6;
+
+/**
+ * A default mapping adapted to the rig. A rig may name the mouth ParamMouthOpenY. A rig may also drive
+ * ParamAngleX and the like through a pendulum that overwrites them from an input of its own (AngleX,
+ * PositionX, ...), so writing the angle directly would be undone every frame: the mapping writes that
+ * input instead (the largest-weight input that no pendulum writes and that the output follows). The
+ * input receives the tracked value in its own range, and the pendulum shapes the response as the model's author set it up (smoothing, gain,
+ * different strength on each side); the mapping is inverted only where the pendulum mirrors the input.
+ */
+function defaultMappingForRig(spec: Omit<TrackingMapping, "id" | "enabled">, context: DefaultMappingContext): Omit<TrackingMapping, "id" | "enabled"> {
+  const { rig, authored, ranges, claimed } = context;
+  let parameter = spec.parameter;
+  const alternateName = ALTERNATE_PARAMETER_NAMES[parameter];
+  if (alternateName && !authored.has(parameter) && authored.has(alternateName)) parameter = alternateName;
+  const pendulum = rig.physics?.enabled ? rig.physics.pendulum : undefined;
+  if (pendulum?.settings?.length) {
+    const written = new Set(pendulum.settings.flatMap((setting) => (setting.enabled === false ? [] : setting.outputs.map((output) => output.parameter))));
+    for (const setting of pendulumSettingsOverwriting(pendulum, parameter)) {
+      const candidates = setting.inputs
+        .filter((input) => authored.has(input.parameter) && !written.has(input.parameter) && !claimed.has(input.parameter))
+        .sort((a, b) => Math.abs(b.weight) - Math.abs(a.weight));
+      for (const candidate of candidates) {
+        const input = authored.get(candidate.parameter)!;
+        const gain = pendulumSettledGain(pendulum, ranges, setting, input.id, parameter);
+        if (!(Math.abs(gain) > MINIMUM_PENDULUM_GAIN)) continue;
+        // The default's target range carried onto the input's range (identical when both are -30..30).
+        const spanned = Number.isFinite(spec.min) && Number.isFinite(spec.max) && spec.max !== spec.min;
+        const ratio = spanned ? (input.max - input.min) / (Number(spec.max) - Number(spec.min)) : 1;
+        claimed.add(input.id);
+        return {
+          ...spec,
+          parameter: input.id,
+          scale: spec.scale * ratio,
+          offset: spanned ? input.min + (spec.offset - Number(spec.min)) * ratio : spec.offset,
+          min: spanned ? input.min : spec.min,
+          max: spanned ? input.max : spec.max,
+          invert: gain < 0 ? !spec.invert : spec.invert
+        };
+      }
+    }
+  }
+  claimed.add(parameter);
+  return parameter === spec.parameter ? spec : { ...spec, parameter };
 }
 
 export function createDefaultTrackingMapping(rig: RigDocument, index = 0): TrackingMapping {

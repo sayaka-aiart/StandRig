@@ -215,11 +215,11 @@ function comparePair(poseId: string, source: string, partAId: string, partBId: s
 }
 
 async function auditMasks(rig: RigDocument, publicDir: string, poses: string[], width: number, height: number, threshold: number, request: JoinQaRequest, cache: Map<string, Promise<RgbaImage>>): Promise<MaskQaEntry[]> {
-  const groups = new Map<string, { owner: RigPart; contentPartIds: string[]; maskPartIds: string[] }>();
+  const groups = new Map<string, { owner: RigPart; contentPartIds: string[]; maskPartIds: string[]; invert: boolean }>();
   for (const part of rig.parts.filter((entry) => entry.kind === "image" && entry.assetId)) {
     const resolved = resolvePartClip(rig, part);
     if (!resolved) continue;
-    const group = groups.get(resolved.owner.id) ?? { owner: resolved.owner, contentPartIds: [], maskPartIds: resolved.maskPartIds };
+    const group = groups.get(resolved.owner.id) ?? { owner: resolved.owner, contentPartIds: [], maskPartIds: resolved.maskPartIds, invert: resolved.clip.invert === true };
     group.contentPartIds.push(part.id);
     groups.set(resolved.owner.id, group);
   }
@@ -237,7 +237,8 @@ async function auditMasks(rig: RigDocument, publicDir: string, poses: string[], 
         const maskAlpha = mask.data[index * 4 + 3] ?? 0;
         if (contentAlpha >= threshold) contentPixels += 1;
         if (maskAlpha >= threshold) maskPixels += 1;
-        if (contentAlpha >= threshold && maskAlpha < threshold) maskLeakPixels += 1;
+        // Content the clip would cut away: outside the masks, or inside them for an inverted clip.
+        if (contentAlpha >= threshold && (group.invert ? maskAlpha >= threshold : maskAlpha < threshold)) maskLeakPixels += 1;
       }
       const maskLeakRatio = maskLeakPixels / Math.max(1, contentPixels);
       entries.push({ poseId, ownerPartId: group.owner.id, contentPartIds: group.contentPartIds, maskPartIds: group.maskPartIds, contentPixels, maskPixels, maskLeakPixels, maskLeakRatio: round(maskLeakRatio), pass: maskLeakPixels === 0, issues: maskLeakPixels ? ["mask-leak"] : [] });

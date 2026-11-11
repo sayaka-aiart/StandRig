@@ -16,10 +16,13 @@ import { EvaluationCache, withEvaluationCache } from "@standrig/core/evaluationC
 import { ContourShadeProcessor, validateContourShade } from "@standrig/core/contourShade";
 import { AlphaRevealProcessor, validateAlphaReveal } from "@standrig/core/alphaReveal";
 import { canvasBlendMode, compositeRgba, hasLayerCompositing, layerCompositingPlan, paintLayerPlan } from '@standrig/core/compositing';
+import { hasDrawOrderGroups, hasKeyedDrawOrder, sortPartsForPaint } from '@standrig/core/drawOrder';
+import { applyBlendColorsToRgba, blendColorsCacheKey, resolvePartBlendColors, type ResolvedBlendColors } from '@standrig/core/blendColors';
 import type { RgbaImage } from "@standrig/core/png";
 import { expandTriangleForCoverage, localCoverageOverlap } from "@standrig/core/triangleCoverage";
 import { alphaMaskHit, triangleUvAtPoint, type AlphaMask, type HitVertex } from "@standrig/core/hitTesting";
 import { comparePixelBuffers, WebGLArtMeshRenderer, type PixelParityResult } from "./webglMesh.js";
+import { WebGLFrameRenderer, type FrameBlendMode, type FrameMesh, type FrameStep } from "./webglFrame.js";
 import type {
   AssetDefinition,
   ParameterValues,
@@ -136,6 +139,8 @@ export interface RenderOptions {
   webglWarp?: boolean;
   /** Diagnostic filter: only these part IDs use the WebGL ArtMesh path. */
   webglMeshPartIds?: readonly string[];
+  /** Draw the whole frame in one WebGL pass when every part allows it (Canvas otherwise). */
+  webglFrame?: boolean;
   /** Display-only zoom multiplier around the stage center. */
   zoom?: number;
   /** Display-only pan in CSS pixels; canvas dataset is used when omitted. */
@@ -149,6 +154,7 @@ export class RigRuntime {
 
   private images = new Map<string, HTMLImageElement>();
   private tintedImages = new Map<string, HTMLCanvasElement>();
+  private blendColoredImages = new Map<string, { source: HTMLImageElement; key: string; canvas: HTMLCanvasElement }>();
   private revealImages = new Map<string, { source: CanvasImageSource; key: string; processor: AlphaRevealProcessor; canvas: HTMLCanvasElement; last?: RgbaImage }>();
   private contourImages = new Map<string, { source: CanvasImageSource; key: string; processor: ContourShadeProcessor; canvas: HTMLCanvasElement; last?: RgbaImage }>();
   private alphaMasks = new Map<string, AlphaMask>();
@@ -160,6 +166,12 @@ export class RigRuntime {
   private compositeLayers: HTMLCanvasElement[] = [];
   private webglMeshRenderer?: WebGLArtMeshRenderer;
   private webglMeshError?: string;
+  private webglFrameRenderer?: WebGLFrameRenderer;
+  private webglFrameError?: string;
+  /** Derived from the parts list; recomputed when the list is replaced. */
+  private webglFrameEligible?: { source: readonly RigPart[]; value: boolean };
+  private assetById?: { source: readonly AssetDefinition[]; byId: Map<string, AssetDefinition> };
+  private lastFramePathValue: "webgl-frame" | "canvas" = "canvas";
 
   private evaluationCache?: EvaluationCache;
 
@@ -172,14 +184,16 @@ export class RigRuntime {
   resumeClock() { this.lastFrameTime = performance.now(); this.previousPhysicsInputs = undefined; }
   resetPhysics() { this.physicsState.clear(); this.resumeClock(); }
 
-  dispose() { this.webglMeshRenderer?.dispose(); this.webglMeshRenderer = undefined; this.evaluationCache = undefined; }
+  dispose() { this.webglMeshRenderer?.dispose(); this.webglMeshRenderer = undefined; this.webglFrameRenderer?.dispose(); this.webglFrameRenderer = undefined; this.evaluationCache = undefined; }
 
   async setRig(rig: RigDocument) {
     this.dispose();
     this.rig = prepareRigBindingOrder(rig);
+    this.webglFrameError = undefined;
     this.evaluationCache = this.settings.cacheEvaluation ? new EvaluationCache() : undefined;
     this.images.clear();
     this.tintedImages.clear();
+    this.blendColoredImages.clear();
     this.revealImages.clear();
     this.contourImages.clear();
     this.alphaMasks.clear();
@@ -206,7 +220,7 @@ export class RigRuntime {
 
   getWebGLMeshStatus() {
     const renderer = this.webglMeshRenderer;
-    return { supported: Boolean(renderer), status: renderer?.status ?? "canvas-fallback", error: this.webglMeshError };
+    return { supported: Boolean(renderer), status: renderer?.status ?? "canvas-fallback", error: this.webglMeshError, framePath: this.lastFramePathValue, frameError: this.webglFrameError };
   }
 
   async probeWebGLContextRecovery(delayMs = 0) {
@@ -287,12 +301,15 @@ export class RigRuntime {
     // second rasterization seam at the WebGL boundary; alpha-contour meshes
     // remain the explicit WebGL opt-in path for sparse geometry.
     const webglRendererForPart = (part: RigPart) => webglMeshRenderer && (options.webglWarp === true || part.artMesh?.generator.topology === "alpha-contour") && (!webglMeshPartIds || webglMeshPartIds.has(part.id)) ? webglMeshRenderer : undefined;
-    const renderable = [...this.rig.parts]
-      .filter((part) => part.kind === "image" && part.assetId)
-      .sort((left, right) => left.drawOrder - right.drawOrder);
+    const renderable = sortPartsForPaint(this.rig.parts, this.rig.parts.filter((part) => part.kind === "image" && part.assetId), effectiveParams);
 
     const resolveClip = createPartClipResolver(this.rig);
-    if (hasLayerCompositing(this.rig)) {
+    const drewWebGLFrame = options.webglFrame === true && !options.showBounds
+      && this.drawWebGLFrame(ctx, renderable, resolveClip, computed, effectiveParams, view.pixelBaseMatrix, skinningTransforms, glueStitch);
+    this.lastFramePathValue = drewWebGLFrame ? "webgl-frame" : "canvas";
+    if (drewWebGLFrame) {
+      // The whole frame was drawn in one WebGL pass.
+    } else if (hasLayerCompositing(this.rig)) {
       type Box={x:number;y:number;width:number;height:number};
       const boxes=new Map<CanvasRenderingContext2D,Box>();
       boxes.set(ctx,{x:0,y:0,width:canvas.width,height:canvas.height});
@@ -326,7 +343,7 @@ export class RigRuntime {
         }
         if(!preserveAlpha)boxes.set(target,union(boxes.get(target),sourceBox));
       };
-      paintLayerPlan(layerCompositingPlan(this.rig), ctx, {
+      paintLayerPlan(layerCompositingPlan(this.rig, effectiveParams), ctx, {
         create,release,state:part=>computed.get(part.id),
         draw:(target,part,scale,mode)=>{
           const clip=resolveClip(part);
@@ -338,7 +355,7 @@ export class RigRuntime {
           if(clip){
             const mask=create();
             for(const source of clip.maskParts)draw(mask,source,1,undefined,clip.clip.maskOpacity==='ignore');
-            content.save();content.setTransform(1,0,0,1,0,0);content.globalAlpha=1;content.globalCompositeOperation='destination-in';content.drawImage(mask.canvas,0,0);content.restore();release(mask);
+            content.save();content.setTransform(1,0,0,1,0,0);content.globalAlpha=1;content.globalCompositeOperation=clip.clip.invert?'destination-out':'destination-in';content.drawImage(mask.canvas,0,0);content.restore();release(mask);
           }
           compose(target,content,mode,1);release(content);
         },compose,
@@ -381,7 +398,8 @@ export class RigRuntime {
       contentContext.save();
       contentContext.setTransform(1, 0, 0, 1, 0, 0);
       contentContext.globalAlpha = 1;
-      contentContext.globalCompositeOperation = "destination-in";
+      // An inverted clip keeps the content where the masks are absent.
+      contentContext.globalCompositeOperation = clip.clip.invert ? "destination-out" : "destination-in";
       contentContext.drawImage(maskLayer, 0, 0);
       contentContext.restore();
       ctx.save();
@@ -417,9 +435,9 @@ export class RigRuntime {
     const view = this.getCanvasView(canvas, options);
     const point = this.cssPointFromClient(canvas, clientX, clientY);
     const computed = this.computePartStates(params, new Map(), view.cssBaseMatrix);
-    const renderable = [...this.rig.parts]
-      .filter((part) => part.kind === "image" && part.assetId)
-      .sort((left, right) => right.drawOrder - left.drawOrder);
+    const imageParts = this.rig.parts.filter((part) => part.kind === "image" && part.assetId);
+    // Front-most first; without keyed draw orders this is exactly the legacy order (ties keep part order).
+    const renderable = hasKeyedDrawOrder(this.rig.parts) || hasDrawOrderGroups(this.rig.parts) ? sortPartsForPaint(this.rig.parts, imageParts, params).reverse() : imageParts.sort((left, right) => right.drawOrder - left.drawOrder);
 
     for (const part of renderable) {
       const size = this.partSize(part);
@@ -844,16 +862,34 @@ export class RigRuntime {
       return undefined;
     }
   }
-private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPart["tint"]): CanvasImageSource {
+/** Multiply and screen colors; one cached canvas per part, redone only when the colors change. */
+  private resolveBlendColoredImage(partId: string, image: HTMLImageElement, colors: ResolvedBlendColors | undefined, colorKey: string): HTMLImageElement | HTMLCanvasElement {
+    if (!colors) return image;
+    const entry = this.blendColoredImages.get(partId);
+    if (entry && entry.source === image && entry.key === colorKey) return entry.canvas;
+    const canvas = entry?.source === image ? entry.canvas : document.createElement("canvas");
+    canvas.width = image.naturalWidth || image.width;
+    canvas.height = image.naturalHeight || image.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context || canvas.width <= 0 || canvas.height <= 0) return image;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+    pixels.data.set(applyBlendColorsToRgba(pixels.data, colors));
+    context.putImageData(pixels, 0, 0);
+    this.blendColoredImages.set(partId, { source: image, key: colorKey, canvas });
+    return canvas;
+  }
+  private resolveTintedImage(partId: string, image: HTMLImageElement | HTMLCanvasElement, tint: RigPart["tint"], colorKey = ""): CanvasImageSource {
     if (!tint || (tint.mode !== "multiply" && tint.mode !== "screen") || !/^#[0-9a-fA-F]{6}$/.test(tint.color) || !Number.isFinite(tint.opacity) || tint.opacity <= 0) return image;
     const opacity = Math.min(1, Math.max(0, tint.opacity));
     if (opacity <= 0) return image;
-    const key = `${partId}:${tint.mode}:${tint.color.toLowerCase()}:${opacity}`;
+    const key = `${partId}:${tint.mode}:${tint.color.toLowerCase()}:${opacity}${colorKey ? ":" + colorKey : ""}`;
     const cached = this.tintedImages.get(key);
     if (cached) return cached;
     const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth || image.width;
-    canvas.height = image.naturalHeight || image.height;
+    canvas.width = (image instanceof HTMLImageElement ? image.naturalWidth : 0) || image.width;
+    canvas.height = (image instanceof HTMLImageElement ? image.naturalHeight : 0) || image.height;
     const context = canvas.getContext("2d");
     if (!context || canvas.width <= 0 || canvas.height <= 0) return image;
 
@@ -958,30 +994,14 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
     ctx.setTransform(partState.matrix.a, partState.matrix.b, partState.matrix.c, partState.matrix.d, partState.matrix.e, partState.matrix.f);
     ctx.globalAlpha = ignoreVisualAlpha ? 1 : Math.min(1, Math.max(0, partState.opacity * opacityScale));
     ctx.globalCompositeOperation = ignoreVisualAlpha ? 'source-over' : canvasBlendMode(modeOverride ?? part.blendMode);
-    const tintedImage = this.resolveTintedImage(part.id, size.image, part.tint);
+    const blendColors = resolvePartBlendColors(part, params);
+    const colorKey = blendColorsCacheKey(blendColors);
+    const tintedImage = this.resolveTintedImage(part.id, this.resolveBlendColoredImage(part.id, size.image, blendColors, colorKey), part.tint, colorKey);
     const coloredImage = ignoreVisualAlpha ? tintedImage : this.resolveContourImage(part, tintedImage, size.width, size.height, params);
     const sourceImage = this.resolveRevealImage(part, coloredImage, size.width, size.height, params);
-    const left = -partState.pose.pivotX * size.width;
-    const top = -partState.pose.pivotY * size.height;
-    const warp = this.resolveRenderableWarp(part, partState, size, computed);
-    const baseArtMesh = resolveArtMesh(part, size.width, size.height, params);
-    const artMesh = baseArtMesh && part.artMesh?.skinning
-      ? { ...baseArtMesh, vertices: applySkinningToVertices(baseArtMesh.vertices, part.artMesh.skinning, skinningTransforms) }
-      : baseArtMesh;
-    const sharedWarps = partState.sharedWarps;
-    const stitchOffsets = localStitchOffsets(glueStitch?.get(part.id), partState.matrix);
-    const hasSharedWarp = Boolean(sharedWarps?.some(hasSharedWarpFieldEffect));
-    const sharedProject = hasSharedWarp ? createSharedWarpProjector(partState.matrix, baseMatrix, sharedWarps) : undefined;
-    const inversePartMatrix = hasSharedWarp ? invertMatrix(partState.matrix) : undefined;
-    const project = hasSharedWarp ? (point: { x: number; y: number }) => {
-      const rendered = sharedProject!(point);
-      return transformMatrixPoint(inversePartMatrix!, rendered.x, rendered.y);
-    } : undefined;
-    const sharedGrid = hasSharedWarp ? {
-      columns: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.columns)),
-      rows: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.rows))
-    } : undefined;
-    const geometry=webglMeshRenderer||onBounds?buildWebGLPartGeometry({left,top,width:size.width,height:size.height,matrix:partState.matrix,mesh:artMesh,warp,project,sharedGrid,stitchOffsets}):undefined;
+    const shape = this.resolvePartShape(part, partState, size, computed, params, baseMatrix, skinningTransforms, glueStitch);
+    const { left, top, warp, mesh: artMesh, project, sharedGrid, stitchOffsets, hasSharedWarp } = shape;
+    const geometry=webglMeshRenderer||onBounds?buildWebGLPartGeometry(shape):undefined;
     if(onBounds&&geometry?.vertices.length){
       const xs=geometry.vertices.map(p=>p.x),ys=geometry.vertices.map(p=>p.y),x=Math.floor(Math.min(...xs))-2,y=Math.floor(Math.min(...ys))-2;
       onBounds({x,y,width:Math.ceil(Math.max(...xs))+2-x,height:Math.ceil(Math.max(...ys))+2-y});
@@ -1003,6 +1023,129 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
     drawArtPathsCanvas(ctx, part, params, size.width, size.height, left, top, warp, project);
     ctx.restore();
   }
+
+  /** Where a part's image lands: local warp, ArtMesh, shared warps and glue stitches, as Canvas and WebGL both draw it. */
+  private resolvePartShape(
+    part: RigPart,
+    partState: EvaluatedPartState,
+    size: { width: number; height: number },
+    computed: Map<string, EvaluatedPartState>,
+    params: ParameterValues,
+    baseMatrix: Matrix2D,
+    skinningTransforms?: ReadonlyMap<string, Matrix2D>,
+    glueStitch?: GlueVertexOffsets
+  ) {
+    const left = -partState.pose.pivotX * size.width;
+    const top = -partState.pose.pivotY * size.height;
+    const warp = this.resolveRenderableWarp(part, partState, size, computed);
+    const baseArtMesh = resolveArtMesh(part, size.width, size.height, params);
+    const mesh = baseArtMesh && part.artMesh?.skinning
+      ? { ...baseArtMesh, vertices: applySkinningToVertices(baseArtMesh.vertices, part.artMesh.skinning, skinningTransforms) }
+      : baseArtMesh;
+    const sharedWarps = partState.sharedWarps;
+    const stitchOffsets = localStitchOffsets(glueStitch?.get(part.id), partState.matrix);
+    const hasSharedWarp = Boolean(sharedWarps?.some(hasSharedWarpFieldEffect));
+    const sharedProject = hasSharedWarp ? createSharedWarpProjector(partState.matrix, baseMatrix, sharedWarps) : undefined;
+    const inversePartMatrix = hasSharedWarp ? invertMatrix(partState.matrix) : undefined;
+    const project = hasSharedWarp ? (point: { x: number; y: number }) => {
+      const rendered = sharedProject!(point);
+      return transformMatrixPoint(inversePartMatrix!, rendered.x, rendered.y);
+    } : undefined;
+    const sharedGrid = hasSharedWarp ? {
+      columns: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.columns)),
+      rows: Math.max(1, ...(sharedWarps ?? []).filter(hasSharedWarpFieldEffect).map((field) => field.grid.rows))
+    } : undefined;
+    return { left, top, width: size.width, height: size.height, matrix: partState.matrix, mesh, warp, project, sharedGrid, stitchOffsets, hasSharedWarp };
+  }
+
+  /**
+   * Whether every image part draws with what the whole-frame WebGL path reproduces: no layer
+   * compositing, a supported blend mode, and no per-pixel image effects (tint, contour, reveal, art paths).
+   */
+  private canDrawWebGLFrame(): boolean {
+    if (this.webglFrameEligible?.source === this.rig.parts) return this.webglFrameEligible.value;
+    const supportedTint = (part: RigPart) => !part.tint || (part.tint.mode !== "multiply" && part.tint.mode !== "screen") || !/^#[0-9a-fA-F]{6}$/.test(part.tint.color) || !Number.isFinite(part.tint.opacity) || part.tint.opacity <= 0;
+    const value = !hasLayerCompositing(this.rig) && this.rig.parts.every((part) => part.kind !== "image" || (
+      (part.blendMode === undefined || part.blendMode === "normal" || part.blendMode === "multiply" || part.blendMode === "screen" || part.blendMode === "additive")
+      && supportedTint(part) && !part.contourShade && !part.alphaReveal && readRigArtPaths(part).length === 0
+    ));
+    this.webglFrameEligible = { source: this.rig.parts, value };
+    return value;
+  }
+
+  private getWebGLFrameRenderer(): WebGLFrameRenderer | undefined {
+    if (this.webglFrameRenderer) return this.webglFrameRenderer.status === "ready" ? this.webglFrameRenderer : undefined;
+    if (this.webglFrameError) return undefined;
+    try {
+      this.webglFrameRenderer = new WebGLFrameRenderer();
+      return this.webglFrameRenderer;
+    } catch (error) {
+      this.webglFrameError = error instanceof Error ? error.message : String(error);
+      return undefined;
+    }
+  }
+
+  /** One WebGL pass for the whole frame, grouped by clip exactly like the Canvas loop. False falls back to Canvas. */
+  private drawWebGLFrame(
+    ctx: CanvasRenderingContext2D,
+    renderable: RigPart[],
+    resolveClip: ReturnType<typeof createPartClipResolver>,
+    computed: Map<string, EvaluatedPartState>,
+    params: ParameterValues,
+    baseMatrix: Matrix2D,
+    skinningTransforms?: ReadonlyMap<string, Matrix2D>,
+    glueStitch?: GlueVertexOffsets
+  ): boolean {
+    if (!this.canDrawWebGLFrame()) return false;
+    const renderer = this.getWebGLFrameRenderer();
+    if (!renderer) return false;
+    const mesh = (part: RigPart, ignoreVisualAlpha = false): FrameMesh | undefined => {
+      const size = this.partSize(part);
+      const partState = computed.get(part.id);
+      if (!size || !partState || (!ignoreVisualAlpha && (!partState.visible || partState.opacity <= 0))) return undefined;
+      const geometry = buildWebGLPartGeometry(this.resolvePartShape(part, partState, size, computed, params, baseMatrix, skinningTransforms, glueStitch));
+      if (geometry.vertices.length < 3 || geometry.triangles.length < 3) return undefined;
+      return {
+        image: size.image,
+        vertices: geometry.vertices,
+        triangles: geometry.triangles,
+        opacity: ignoreVisualAlpha ? 1 : partState.opacity,
+        mode: ignoreVisualAlpha ? "normal" : (part.blendMode ?? "normal") as FrameBlendMode,
+        colors: resolvePartBlendColors(part, params)
+      };
+    };
+    const steps: FrameStep[] = [];
+    for (let index = 0; index < renderable.length;) {
+      const part = renderable[index];
+      const clip = resolveClip(part);
+      if (!clip) {
+        const drawn = mesh(part);
+        if (drawn) steps.push({ kind: "mesh", mesh: drawn });
+        index += 1;
+        continue;
+      }
+      const content: FrameMesh[] = [];
+      while (index < renderable.length && sameResolvedPartClip(clip, resolveClip(renderable[index]))) {
+        const drawn = mesh(renderable[index]);
+        if (drawn) content.push(drawn);
+        index += 1;
+      }
+      if (!content.length) continue;
+      const masks = clip.maskParts.map((maskPart) => mesh(maskPart, clip.clip.maskOpacity === "ignore")).filter((entry): entry is FrameMesh => entry !== undefined);
+      steps.push({ kind: "clip", invert: clip.clip.invert === true, masks, content });
+    }
+    if (!renderer.render(ctx.canvas.width, ctx.canvas.height, steps)) return false;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(renderer.canvas, 0, 0);
+    ctx.restore();
+    return true;
+  }
+
+  /** Which path drew the most recent frame. */
+  get lastFramePath(): "webgl-frame" | "canvas" { return this.lastFramePathValue; }
 
   /** Screen position of one ArtMesh vertex, matching the draw path exactly. */
   private projectGlueVertex(
@@ -1490,7 +1633,9 @@ private resolveTintedImage(partId: string, image: HTMLImageElement, tint: RigPar
     if (!part.assetId) {
       return undefined;
     }
-    const asset = this.rig.assets.find((entry) => entry.id === part.assetId);
+    // Keyed on the asset list itself, so a replaced rig or asset list is picked up.
+    if (this.assetById?.source !== this.rig.assets) this.assetById = { source: this.rig.assets, byId: new Map(this.rig.assets.map((entry) => [entry.id, entry])) };
+    const asset = this.assetById.byId.get(part.assetId);
     const image = this.images.get(part.assetId);
     if (!asset || !image) {
       return undefined;

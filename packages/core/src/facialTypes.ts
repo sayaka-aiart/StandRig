@@ -39,6 +39,11 @@ export interface ExpressionRequest {
   action: 'expression'; id: string;
   /** @minimum 0 @maximum 1 */
   strength?: number;
+  /**
+   * Layer this expression over the active ones instead of replacing them (toggle-style expressions).
+   * With strength 0 it removes just this expression.
+   */
+  stack?: boolean;
 }
 export interface VisemeRequest {
   action: 'viseme'; id: VisemeId;
@@ -51,7 +56,10 @@ export type FacialRequest =
   | { action: 'visemes'; weights: VisemeWeights }
   | { action: 'clear'; layer?: 'expression' | 'viseme' | 'all'; immediate?: boolean };
 export interface FacialState {
+  /** The most recently turned-on expression that is still on. */
   expressionId: string | null;
+  /** Expressions that are on (fading in or held), in the order they were turned on. */
+  activeExpressions: string[];
   expressionWeights: Record<string, number>;
   visemeWeights: VisemeWeights;
   transitioning: boolean;

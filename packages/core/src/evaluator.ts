@@ -1,7 +1,8 @@
+import { evaluatePendulumPhysics, type PendulumState } from "./pendulumPhysics.js";
 import { applyTransformShapes, resolveSharedShape } from './extendedBlendShape.js';
 import { sampleBinding } from "./bindings.js";
 import { sampleMultiParameterBinding } from "./multiBindings.js";
-import { deformerForPart } from "./deformers.js";
+import { createDeformerForPartLookup } from "./deformers.js";
 import { defaultParameterValues } from "./parameters.js";
 import { resolvePartAffine } from "./partAffine.js";
 import { isTransformBindingProperty, mergeResolvedWarpDeformers, resolveDeformerWarp, type ResolvedWarpDeformer } from "./warp.js";
@@ -21,7 +22,16 @@ export interface PhysicsValue {
   value: number;
   velocity: number;
   target?: number;
+  /** Only on the PENDULUM_STATE_KEY entry: the pendulum strands. */
+  pendulum?: PendulumState;
 }
+
+/**
+ * The physics state entry that carries the pendulum strands. Keeping them inside the caller's map (rather
+ * than beside it) lets callers copy the map entry by entry between frames, as Connect does for rollback;
+ * each evaluation stores a new strand state and leaves the previous one untouched.
+ */
+export const PENDULUM_STATE_KEY = "\u0000pendulum";
 
 export interface EvaluatedPartState {
   parameterValues?: ParameterValues;
@@ -170,7 +180,7 @@ function evaluateRigPartsWithDeformers(
   deformerStates: ReadonlyMap<string, EvaluatedDeformerState>
 ): Map<string, EvaluatedPartState> {
   const byId = new Map(rig.parts.map((part) => [part.id, part]));
-  const deformers = rig.deformers ?? [];
+  const deformerOf = createDeformerForPartLookup(rig.deformers ?? []);
   const computed = new Map<string, EvaluatedPartState>();
   const visiting = new Set<string>();
 
@@ -197,7 +207,7 @@ function evaluateRigPartsWithDeformers(
     const parentComputed = parent
       ? computePart(parent)
       : { matrix: baseMatrix, parentMatrix: baseMatrix, opacity: 1, visible: true, pose: zeroPose(), warp: undefined };
-    const deformer = deformerForPart(part, deformers);
+    const deformer = deformerOf(part);
     const deformerComputed = deformer ? deformerStates.get(deformer.id) : undefined;
     const pose = resolvePartPose(part, values, options.physicsOffsets?.get(part.id));
     const localMatrix = multiplyMatrices(
@@ -424,6 +434,19 @@ export function resolvePhysicsFrame(
       const partOffset = partOffsets.get(partId) ?? {};
       partOffset[chain.output.property] = (partOffset[chain.output.property] ?? 0) + physicsValue * chain.output.scale;
       partOffsets.set(partId, partOffset);
+    }
+  }
+
+  // Pendulums read the values after the chains and overwrite or blend their
+  // outputs; expressed as offsets so every consumer of parameterOffsets sees the final values.
+  const pendulum = rig.physics.pendulum;
+  if (pendulum?.settings?.length) {
+    const incoming = applyPhysicsParameterOffsets(values, parameterOffsets);
+    const ranges = new Map((rig.parameters ?? []).map((parameter) => [parameter.id, parameter]));
+    const result = evaluatePendulumPhysics(pendulum, ranges, incoming, safeDt, state.get(PENDULUM_STATE_KEY)?.pendulum);
+    state.set(PENDULUM_STATE_KEY, { value: 0, velocity: 0, pendulum: result.state });
+    for (const [parameter, value] of Object.entries(result.outputs)) {
+      parameterOffsets[parameter] = (parameterOffsets[parameter] ?? 0) + value - (incoming[parameter] ?? 0);
     }
   }
   return { partOffsets, deformerOffsets, parameterOffsets };

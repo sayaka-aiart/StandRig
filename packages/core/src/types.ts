@@ -133,8 +133,11 @@ export interface MultiParameterKeyform {
   value: number;
 }
 
+/** Two or more distinct parameters (up to MAX_GRID_PARAMETERS) spanning a rectangular keyform grid. */
+export type MultiBindingParameters = [string, string, ...string[]];
+
 export interface MultiParameterBinding {
-  parameters: [string, string];
+  parameters: MultiBindingParameters;
   composition?: "legacy-additive" | "multiply";
   property: BindingProperty | WarpBindingProperty | WarpPinBindingProperty;
   keyforms: MultiParameterKeyform[];
@@ -169,7 +172,7 @@ export interface RigWarpPinBinding {
 }
 
 export interface RigWarpPinMultiBinding {
-  parameters: [string, string];
+  parameters: MultiBindingParameters;
   property: WarpPinBindingProperty;
   keyforms: MultiParameterKeyform[];
   additive?: boolean;
@@ -248,7 +251,7 @@ export interface RigArtMeshBinding {
 }
 
 export interface RigArtMeshMultiBinding {
-  parameters: [string, string] | [string, string, string];
+  parameters: MultiBindingParameters;
   /** Apply this rest-mesh surface to the already resolved expression/physics
    * position. Omitted retains legacy per-vertex offset addition. Surface stages
    * run after legacy bindings/blend shapes, in their authored array order. */
@@ -395,6 +398,8 @@ export interface RigClip {
   maskPartIds?: string[];
   /** Ignore source visibility/opacity while retaining evaluated geometry. */
   maskOpacity?: "rendered" | "ignore";
+  /** Show the content only where the masks do not cover it (an inverted clipping mask). */
+  invert?: boolean;
 }
 
 export type RigPartRole =
@@ -481,11 +486,47 @@ export interface RigPart {
   visible: boolean;
   locked?: boolean;
   drawOrder: number;
+  /** Parameter-driven draw order; its sample replaces `drawOrder` while sorting. */
+  drawOrderBinding?: RigDrawOrderBinding;
+  /** Group parts only: a draw order group. Image descendants sort among themselves and the group
+   * takes one slot, by its own draw order, among its siblings. Omitted keeps the flat global sort. */
+  drawOrderGroup?: boolean;
+  /** Multiply and screen colors, static or parameter-driven, applied to the texture before `tint`. */
+  blendColors?: RigPartBlendColors;
   transform: Transform2D;
   warp?: RigWarpDeformer;
   bindings?: ParameterBinding[];
   tags?: string[];
   multiBindings?: MultiParameterBinding[];
+}
+
+/** Keyforms over one to MAX_GRID_PARAMETERS parameters whose values are draw orders. Interpolation is linear. */
+export interface RigDrawOrderBinding {
+  parameters: [string] | MultiBindingParameters;
+  keyforms: MultiParameterKeyform[];
+  /** "truncate" truncates (value + 0.001) to an integer before sorting, so
+   * blends that land next to an integer tie and keep their part order. Omitted means "none". */
+  rounding?: "none" | "truncate";
+}
+
+/** Linear RGB channels in 0..1. */
+export type RigRgb = [number, number, number];
+
+export interface RigBlendColorKeyform {
+  inputs: Record<string, number>;
+  multiply?: RigRgb;
+  screen?: RigRgb;
+}
+
+/** Multiply and screen colors: rgb = rgb * multiply, then rgb = rgb + screen - rgb * screen. */
+export interface RigPartBlendColors {
+  /** Static multiply color, and the fallback for keyforms that omit it. Default white. */
+  multiply?: RigRgb;
+  /** Static screen color, and the fallback for keyforms that omit it. Default black. */
+  screen?: RigRgb;
+  /** With keyforms: the parameters (one to MAX_GRID_PARAMETERS) the colors are keyed on. */
+  parameters?: [string] | MultiBindingParameters;
+  keyforms?: RigBlendColorKeyform[];
 }
 
 export interface RigAffineMatrix { a: number; b: number; c: number; d: number; e: number; f: number; }
@@ -547,6 +588,75 @@ export interface PhysicsChain {
 export interface RigPhysics {
   enabled: boolean;
   chains: PhysicsChain[];
+  /** Pendulum physics (strands of particles driven by parameter inputs), run after `chains`. */
+  pendulum?: RigPendulumPhysics;
+}
+
+export interface RigVector2 {
+  x: number;
+  y: number;
+}
+
+export type RigPendulumValueType = "x" | "y" | "angle";
+
+export interface RigPendulumInput {
+  parameter: string;
+  type: RigPendulumValueType;
+  /** 0..100, the share of the normalized input added to the setting's translation or angle. */
+  weight: number;
+  reflect?: boolean;
+}
+
+export interface RigPendulumOutput {
+  parameter: string;
+  /** Particle whose segment (from the previous particle) is measured; 1 is the first segment. */
+  vertexIndex: number;
+  type: RigPendulumValueType;
+  /** Angle outputs are radians times scale; x/y outputs are the segment's offset times scale. */
+  scale: number;
+  /** 0..100. 100 overwrites the parameter; less blends with its incoming value. */
+  weight: number;
+  reflect?: boolean;
+}
+
+export interface RigPendulumParticle {
+  /** 0..1, the share of the particle's velocity kept from step to step. */
+  mobility: number;
+  /** How far the particle moves per step (larger reacts faster). */
+  delay: number;
+  /** Scales the gravity force on the particle. */
+  acceleration: number;
+  /** Distance from the previous particle. */
+  radius: number;
+}
+
+export interface RigPendulumRange {
+  minimum: number;
+  default: number;
+  maximum: number;
+}
+
+export interface RigPendulumSetting {
+  id: string;
+  name?: string;
+  enabled?: boolean;
+  inputs: RigPendulumInput[];
+  outputs: RigPendulumOutput[];
+  /** The strand; particle 0 is the root that follows the inputs' translation. */
+  particles: RigPendulumParticle[];
+  /** Inputs map their parameter range onto these ranges (position for x/y, angle in degrees). */
+  normalization: { position: RigPendulumRange; angle: RigPendulumRange };
+}
+
+export interface RigPendulumPhysics {
+  /** Fixed simulation rate (frames are interpolated between steps). Omitted or 0 steps once per frame. */
+  fps?: number;
+  /** Reference "down" for the first segment's angle output. Default { x: 0, y: -1 }. */
+  gravity?: RigVector2;
+  /** Constant force added to every particle. Default { x: 0, y: 0 }. */
+  wind?: RigVector2;
+  /** Evaluated in order; a setting reads the outputs of the settings before it in the same step. */
+  settings: RigPendulumSetting[];
 }
 
 export type RigGlueCandidateKind = "overlap" | "near-gap" | "manual";

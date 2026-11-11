@@ -1,3 +1,4 @@
+import { partParameterTrackUses } from "./drawOrder.js";
 import { runPhysicsTemporalQa, type PhysicsTemporalQaResult } from "./physicsQa.js";
 import type { RigDeformer, RigDocument, RigPart, RigPartRole } from "./types.js";
 
@@ -123,6 +124,7 @@ export function auditPhysicsSafety(rig: RigDocument, options: PhysicsSafetyOptio
           || (part.bindings ?? []).some((binding) => binding.parameter === parameter)
           || (part.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))
           || (part.affineBindings ?? []).some((binding) => binding.parameters.includes(parameter))
+          || partParameterTrackUses(part, parameter)
           || (part.artMesh?.bindings ?? []).some((binding) => binding.parameter === parameter)
           || (part.artMesh?.multiBindings ?? []).some((binding) => binding.parameters.includes(parameter))
           || (part.artMesh?.blendShapes ?? []).some((shape) => shape.parameter === parameter)) {

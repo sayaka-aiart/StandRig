@@ -128,19 +128,21 @@ function parameters() {
     const output = document.createElement('output'); output.textContent = String(Number(values[param.id].toFixed(3)));
     const input = document.createElement('input');
     input.type = 'range'; input.min = String(param.min); input.max = String(param.max); input.step = String(param.step ?? 0.1); input.value = String(Number(values[param.id].toFixed(3))); input.setAttribute('aria-label', param.id);
-    input.oninput = () => { values[param.id] = Number(input.value); output.textContent = input.value; render(); sendPose({ [param.id]: Number(input.value) }); };
+    input.oninput = () => { values[param.id] = Number(input.value); shownValues.set(input, values[param.id]); output.textContent = input.value; render(); sendPose({ [param.id]: Number(input.value) }); };
     label.append(caption, output, input); container.append(label);
   }
 }
+const shownValues = new WeakMap<HTMLInputElement, number>();
 function applyState() {
   if (!latest || !rig || modelVersion !== latest.modelVersion || sessionId !== latest.sessionId) return;
   if (physicsEpoch !== latest.physicsEpoch) { runtime.resetPhysics(); physicsEpoch = latest.physicsEpoch; }
   updateMotion();
   values = { ...latest.values, ...poseInput.optimistic };
   facialPanel.update();
+  // Playback pushes every value about 30 times a second; only touch the sliders whose value moved.
   for (const input of document.querySelectorAll<HTMLInputElement>('#params input')) {
     const id = input.getAttribute('aria-label')!;
-    if (document.activeElement !== input) { input.value = String(values[id]); input.parentElement!.querySelector('output')!.textContent = String(Number(values[id].toFixed(3))); }
+    if (document.activeElement !== input && shownValues.get(input) !== values[id]) { shownValues.set(input, values[id]); input.value = String(values[id]); input.parentElement!.querySelector('output')!.textContent = String(Number(values[id].toFixed(3))); }
   }
   if (latest.playing && !runtime.playing) runtime.play(); else if (!latest.playing && runtime.playing) runtime.pause();
   const demo = latest.demo;

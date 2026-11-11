@@ -245,7 +245,7 @@ apps/preview/        PSD import, pose inspection and transparent player
 examples/            Synthetic sample model and integration examples
 ```
 
-`core` and `runtime` can be used without MCP. The packages are not published to npm; develop with the npm workspaces in this source tree. See the [architecture](docs/ARCHITECTURE.md), [adapters and embedding](docs/ADAPTERS.md), [API guide](docs/API.md) and [operation reference](docs/OPERATIONS.md).
+`core` and `runtime` can be used without MCP. The packages are not published to npm; develop with the npm workspaces in this source tree. See the [architecture](docs/ARCHITECTURE.md), [adapters and embedding](docs/ADAPTERS.md), [API guide](docs/API.md), [operation reference](docs/OPERATIONS.md) and [draw order, colors, clips and pendulum physics](docs/RIG-FEATURES.md).
 
 ```sh
 npm run build

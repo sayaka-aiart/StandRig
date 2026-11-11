@@ -1,3 +1,4 @@
+import { MAX_CLIP_MASK_PARTS } from "./mask.js";
 import { matchesPartTarget as matchesTarget, type ModelingOperationTarget } from "./modelingTarget.js";
 export type { ModelingOperationTarget } from "./modelingTarget.js";
 import { executeDeformOperation } from './deformOperations.js';
@@ -915,8 +916,8 @@ function validateSymmetryContract(contract: RigSymmetryContract) {
     const hasSingle = typeof clip.maskPartId === "string" && clip.maskPartId.trim().length > 0;
     const maskPartIds = Array.isArray(clip.maskPartIds) ? clip.maskPartIds : undefined;
     const hasMultiple = maskPartIds !== undefined;
-    const validMultiple = maskPartIds !== undefined && maskPartIds.length >= 1 && maskPartIds.length <= 8 && maskPartIds.every((id) => typeof id === "string" && id.trim() === id && id.length > 0) && new Set(maskPartIds).size === maskPartIds.length;
-    if (clip.mode !== "alpha" || hasSingle === hasMultiple || (hasMultiple && !validMultiple) || (clip.maskOpacity !== undefined && clip.maskOpacity !== "rendered" && clip.maskOpacity !== "ignore")) throw new Error("part-clip clip is invalid");
+    const validMultiple = maskPartIds !== undefined && maskPartIds.length >= 1 && maskPartIds.length <= MAX_CLIP_MASK_PARTS && maskPartIds.every((id) => typeof id === "string" && id.trim() === id && id.length > 0) && new Set(maskPartIds).size === maskPartIds.length;
+    if (clip.mode !== "alpha" || hasSingle === hasMultiple || (hasMultiple && !validMultiple) || (clip.maskOpacity !== undefined && clip.maskOpacity !== "rendered" && clip.maskOpacity !== "ignore") || (clip.invert !== undefined && typeof clip.invert !== "boolean")) throw new Error("part-clip clip is invalid");
   }
   if (action.type === "artmesh-quality") {
     const quality = action.quality;

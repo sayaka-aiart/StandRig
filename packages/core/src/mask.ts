@@ -1,5 +1,8 @@
 import type { RigClip, RigDocument, RigPart } from "./types.js";
 
+/** Most alpha-union mask sources one clip may name. */
+export const MAX_CLIP_MASK_PARTS = 32;
+
 export interface ResolvedPartClip {
   owner: RigPart;
   clip: RigClip;
@@ -42,7 +45,7 @@ export function resolvePartClip(rig: RigDocument, part: RigPart): ResolvedPartCl
 }
 export function sameResolvedPartClip(left: ResolvedPartClip | undefined, right: ResolvedPartClip | undefined): boolean {
   return Boolean(
-    left && right && left.owner.id === right.owner.id && left.clip.mode === right.clip.mode && left.clip.maskOpacity === right.clip.maskOpacity && left.maskPartIds.length === right.maskPartIds.length && left.maskPartIds.every((id, index) => id === right.maskPartIds[index])
+    left && right && left.owner.id === right.owner.id && left.clip.mode === right.clip.mode && left.clip.maskOpacity === right.clip.maskOpacity && Boolean(left.clip.invert) === Boolean(right.clip.invert) && left.maskPartIds.length === right.maskPartIds.length && left.maskPartIds.every((id, index) => id === right.maskPartIds[index])
   );
 }
 

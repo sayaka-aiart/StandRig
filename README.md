@@ -240,7 +240,7 @@ apps/preview/        PSD読込・姿勢確認・透過再生画面
 examples/            合成サンプルモデルと接続例
 ```
 
-`core` / `runtime` はMCPなしでも利用できます。npmへは未公開なので、このソースのnpm workspacesで開発します。[構成](docs/ARCHITECTURE.md)、[外部接続・組み込み](docs/ADAPTERS.md)、[API](docs/API.md)、[操作一覧](docs/OPERATIONS.md)を参照してください。
+`core` / `runtime` はMCPなしでも利用できます。npmへは未公開なので、このソースのnpm workspacesで開発します。[構成](docs/ARCHITECTURE.md)、[外部接続・組み込み](docs/ADAPTERS.md)、[API](docs/API.md)、[操作一覧](docs/OPERATIONS.md)、[描画順・色・クリップ・振り子の物理演算](docs/RIG-FEATURES.md)を参照してください。
 
 ```sh
 npm run build

@@ -2,7 +2,9 @@ import { applyParameterInterpolation, normalizeParameterInterpolation } from "./
 import type { ParameterCurve, ParameterInterpolation, ParameterValues } from "./types.js";
 import { evaluationCache } from "./evaluationCache.js";
 
-export type GridParameters = [string, string] | [string, string, string];
+/** Keyform grids may span up to this many parameters (sampling visits 2^N corners). */
+export const MAX_GRID_PARAMETERS = 8;
+export type GridParameters = [string, string, ...string[]];
 interface GridKey { inputs: Record<string, number> }
 
 interface GridIndex<T> { axes: number[][]; points: Map<string, T> }
@@ -52,13 +54,13 @@ export function sampleParameterGrid<T extends GridKey>(parameters: GridParameter
 }
 
 export function validGridParameters(parameters: unknown): parameters is GridParameters {
-  return Array.isArray(parameters) && [2, 3].includes(parameters.length) &&
+  return Array.isArray(parameters) && parameters.length >= 2 && parameters.length <= MAX_GRID_PARAMETERS &&
     parameters.every(p => typeof p === "string" && p.trim().length > 0) && new Set(parameters).size === parameters.length;
 }
 
 export function parameterGridIssues(parameters: GridParameters, keys: readonly GridKey[], known: ReadonlySet<string>): string[] {
   if (!validGridParameters(parameters) || parameters.some(p => !known.has(p)) || !Array.isArray(keys) || !keys.length)
-    return ["Grid needs two or three distinct known parameters and finite keyforms"];
+    return [`Grid needs two to ${MAX_GRID_PARAMETERS} distinct known parameters and finite keyforms`];
   const issues: string[] = [], axes = parameters.map(() => new Set<number>()), cells = new Set<string>();
   for (const key of keys) {
     const values = parameters.map(p => key?.inputs?.[p]);

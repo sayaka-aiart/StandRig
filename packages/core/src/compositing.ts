@@ -1,4 +1,5 @@
-import type { RigBlendMode, RigDocument, RigPart } from './types.js';
+import type { ParameterValues, RigBlendMode, RigDocument, RigPart } from './types.js';
+import { resolvePartDrawOrder } from './drawOrder.js';
 import type { RgbaImage } from './png.js';
 
 /** PSD names are normalized once at import; rendering uses the same vocabulary everywhere. */
@@ -53,7 +54,7 @@ export function hasLayerCompositing(rig: RigDocument): boolean {
   return rig.parts.some(part => part.compositing !== undefined || part.clippingBaseId !== undefined || part.rasterMaskPartId !== undefined);
 }
 
-export function layerCompositingPlan(rig: RigDocument): CompositeNode[] {
+export function layerCompositingPlan(rig: RigDocument, values: ParameterValues = {}): CompositeNode[] {
   const nodes = new Map(rig.parts.map(part => [part.id, {part, children: [], clipped: []} as CompositeNode]));
   const roots: CompositeNode[] = [];
   for (const node of nodes.values()) {
@@ -61,7 +62,8 @@ export function layerCompositingPlan(rig: RigDocument): CompositeNode[] {
     (parent ? parent.children : roots).push(node);
   }
   const prepare = (list: CompositeNode[]): CompositeNode[] => {
-    list.sort((a,b) => a.part.drawOrder - b.part.drawOrder);
+    if (list.some(node => node.part.drawOrderBinding)) { const orders = new Map(list.map(node => [node, resolvePartDrawOrder(node.part, values)])); list.sort((a,b) => orders.get(a)! - orders.get(b)!); }
+    else list.sort((a,b) => a.part.drawOrder - b.part.drawOrder);
     const siblings = new Map(list.map(node => [node.part.id, node]));
     for (const node of list) node.children = prepare(node.children);
     return list.filter(node => {
