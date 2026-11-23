@@ -1,5 +1,5 @@
 import { readPsd } from "ag-psd";
-import { DEFAULT_PARAMETERS } from "./parameters.js";
+import { CUBISM_PARAMETERS } from "./parameters.js";
 import { expandTransparentRgb } from "./alphaBleed.js";
 import { psdBlendMode } from './compositing.js';
 import {
@@ -268,6 +268,7 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
     name: file.name.replace(/\.[^.]+$/, ""),
     metadata: {
       source: "psd-import",
+      parameterConvention: "cubism",
       importedAt,
       importReport: report,
       ...(Number(options.alphaBleedRadius) > 0 ? { alphaBleedImport: { radius: Math.round(Number(options.alphaBleedRadius)), alphaThreshold: Math.round(Number(options.alphaBleedThreshold ?? 0)) } } : {})
@@ -278,7 +279,7 @@ export async function createRigFromPsdFile(file: File, options: PsdImportOptions
       background: "transparent"
     },
     assets,
-    parameters: structuredClone(DEFAULT_PARAMETERS),
+    parameters: structuredClone(CUBISM_PARAMETERS),
     parts,
     physics: {
       enabled: true,

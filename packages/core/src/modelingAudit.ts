@@ -1,7 +1,8 @@
 import { partParameterTrackUses } from "./drawOrder.js";
 import { summarizeRig, validateRig } from "./inspect.js";
 import { analyzeParameterDistribution, type ParameterDistributionAudit } from "./parameterDistribution.js";
-import { PARAMETER_IDS, type ParameterBinding, type RigDeformer, type RigDocument, type RigPart, type RigWarpPin } from "./types.js";
+import { mouthOpenParameterForRig, recommendedParameterIdsForRig } from "./parameters.js";
+import type { ParameterBinding, RigDeformer, RigDocument, RigPart, RigWarpPin } from "./types.js";
 import { auditPhysicsRootSafety, suggestPhysicsPresets } from "./physicsPresets.js";
 import { runPhysicsTemporalQa } from "./physicsQa.js";
 
@@ -183,7 +184,7 @@ export function auditModelingRig(rig: RigDocument): ModelingAuditResult {
   for (const issue of rootSafetyIssues) {
     addIssue({ id: `physics-root-${issue.chainId}-${issue.partId}`, severity: "warning", category: "physics", title: "Physics targets a structural root", detail: issue.message, recommendation: "Keep neck, face, and torso fixed; use a parameter output connected only to a tail or cloth mesh.", partIds: [issue.partId] });
   }
-  const knownParameters = new Set([...PARAMETER_IDS, ...(rig.parameters ?? []).map((parameter) => parameter.id)]);
+  const knownParameters = new Set([...recommendedParameterIdsForRig(rig), ...(rig.parameters ?? []).map((parameter) => parameter.id)]);
   for (const chain of physicsChains) {
     if (chain.parameterOutput && !knownParameters.has(chain.parameterOutput.parameter)) {
       addIssue({ id: `physics-output-parameter-${chain.id}`, severity: "warning", category: "physics", title: "Physics output parameter is unavailable", detail: `${chain.id} outputs to ${chain.parameterOutput.parameter}, which is not defined or reserved.`, recommendation: "Choose a reserved hair/cloth parameter or add a model parameter before assigning this chain.", parameterIds: [chain.parameterOutput.parameter] });
@@ -436,17 +437,18 @@ function auditExpressionCoverage(
   const imageParts = parts.filter((part) => part.kind === "image");
   const mouthParts = imageParts.filter((part) => textMatchesAny(partPaths.get(part.id) ?? part.name, MOUTH_KEYWORDS));
   const mouthReferenceParts = mouthParts.filter((part) => (partPaths.get(part.id) ?? part.name).includes("口参考"));
-  const mouthBindingCount = countBindingsForParameter(parts, deformers, "ParamMouthOpen");
+  const mouthOpenId = mouthOpenParameterForRig(rig);
+  const mouthBindingCount = countBindingsForParameter(parts, deformers, mouthOpenId);
   if (mouthParts.length >= 5 && mouthBindingCount <= 2) {
     addIssue({
       id: "mouth-expression-mostly-single-deformer",
       severity: "info",
       category: "expression",
       title: "Mouth expression layers are not yet individually keyed",
-      detail: `${mouthParts.length} mouth-like image parts were found, while ParamMouthOpen has ${mouthBindingCount} binding groups.`,
+      detail: `${mouthParts.length} mouth-like image parts were found, while ${mouthOpenId} has ${mouthBindingCount} binding groups.`,
       recommendation: "Add visibility/opacity keys for mouth shape layers before phoneme or expression tracking work.",
       partIds: mouthParts.slice(0, 12).map((part) => part.id),
-      parameterIds: ["ParamMouthOpen"]
+      parameterIds: [mouthOpenId]
     });
   }
   const visibleMouthReferenceParts = mouthReferenceParts.filter((part) => effectiveVisiblePartIds.has(part.id));
@@ -488,7 +490,7 @@ function auditExpressionCoverage(
       });
     }
   }
-  for (const parameterId of PARAMETER_IDS) {
+  for (const parameterId of recommendedParameterIdsForRig(rig)) {
     if (!rig.parameters.some((parameter) => parameter.id === parameterId)) {
       addIssue({
         id: `${parameterId}-missing-standard-param`,
@@ -526,7 +528,7 @@ function auditTracking(rig: RigDocument, addIssue: (issue: ModelingAuditIssue) =
     });
   }
   const mappedParameters = new Set(rig.tracking.mappings.filter((mapping) => mapping.enabled).map((mapping) => mapping.parameter));
-  const missingMappings = PARAMETER_IDS.filter((parameterId) => !mappedParameters.has(parameterId));
+  const missingMappings = recommendedParameterIdsForRig(rig).filter((parameterId) => !mappedParameters.has(parameterId));
   if (missingMappings.length) {
     addIssue({
       id: "tracking-mapping-gaps",

@@ -1,4 +1,5 @@
 import type { ParameterValues, RigDocument, RigPart } from "./types.js";
+import { facePitchUpSign } from "./parameters.js";
 
 export type HeadProxyLandmarkId = "faceCenter" | "leftEye" | "rightEye" | "nose" | "mouth" | "chin" | "leftEar" | "rightEar";
 export type HeadProxyFitMethod = "role-bounds" | "role-bounds-calibrated";
@@ -25,6 +26,7 @@ export interface HeadProxyBounds {
 
 export interface HeadProxy {
   version: 1;
+  facePitchUp?: "positive";
   fitMethod: HeadProxyFitMethod;
   axisX: number;
   bounds: HeadProxyBounds;
@@ -66,6 +68,7 @@ export function fitHeadProxy(rig: RigDocument, options: { calibration?: HeadProx
   };
   return {
     version: 1,
+    ...(facePitchUpSign(rig) === 1 ? { facePitchUp: "positive" as const } : {}),
     fitMethod: options.calibration ? "role-bounds-calibrated" : "role-bounds",
     axisX,
     bounds,
@@ -98,7 +101,7 @@ export function headProxyPoseCandidates(proxy: HeadProxy): HeadProxyPoseCandidat
         landmarkOffsets[id] = { x: round(yawShift), y: round(pitchShift) };
       }
       candidates.push({
-        values: { ParamAngleX: angleX, ParamAngleY: angleY },
+        values: { ParamAngleX: angleX, ParamAngleY: proxy.facePitchUp === "positive" && angleY !== 0 ? -angleY : angleY },
         scaleX: round(scaleX),
         scaleY: round(scaleY),
         landmarkOffsets

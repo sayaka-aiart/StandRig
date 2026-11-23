@@ -1,11 +1,11 @@
-import { parameterDefinitionsForRig } from '@standrig/core/parameters';
+import { parameterDefinitionsForRig, poseFromLegacyParameters, usesCubismParameters } from '@standrig/core/parameters';
 import type { ParameterDefinition, ParameterValues, RigDocument } from '@standrig/core/types';
 import { motionPreviewValues, type MotionPreviewMode, type MotionPreviewPointer } from './motionPreview.js';
 
 /** Discover authored controls without traversing assets, metadata or physics outputs. */
 export function demoParameters(rig: RigDocument): ParameterDefinition[] {
   const ids = new Set<string>();
-  const choreographed = new Set(['ParamAngleX', 'ParamAngleY', 'ParamAngleZ', 'ParamBodyAngleX', 'ParamBodyAngleY', 'ParamBodyAngleZ', 'ParamBreath', 'ParamEyeBallX', 'ParamEyeBallY', 'ParamEyeLOpen', 'ParamEyeROpen', 'ParamEyeLSmile', 'ParamEyeRSmile', 'ParamMouthOpen', 'ParamMouthForm', 'ParamMouthSmile', 'ParamCheek']);
+  const choreographed = new Set(['ParamAngleX', 'ParamAngleY', 'ParamAngleZ', 'ParamBodyAngleX', 'ParamBodyAngleY', 'ParamBodyAngleZ', 'ParamBreath', 'ParamEyeBallX', 'ParamEyeBallY', 'ParamEyeLOpen', 'ParamEyeROpen', 'ParamEyeLSmile', 'ParamEyeRSmile', 'ParamMouthOpen', 'ParamMouthOpenY', 'ParamMouthForm', 'ParamMouthSmile', 'ParamMouthRound', 'ParamCheek']);
   function visit(value: unknown) {
     if (Array.isArray(value)) { value.forEach(visit); return; }
     if (!value || typeof value !== 'object') return;
@@ -21,8 +21,11 @@ export function demoParameters(rig: RigDocument): ParameterDefinition[] {
 }
 
 /** Keep the original choreography, clamped to each model's declared ranges. */
-export function sampleDemo(parameters: ParameterDefinition[], base: ParameterValues, mode: MotionPreviewMode, elapsedSeconds: number, pointer: MotionPreviewPointer) {
-  const generated = motionPreviewValues(base, mode, elapsedSeconds, pointer);
+export function sampleDemo(parameters: ParameterDefinition[], base: ParameterValues, mode: MotionPreviewMode, elapsedSeconds: number, pointer: MotionPreviewPointer, rig: Pick<RigDocument, 'metadata'> = {}) {
+  const legacyBase = usesCubismParameters(rig)
+    ? { ...base, ParamMouthOpen: base.ParamMouthOpenY, ParamMouthForm: base.ParamMouthRound, ParamMouthSmile: base.ParamMouthForm }
+    : base;
+  const generated = poseFromLegacyParameters(rig, motionPreviewValues(legacyBase, mode, elapsedSeconds, pointer));
   const values = { ...base };
   for (const p of parameters) values[p.id] = Math.max(p.min, Math.min(p.max, generated[p.id] ?? base[p.id] ?? p.default));
   return values;

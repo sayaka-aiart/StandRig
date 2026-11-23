@@ -1,4 +1,4 @@
-import { previewParameterValuesForRig } from "./parameters.js";
+import { poseFromLegacyParameters, previewParameterValuesForRig } from "./parameters.js";
 import type { ParameterValues, RigDocument, RigPart } from "./types.js";
 
 export type MouthPhonemeCategory = "vowel" | "expression" | "reference";
@@ -117,7 +117,7 @@ function targetForPart(rig: RigDocument, part: RigPart, partsById: Map<string, R
     sourcePartName: part.name,
     sourceAssetId: part.assetId,
     sourcePath: partPath(part, partsById).map((entry) => entry.name).join("/"),
-    values: previewParameterValuesForRig(rig, base.values),
+    values: previewParameterValuesForRig(rig, poseFromLegacyParameters(rig, base.values)),
     tags: part.tags ?? []
   };
 }

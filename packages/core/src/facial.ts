@@ -28,7 +28,8 @@ export function validateExpression(doc:ExpressionDocument,parameters:ParameterDe
 /** Explicit mappings win; only the documented MouthOpenY/MouthOpen compatibility alias is automatic. */
 export function importExpression(value:unknown,rig:RigDocument,parameterMap:Readonly<Record<string,string>>={}):ExpressionDocument {
   const doc=parseExpression(value),defs=parameterDefinitionsForRig(rig),ids=new Set(defs.map(p=>p.id));
-  const mapped={...doc,Parameters:doc.Parameters.map(p=>({...p,Id:Object.hasOwn(parameterMap,p.Id)?parameterMap[p.Id]:ids.has(p.Id)?p.Id:p.Id==='ParamMouthOpenY'&&ids.has('ParamMouthOpen')?'ParamMouthOpen':p.Id}))};
+  const alternateMouthOpen: Record<string, string> = { ParamMouthOpenY: 'ParamMouthOpen', ParamMouthOpen: 'ParamMouthOpenY' };
+  const mapped={...doc,Parameters:doc.Parameters.map(p=>({...p,Id:Object.hasOwn(parameterMap,p.Id)?parameterMap[p.Id]:ids.has(p.Id)?p.Id:ids.has(alternateMouthOpen[p.Id])?alternateMouthOpen[p.Id]:p.Id}))};
   const parsed=parseExpression(mapped);validateExpression(parsed,defs);return parsed;
 }
 export function exportExpression(expression:RegisteredExpression,rig:RigDocument,parameterMap:Readonly<Record<string,string>>={}):ExpressionDocument {

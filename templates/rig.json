@@ -1,6 +1,7 @@
 {
   "schemaVersion": "0.1.0",
   "name": "Untitled model",
+  "metadata": { "parameterConvention": "cubism" },
   "stage": {
     "width": 900,
     "height": 1200,
@@ -56,23 +57,23 @@
     {
       "id": "ParamBodyAngleX",
       "label": "Body X",
-      "min": -30,
-      "max": 30,
+      "min": -10,
+      "max": 10,
       "default": 0,
-      "step": 1,
+      "step": 0.1,
       "group": "Body"
     },
     {
       "id": "ParamBodyAngleY",
       "label": "Body Y",
-      "min": -30,
-      "max": 30,
+      "min": -10,
+      "max": 10,
       "default": 0,
-      "step": 1,
+      "step": 0.1,
       "group": "Body"
     },
     {
-      "id": "ParamMouthOpen",
+      "id": "ParamMouthOpenY",
       "label": "Mouth",
       "min": 0,
       "max": 1,
@@ -90,8 +91,8 @@
       "group": "Expression"
     },
     {
-      "id": "ParamMouthSmile",
-      "label": "Mouth Smile",
+      "id": "ParamMouthRound",
+      "label": "Mouth Round",
       "min": -1,
       "max": 1,
       "default": 0,

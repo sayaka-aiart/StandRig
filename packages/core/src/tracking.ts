@@ -1,4 +1,4 @@
-import { clampParameterValue, parameterDefinitionsForRig } from "./parameters.js";
+import { clampParameterValue, parameterDefinitionsForRig, usesCubismParameters } from "./parameters.js";
 import { pendulumSettingsOverwriting, pendulumSettledGain } from "./pendulumPhysics.js";
 import type { OneEuroFilterOptions, ParameterDefinition, ParameterValues, RigDocument, RigTracking, TrackingEyeSync, TrackingInputValues, TrackingMapping, TrackingResponseCurve } from "./types.js";
 
@@ -123,6 +123,15 @@ const MINIMUM_PENDULUM_GAIN = 1e-6;
  */
 function defaultMappingForRig(spec: Omit<TrackingMapping, "id" | "enabled">, context: DefaultMappingContext): Omit<TrackingMapping, "id" | "enabled"> {
   const { rig, authored, ranges, claimed } = context;
+  if (usesCubismParameters(rig)) {
+    if (spec.parameter === "ParamMouthOpen") spec = { ...spec, parameter: "ParamMouthOpenY" };
+    if (spec.parameter === "ParamMouthForm") spec = { ...spec, parameter: "ParamMouthRound" };
+    if (spec.parameter === "ParamMouthSmile") spec = { ...spec, parameter: "ParamMouthForm" };
+    if (spec.parameter === "ParamBodyAngleX" || spec.parameter === "ParamBodyAngleY") {
+      const range = ranges.get(spec.parameter)!;
+      spec = { ...spec, scale: spec.scale * (range.max - range.min) / 60, min: range.min, max: range.max, offset: range.default };
+    }
+  }
   let parameter = spec.parameter;
   const alternateName = ALTERNATE_PARAMETER_NAMES[parameter];
   if (alternateName && !authored.has(parameter) && authored.has(alternateName)) parameter = alternateName;

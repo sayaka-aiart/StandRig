@@ -1,4 +1,4 @@
-import { mergeParameterValues } from "./parameters.js";
+import { mergeParameterValues, poseFromLegacyParameters } from "./parameters.js";
 import type { ParameterValues, RigDocument } from "./types.js";
 
 export interface ModelingPosePreset {
@@ -112,7 +112,7 @@ export const MODELING_POSE_PRESETS: ModelingPosePreset[] = [
 export function modelingPosePresetsForRig(rig: RigDocument, baseValues: Partial<ParameterValues> = {}) {
   return MODELING_POSE_PRESETS.map((pose) => ({
     ...pose,
-    values: mergeParameterValues(rig, { ...baseValues, ...pose.values })
+    values: mergeParameterValues(rig, { ...baseValues, ...poseFromLegacyParameters(rig, pose.values) })
   }));
 }
 
@@ -122,6 +122,6 @@ export function modelingPosePresetById(id: string): ModelingPosePreset | undefin
 
 export function modelingPoseValuesForRig(rig: RigDocument, id: string, baseValues: Partial<ParameterValues> = {}): ParameterValues | undefined {
   const preset = modelingPosePresetById(id);
-  return preset ? mergeParameterValues(rig, { ...baseValues, ...preset.values }) : undefined;
+  return preset ? mergeParameterValues(rig, { ...baseValues, ...poseFromLegacyParameters(rig, preset.values) }) : undefined;
 }
 

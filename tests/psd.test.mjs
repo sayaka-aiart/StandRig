@@ -16,6 +16,12 @@ const layer=(name,alpha=255)=>({name,left:0,top:0,imageData:{width:8,height:8,da
 const psd=children=>new File([writePsdUint8Array({width:16,height:16,children},{generateThumbnail:false})],'test.psd');
 test('layered PSD preserves separate part names and pixels', async()=>{
   const rig=await createRigFromPsdFile(psd([{name:'Face',children:[layer('Eye'),layer('Mouth')]}]));
+  assert.equal(rig.metadata.parameterConvention, 'cubism');
+  const byId = new Map(rig.parameters.map(parameter => [parameter.id, parameter]));
+  assert.equal(byId.get('ParamMouthOpenY').default, 0);
+  assert.equal(byId.get('ParamBodyAngleY').max, 10);
+  assert.equal(byId.get('ParamEyeLOpen').default, 1);
+  assert.equal(byId.has('ParamMouthOpen'), false);
   assert.equal(rig.assets.length,2);
   assert.ok(rig.parts.some(p=>p.name==='Eye'));
   assert.ok(rig.parts.some(p=>p.name==='Mouth'));

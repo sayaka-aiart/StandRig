@@ -145,9 +145,10 @@ export class ContourShadeProcessor {
       }
     }
   }
-  render(values: ParameterValues): RgbaImage {
+  render(values: ParameterValues, pitchUp: 1 | -1 = -1): RgbaImage {
     const yaw = values[this.shade.yawParameter] ?? 0;
-    const pitch = values[this.shade.pitchParameter] ?? 0;
+    // Shading profiles are authored along screen Y (negative values point up).
+    const pitch = -(values[this.shade.pitchParameter] ?? 0) * pitchUp;
     if (!Number.isFinite(yaw) || !Number.isFinite(pitch)) return this.source;
     const yawWeight = smooth(Math.abs(yaw) / this.shade.maxYaw);
     const fade = (this.shade.farContourFade ?? 0) * yawWeight;
@@ -196,10 +197,10 @@ export class ContourShadeProcessor {
 }
 
 const processors = new WeakMap<RgbaImage, { key: string; processor: ContourShadeProcessor }>();
-export function applyContourShade(source: RgbaImage, shade: RigContourShade | undefined, values: ParameterValues): RgbaImage {
+export function applyContourShade(source: RgbaImage, shade: RigContourShade | undefined, values: ParameterValues, pitchUp: 1 | -1 = -1): RgbaImage {
   if (!shade || !validateContourShade(shade)) return source;
   const key = JSON.stringify(shade);
   let entry = processors.get(source);
   if (!entry || entry.key !== key) { entry = { key, processor: new ContourShadeProcessor(source, shade) }; processors.set(source, entry); }
-  return entry.processor.render(values);
+  return entry.processor.render(values, pitchUp);
 }

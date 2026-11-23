@@ -17,7 +17,7 @@ import { expandTriangleForCoverage } from "./triangleCoverage.js";
 import { resolvePartClip, sameResolvedPartClip } from "./mask.js";
 import { modelingPosePresetsForRig } from "./modeling.js";
 import { isReferenceSheetSet, referenceSheetColumns, referenceSheetPresetsForRig, type ReferenceSheetSet } from "./reference.js";
-import { clampParameterValue, normalizeParameterKey, parameterDefinitionsForRig, previewParameterValuesForRig } from "./parameters.js";
+import { clampParameterValue, facePitchUpSign, normalizeParameterKey, parameterDefinitionsForRig, poseFromLegacyParameters, previewParameterValuesForRig } from "./parameters.js";
 import { createBlankRgba, decodePng, encodePng, type RgbaImage } from "./png.js";
 import { applyTintChannel, parseTintColor } from "./tint.js";
 import { applyContourShade } from "./contourShade.js";
@@ -97,7 +97,7 @@ export function screenshotOptionsFromUrl(rig: RigDocument, url: URL): Screenshot
   const knownParameters = new Set(parameterDefinitionsForRig(rig).map((parameter) => parameter.id));
 
   for (const [rawKey, rawValue] of url.searchParams) {
-    const key = normalizeParameterKey(rawKey);
+    const key = normalizeParameterKey(rawKey, rig);
     const value = Number(rawValue);
     if (knownParameters.has(key) && Number.isFinite(value)) {
       values[key] = clampParameterValue(rig, key, value);
@@ -200,16 +200,17 @@ function screenshotPresets(
   const withValues = (id: string, label: string, values: Partial<ParameterValues>) => ({
     id,
     label,
-    values: previewParameterValuesForRig(rig, { ...baseValues, ...values })
+    values: previewParameterValuesForRig(rig, { ...baseValues, ...poseFromLegacyParameters(rig, values) })
   });
 
   if (set === "angles") {
+    const positiveUp = facePitchUpSign(rig) === 1;
     return [
       withValues("center", "CENTER", {}),
       withValues("angle-x-left", "X -20", { ParamAngleX: -20, ParamBodyAngleX: -8 }),
       withValues("angle-x-right", "X +20", { ParamAngleX: 20, ParamBodyAngleX: 8 }),
-      withValues("angle-y-up", "Y -15", { ParamAngleY: -15, ParamBodyAngleY: -6 }),
-      withValues("angle-y-down", "Y +15", { ParamAngleY: 15, ParamBodyAngleY: 6 }),
+      withValues("angle-y-up", positiveUp ? "Y +15" : "Y -15", { ParamAngleY: -15, ParamBodyAngleY: -6 }),
+      withValues("angle-y-down", positiveUp ? "Y -15" : "Y +15", { ParamAngleY: 15, ParamBodyAngleY: 6 }),
       withValues("angle-z-left", "Z -15", { ParamAngleZ: -15 }),
       withValues("angle-z-right", "Z +15", { ParamAngleZ: 15 }),
       withValues("mouth-open", "MOUTH 1", { ParamMouthOpen: 1 }),
@@ -367,7 +368,8 @@ function renderRigToImage(
     if (!geometry || !state || (!ignoreVisualAlpha && !forceVisible && !state.visible) || (!ignoreVisualAlpha && state.opacity <= 0)) {
       return;
     }
-    const coloredImage = ignoreVisualAlpha ? geometry.sourceImage : applyContourShade(geometry.sourceImage, part.contourShade, effectiveValues);
+    const pitchUp = part.contourShade?.pitchParameter === "ParamAngleY" ? facePitchUpSign(rig) : -1;
+    const coloredImage = ignoreVisualAlpha ? geometry.sourceImage : applyContourShade(geometry.sourceImage, part.contourShade, effectiveValues, pitchUp);
     const sourceImage = applyAlphaReveal(coloredImage, part.alphaReveal, effectiveValues);
     const warp = geometry.warp;
     const blendMode: PartBlendMode = ignoreVisualAlpha ? "normal" : modeOverride ?? part.blendMode ?? 'normal';

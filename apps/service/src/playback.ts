@@ -62,7 +62,7 @@ export class PlaybackSession {
     this.demoTimer = startFrameTimer(() => {
       this.smoothedPointer.x += (this.pointer.x - this.smoothedPointer.x) * 0.82;
       this.smoothedPointer.y += (this.pointer.y - this.smoothedPointer.y) * 0.82;
-      this.baseValues = sampleDemo(this.parameterCatalogue, base, this.demoMode, (performance.now() - started) / 1000, this.smoothedPointer);
+      this.baseValues = sampleDemo(this.parameterCatalogue, base, this.demoMode, (performance.now() - started) / 1000, this.smoothedPointer, this.rig);
       this.broadcast();
     });
     this.demoTimer.unref();

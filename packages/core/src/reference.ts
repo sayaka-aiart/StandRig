@@ -1,4 +1,4 @@
-import { previewParameterValuesForRig } from "./parameters.js";
+import { poseFromLegacyParameters, previewParameterValuesForRig, usesCubismParameters } from "./parameters.js";
 import type { ParameterValues, RigDocument } from "./types.js";
 
 export type ReferenceSheetSet = "reference-face" | "reference-expression" | "reference-body" | "reference-all";
@@ -86,10 +86,17 @@ export function referenceSheetDefinitionsForRig(rig: RigDocument): ReferenceShee
     ])
   ].map((definition) => ({
     ...definition,
-    poses: definition.poses.map((pose) => ({
-      ...pose,
-      values: previewParameterValuesForRig(rig, pose.values)
-    }))
+    poses: definition.poses.map((pose) => {
+      const inputs = poseFromLegacyParameters(rig, pose.values);
+      const label = usesCubismParameters(rig)
+        ? pose.label.replace(/^(FACE Y|BODY [XY]) [+-]\d+$/, (_, axis: string) => {
+          const id = axis === "FACE Y" ? "ParamAngleY" : axis === "BODY Y" ? "ParamBodyAngleY" : "ParamBodyAngleX";
+          const value = Number(inputs[id]?.toFixed(1) ?? 0);
+          return `${axis} ${value > 0 ? "+" : ""}${value}`;
+        })
+        : pose.label;
+      return { ...pose, label, values: previewParameterValuesForRig(rig, inputs) };
+    })
   }));
 }
 

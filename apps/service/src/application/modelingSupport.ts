@@ -12,7 +12,7 @@ import { fileStamp } from '../fileStamp.js';
 import { evaluateModelFreezeReadiness } from "@standrig/core/modelFreeze";
 import { auditModelingRig } from "@standrig/core/modelingAudit";
 import { executeModelingOperation, type ModelingOperation } from "@standrig/core/modelingOps";
-import { parameterDefinitionsForRig } from "@standrig/core/parameters";
+import { mouthOpenParameterForRig, parameterDefinitionsForRig, usesCubismParameters } from "@standrig/core/parameters";
 import { mouthPhonemeTargetsForRig } from "@standrig/core/phonemes";
 import { runPhysicsTemporalQa } from "@standrig/core/physicsQa";
 import { auditPhysicsSafety } from "@standrig/core/physicsSafety";
@@ -225,9 +225,9 @@ export function mouthPhonemeTargetsWithUrls(rig: RigDocument) {
                 previewParams.set(queryKey, String(value));
             }
         };
-        setNumberParam("mouthOpen", "ParamMouthOpen");
+        setNumberParam("mouthOpen", mouthOpenParameterForRig(rig));
         setNumberParam("mouthForm", "ParamMouthForm");
-        setNumberParam("mouthSmile", "ParamMouthSmile");
+        if (usesCubismParameters(rig)) setNumberParam("mouthRound", "ParamMouthRound"); else setNumberParam("mouthSmile", "ParamMouthSmile");
         const screenshotUrl = `/api/screenshot?${params.toString()}`;
         const previewQuery = previewParams.toString();
         return {

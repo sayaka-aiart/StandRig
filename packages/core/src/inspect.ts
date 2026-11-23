@@ -3,7 +3,6 @@ import { partAffineIssues } from './partAffine.js';
 import { parameterGridIssues } from './parameterGrid.js';
 import { parseFacialPresets } from './facial.js';
 import {
-  PARAMETER_IDS,
   RIG_SCHEMA_VERSION,
   TRANSFORM_PROPERTIES,
   WARP_BINDING_PROPERTIES,
@@ -19,6 +18,7 @@ import {
   type TransformProperty
 } from "./types.js";
 import { DEFAULT_TRACKING_INPUTS } from "./tracking.js";
+import { recommendedParameterIdsForRig, usesCubismParameters } from "./parameters.js";
 import { isParameterInterpolation } from "./bindings.js";
 import { inspectArtMeshQuality, isValidArtMesh } from "./artMesh.js";
 import { validateArtPath } from "./artPath.js";
@@ -47,6 +47,7 @@ export interface RigValidationIssue {
 export interface RigSummary {
   name: string;
   schemaVersion: string;
+  parameterConvention: "cubism" | "standrig-legacy";
   stage: {
     width: number;
     height: number;
@@ -125,6 +126,7 @@ export function summarizeRig(rig: RigDocument): RigSummary {
   return {
     name: typeof rig.name === "string" ? rig.name : "Untitled rig",
     schemaVersion: typeof rig.schemaVersion === "string" ? rig.schemaVersion : "unknown",
+    parameterConvention: usesCubismParameters(rig) ? "cubism" : "standrig-legacy",
     stage: {
       width: numberOrZero(rig.stage?.width),
       height: numberOrZero(rig.stage?.height),
@@ -165,6 +167,9 @@ export function summarizeRig(rig: RigDocument): RigSummary {
 export function validateRig(rig: RigDocument): RigValidationResult {
   const issues: RigValidationIssue[] = [];
   const addIssue = (issue: RigValidationIssue) => issues.push(issue);
+  if (rig.metadata?.parameterConvention !== undefined && !usesCubismParameters(rig)) {
+    addIssue({ severity: "error", code: "invalid-parameter-convention", message: 'parameterConvention must be "cubism".', path: "metadata.parameterConvention" });
+  }
   if(rig.facialPresets!==undefined)try{parseFacialPresets(rig.facialPresets,rig);}catch(error){addIssue({severity:'error',code:'invalid-facial-presets',message:String(error),path:'facialPresets'});}
   for(const message of extendedBlendIssues(rig))addIssue({severity:"error",code:"invalid-blend-shape",message,path:"blendShapes"});
 
@@ -249,7 +254,7 @@ export function validateRig(rig: RigDocument): RigValidationResult {
     }
   }
   validateGlue(glues, partIds, glueVertexIdsByPart, addIssue);
-  validateRecommendedParameters(parameterIds, addIssue);
+  validateRecommendedParameters(rig, parameterIds, addIssue);
   validatePhysics(rig, partIds, parameterIds, deformerIds, addIssue);
   validateTracking(rig, parameterIds, addIssue);
 
@@ -941,8 +946,8 @@ function validateGlue(glues: RigGlue[], partIds: Set<string>, vertexIdsByPart: M
     }
   });
 }
-function validateRecommendedParameters(parameterIds: Set<string>, addIssue: (issue: RigValidationIssue) => void) {
-  for (const id of PARAMETER_IDS) {
+function validateRecommendedParameters(rig: RigDocument, parameterIds: Set<string>, addIssue: (issue: RigValidationIssue) => void) {
+  for (const id of recommendedParameterIdsForRig(rig)) {
     if (!parameterIds.has(id)) {
       addIssue({ severity: "warning", code: "missing-standard-parameter", message: `Standard parameter ${id} is missing.`, path: "parameters" });
     }

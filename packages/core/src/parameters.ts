@@ -1,5 +1,44 @@
 import { PARAMETER_IDS, type ParameterDefinition, type ParameterValues, type RigDocument } from "./types.js";
 
+type RigConvention = Pick<RigDocument, "metadata">;
+
+export const CUBISM_VERTICAL_PARAMETERS = ["ParamAngleY", "ParamBodyAngleY", "ParamEyeBallY"] as const;
+
+export function usesCubismParameters(rig: RigConvention): boolean {
+  return rig.metadata?.parameterConvention === "cubism";
+}
+
+export function facePitchUpSign(rig: RigConvention): 1 | -1 {
+  return usesCubismParameters(rig) ? 1 : -1;
+}
+
+/** Adapt generated poses. Saved keys, clips and external values are already in model coordinates. */
+export function poseFromLegacyParameters(rig: RigConvention, values: Partial<ParameterValues>): Partial<ParameterValues> {
+  if (!usesCubismParameters(rig)) return values;
+  const pose = { ...values };
+  for (const id of CUBISM_VERTICAL_PARAMETERS) {
+    const value = pose[id];
+    if (value !== undefined && value !== 0) pose[id] = -value;
+  }
+  for (const id of ["ParamBodyAngleX", "ParamBodyAngleY"]) {
+    const value = pose[id];
+    if (value !== undefined) pose[id] = value / 3;
+  }
+  if (values.ParamMouthOpen !== undefined) {
+    pose.ParamMouthOpenY = values.ParamMouthOpen;
+    delete pose.ParamMouthOpen;
+  }
+  if (values.ParamMouthForm !== undefined) {
+    pose.ParamMouthRound = values.ParamMouthForm;
+    pose.ParamMouthForm = 0;
+  }
+  if (values.ParamMouthSmile !== undefined) {
+    pose.ParamMouthForm = values.ParamMouthSmile;
+    delete pose.ParamMouthSmile;
+  }
+  return pose;
+}
+
 /**
  * Reserved vocabulary shared with the modeling side. Definitions exist ahead
  * of model keyforms so tracking mappings and URL/API access stay stable.
@@ -42,6 +81,31 @@ export const DEFAULT_PARAMETERS: ParameterDefinition[] = [
   ...RESERVED_PARAMETERS
 ];
 
+export const CUBISM_PARAMETERS: ParameterDefinition[] = DEFAULT_PARAMETERS.map((parameter) => {
+  switch (parameter.id) {
+    case "ParamBodyAngleX":
+    case "ParamBodyAngleY":
+      return { ...parameter, min: -10, max: 10, step: 0.1 };
+    case "ParamMouthOpen":
+      return { ...parameter, id: "ParamMouthOpenY" };
+    case "ParamMouthSmile":
+      return { ...parameter, id: "ParamMouthRound", label: "Mouth Round" };
+    default:
+      return parameter;
+  }
+});
+
+export function mouthOpenParameterForRig(rig: Pick<RigDocument, "metadata" | "parameters">): string {
+  if (usesCubismParameters(rig)) return "ParamMouthOpenY";
+  const ids = new Set((rig.parameters ?? []).map(parameter => parameter.id));
+  return ids.has("ParamMouthOpenY") && !ids.has("ParamMouthOpen") ? "ParamMouthOpenY" : "ParamMouthOpen";
+}
+
+export function recommendedParameterIdsForRig(rig: RigDocument): string[] {
+  const ids = PARAMETER_IDS.map(id => id === "ParamMouthOpen" ? mouthOpenParameterForRig(rig) : id);
+  return usesCubismParameters(rig) ? ids.filter(id => id !== "ParamMouthSmile") : ids;
+}
+
 const QUERY_ALIASES: Record<string, string> = {
   angleX: "ParamAngleX",
   angleY: "ParamAngleY",
@@ -77,7 +141,7 @@ const QUERY_ALIASES: Record<string, string> = {
 
 export function parameterDefinitionsForRig(rig: RigDocument): ParameterDefinition[] {
   const merged = new Map<string, ParameterDefinition>();
-  for (const parameter of DEFAULT_PARAMETERS) {
+  for (const parameter of usesCubismParameters(rig) ? CUBISM_PARAMETERS : DEFAULT_PARAMETERS) {
     merged.set(parameter.id, parameter);
   }
   for (const parameter of rig.parameters ?? []) {
@@ -121,7 +185,10 @@ export function writePreviewParameterValues(rig: RigDocument, values: Partial<Pa
   return merged;
 }
 
-export function normalizeParameterKey(key: string): string {
+export function normalizeParameterKey(key: string, rig?: RigDocument): string {
+  if (key === "mouthOpen" && rig) return mouthOpenParameterForRig(rig);
+  if (rig && usesCubismParameters(rig) && (key === "mouthRound" || key === "mouthWide")) return "ParamMouthRound";
+  if (key === "mouthSmile" && rig && usesCubismParameters(rig)) return "ParamMouthForm";
   if ((PARAMETER_IDS as readonly string[]).includes(key)) {
     return key;
   }

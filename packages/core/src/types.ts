@@ -888,6 +888,8 @@ export interface RigPhonemeReferences {
 }
 
 export interface RigMetadata {
+  /** Omitted for rigs authored with the original StandRig parameter conventions. */
+  parameterConvention?: "cubism";
   source?: string;
   importedAt?: string;
   format?: string;

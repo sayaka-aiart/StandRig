@@ -14,6 +14,7 @@ import { createPartClipResolver, sameResolvedPartClip } from "@standrig/core/mas
 import { prepareRigBindingOrder } from "@standrig/core/bindingPreparation";
 import { EvaluationCache, withEvaluationCache } from "@standrig/core/evaluationCache";
 import { ContourShadeProcessor, validateContourShade } from "@standrig/core/contourShade";
+import { facePitchUpSign } from "@standrig/core/parameters";
 import { AlphaRevealProcessor, validateAlphaReveal } from "@standrig/core/alphaReveal";
 import { canvasBlendMode, compositeRgba, hasLayerCompositing, layerCompositingPlan, paintLayerPlan } from '@standrig/core/compositing';
 import { hasDrawOrderGroups, hasKeyedDrawOrder, sortPartsForPaint } from '@standrig/core/drawOrder';
@@ -923,7 +924,8 @@ export class RigRuntime {
     if (!part.contourShade || !validateContourShade(part.contourShade)) return source;
     const yawActive = (params[part.contourShade.yawParameter] ?? 0) !== 0
       && (part.contourShade.strength > 0 || part.contourShade.farContourFade || part.contourShade.nearContourFade);
-    const upActive = (params[part.contourShade.pitchParameter] ?? 0) < 0
+    const pitchUp = part.contourShade.pitchParameter === "ParamAngleY" ? facePitchUpSign(this.rig) : -1;
+    const upActive = (params[part.contourShade.pitchParameter] ?? 0) * pitchUp > 0
       && (part.contourShade.upContourFade || part.contourShade.upShadowStrength);
     if (!yawActive && !upActive) return source;
     const key = JSON.stringify(part.contourShade);
@@ -937,7 +939,7 @@ export class RigRuntime {
       entry = { source, key, canvas, processor: new ContourShadeProcessor(pixels, part.contourShade) };
       this.contourImages.set(part.id, entry);
     }
-    const pixels = entry.processor.render(params);
+    const pixels = entry.processor.render(params, pitchUp);
     if (pixels !== entry.last) {
       const context = entry.canvas.getContext("2d")!;
       const frame = context.createImageData(width, height);

@@ -9,7 +9,7 @@ import './styles.css';
 import { createRigFromPsdFile } from '@standrig/core/importers';
 import { fetchRigDocument, downloadRigDocument } from '@standrig/core/io';
 import { StandRigPlayer, type PlaybackSnapshot } from '@standrig/runtime';
-import { parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
+import { facePitchUpSign, parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
 import type { ParameterValues, RigDocument } from '@standrig/core/types';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -125,7 +125,7 @@ const parameterControls = createParameterControls(document.querySelector<HTMLEle
   change(patch) { Object.assign(values, patch); render(); sendPose(patch); }
 });
 function parameters() {
-  parameterControls.load(parameterDefinitionsForRig(rig), rig.name);
+  parameterControls.load(parameterDefinitionsForRig(rig), rig.name, facePitchUpSign(rig));
 }
 function applyState() {
   if (!latest || !rig || modelVersion !== latest.modelVersion || sessionId !== latest.sessionId) return;

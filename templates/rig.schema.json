@@ -20,7 +20,13 @@
       "type": "string"
     },
     "metadata": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "parameterConvention": {
+          "const": "cubism",
+          "description": "Cubism parameter conventions. Omitted in rigs that use the original StandRig conventions."
+        }
+      }
     },
     "stage": {
       "type": "object",
