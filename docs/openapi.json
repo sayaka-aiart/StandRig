@@ -6442,6 +6442,10 @@
                       "type": "number"
                     },
                     "description": "Finite model parameter values. Playback also requires known IDs and values within their declared ranges."
+                  },
+                  "clearViseme": {
+                    "type": "boolean",
+                    "description": "Immediately clear the vowel layer in the same update as the parameter values."
                   }
                 }
               }

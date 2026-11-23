@@ -8,6 +8,7 @@ import { visemeLabels as labels } from './parameterControls';
 interface Host {
   rig:()=>RigDocument|undefined; values:()=>ParameterValues|undefined; state:()=>PlaybackSnapshot|undefined;
   post:(url:string,body:unknown)=>Promise<unknown>; reload:()=>Promise<void>; report:(error:unknown)=>void;
+  previewViseme:(id:VisemeId)=>void;
 }
 const empty=():FacialPresets=>({version:1,expressions:[]});
 export function createFacialPanel(host:Host) {
@@ -140,10 +141,6 @@ export function createFacialPanel(host:Host) {
       dialog.showModal();
     } catch (error) { host.report(error); }
   }
-  async function previewViseme(id: VisemeId) {
-    try { await host.post('/api/playback/facial', { action: 'viseme', id }); }
-    catch (error) { host.report(error); }
-  }
   query<HTMLButtonElement>('facial-edit').onclick=()=>openEditor();
   query<HTMLButtonElement>('facial-close').onclick=()=>dialog.close();query<HTMLSelectElement>('facial-kind').onchange=chooseMode;
   query<HTMLSelectElement>('viseme-id').onchange=()=>rebuildRows();query<HTMLSelectElement>('viseme-mode').onchange=()=>rebuildRows();
@@ -154,7 +151,7 @@ export function createFacialPanel(host:Host) {
   query<HTMLSelectElement>('expression-select').onchange=()=>{const e=bank().expressions.find(e=>e.id===query<HTMLSelectElement>('expression-select').value);if(e){query<HTMLInputElement>('expression-id').value=e.id;query<HTMLInputElement>('expression-name').value=e.name;}};
   function refresh(){const catalog=bank(),editSelect=query<HTMLSelectElement>('expression-edit-select'),oldEdit=editSelect.value;editSelect.replaceChildren(new Option('新規登録',''));for(const e of catalog.expressions)editSelect.add(new Option(e.name,e.id));if(catalog.expressions.some(e=>e.id===oldEdit))editSelect.value=oldEdit;const select=query<HTMLSelectElement>('expression-select'),old=select.value;select.replaceChildren();for(const e of catalog.expressions)select.add(new Option(e.name,e.id));if(catalog.expressions.some(e=>e.id===old))select.value=old;query<HTMLButtonElement>('expression-preview').disabled=!catalog.expressions.length;
     const rig=host.rig(),active=rig&&activeVisemeBank(catalog,rig);
-    const buttons=query('viseme-buttons');buttons.replaceChildren();for(const id of VISEME_IDS){const button=document.createElement('button');button.textContent=labels[id];button.disabled=!active?.presets.some(p=>p.id===id);button.onclick=()=>previewViseme(id);buttons.append(button);}query<HTMLSelectElement>('viseme-mode').value=catalog.visemes?.mode??'pose';
+    const buttons=query('viseme-buttons');buttons.replaceChildren();for(const id of VISEME_IDS){const button=document.createElement('button');button.textContent=labels[id];button.disabled=!active?.presets.some(p=>p.id===id);button.onclick=()=>host.previewViseme(id);buttons.append(button);}query<HTMLSelectElement>('viseme-mode').value=catalog.visemes?.mode??'pose';
     motionSyncSelect.replaceChildren(new Option('手動登録', ''));
     for (const profile of catalog.motionSync?.profiles ?? []) motionSyncSelect.add(new Option(profile.name, profile.id));
     motionSyncSelect.value = catalog.motionSync?.selectedId ?? '';
@@ -167,5 +164,5 @@ export function createFacialPanel(host:Host) {
   function update(){const state=host.state()?.facial;const active=state?.activeExpressions??(state?.expressionId?[state.expressionId]:[]);query('facial-status').textContent=active.length?`表情：${active.map(id=>bank().expressions.find(e=>e.id===id)?.name??id).join('、')}`:Object.values(state?.visemeWeights??{}).some(v=>(v??0)>0)?'母音プレビュー中':'プレビュー停止';
     if(dialog.open&&!imported){const values=host.values()??{};for(const output of dialog.querySelectorAll<HTMLOutputElement>('output[data-value]'))output.textContent=String(Number((values[output.dataset.value!]??0).toFixed(3)));}
   }
-  return {refresh,update,previewViseme,editViseme:(id?:VisemeId)=>openEditor(true,id)};
+  return {refresh,update,editViseme:(id?:VisemeId)=>openEditor(true,id)};
 }

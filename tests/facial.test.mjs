@@ -155,6 +155,28 @@ test('commit publishes facial playback before sending success and reloads only o
  }finally{await service?.close();assert.equal(path.dirname(dir),path.resolve(os.tmpdir()));await rm(dir,{recursive:true,force:true});}
 });
 
+test('manual mouth input releases the vowel preview in the same playback update', () => {
+ const session = new PlaybackSession(fixture());
+ try {
+  session.facialCommand({ action: 'expression', id: 'half' });
+  session.facialCommand({ action: 'viseme', id: 'A' });
+  const tracking = session.input({ source: 'tracker', sequence: 1, values: { ParamMouthOpen: 0.4 } });
+  assert.equal(tracking.values.ParamMouthOpen, 1);
+  assert.equal(tracking.baseValues.ParamMouthOpen, 0.4);
+  const manual = { source: 'editor', sequence: 1, values: { ParamMouthOpen: 0.27, ParamMouthForm: -0.62 } };
+  assert.throws(() => session.input({ ...manual, clearViseme: 'yes' }), /invalid clearViseme/);
+  assert.throws(() => session.input({ ...manual, clearViseme: true, values: { ParamMouthOpen: 2 } }), /out-of-range/);
+  assert.equal(session.snapshot().values.ParamMouthOpen, 1);
+  const result = session.input({ ...manual, clearViseme: true });
+  assert.equal(result.revision, tracking.revision + 1);
+  assert.equal(result.values.ParamMouthOpen, 0.27);
+  assert.equal(result.values.ParamMouthForm, -0.62);
+  assert.deepEqual(result.facial.visemeWeights, {});
+  assert.equal(result.facial.expressionId, 'half');
+  assert.equal(session.snapshot().values.ParamMouthOpen, 0.27);
+ } finally { session.close(); }
+});
+
 test('HTTP/MCP register, play and export facial presets through CAS transactions only',async()=>{
  const dir=await mkdtemp(path.join(os.tmpdir(),'standrig-facial-'));let service,client,transport;
  try{

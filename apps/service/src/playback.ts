@@ -97,7 +97,7 @@ export class PlaybackSession {
     res.on('close', () => { clearInterval(heartbeat); this.streams.delete(res); this.congested.delete(res); this.encoders.delete(res); });
   }
   input(body: Record<string, unknown>) {
-    const { source, sequence, values } = body;
+    const { source, sequence, values, clearViseme } = body;
     if (body.expectedSessionId !== undefined && body.expectedSessionId !== this.state.sessionId) throw new Error('playback session changed');
     if (body.expectedModelVersion !== undefined && body.expectedModelVersion !== this.state.modelVersion) throw new Error('playback model changed');
     if (typeof source !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(source)) throw new Error('invalid source');
@@ -105,9 +105,14 @@ export class PlaybackSession {
     const previous = this.sequences.get(source);
     if (previous !== undefined && sequence <= previous) throw new Error('stale sequence');
     if (!this.sequences.has(source) && this.sequences.size >= 64) throw new Error('too many sources; reload model');
+    if (clearViseme !== undefined && typeof clearViseme !== 'boolean') throw new Error('invalid clearViseme');
     const patch = validateParameterPatch(this.rig, values);
     this.stopDemo();
     Object.assign(this.baseValues,this.motion.external(patch), patch);
+    if (clearViseme) {
+      this.facial.command({ action: 'clear', layer: 'viseme', immediate: true }, performance.now());
+      this.syncFacialTimer();
+    }
     this.syncMotionTimer();
     this.sequences.set(source, sequence);
     this.state.lastSource = source;

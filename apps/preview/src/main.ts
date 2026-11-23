@@ -4,6 +4,7 @@ import { playbackEvents } from './playbackEvents.js';
 import { jsonRequest } from '@standrig/core/httpTransport';
 import { packModelBundle } from '@standrig/core/bundle';
 import { activeVisemeBank } from '@standrig/core/motionSync';
+import type { VisemeId } from '@standrig/core/facialTypes';
 import { createFacialPanel } from './facialPanel';
 import { parseModelFile } from './modelFile';
 import './styles.css';
@@ -119,13 +120,16 @@ let latest: PlaybackSnapshot | undefined;
 let reloadQueue = Promise.resolve();
 let inputSequence = 0;
 const inputSource = 'preview_' + crypto.randomUUID().replaceAll('-', '');
+let visemeParameters = new Set<string>();
 function acceptPlayback(reply: unknown) {
   const state = (reply as { playback: PlaybackSnapshot }).playback;
   if (state.sessionId === latest?.sessionId && state.modelVersion === latest?.modelVersion && state.revision >= latest.revision) latest = state;
   applyState();
 }
 const poseInput = new PoseInput(
-  patch => post('/api/playback/parameters', { source: inputSource, sequence: ++inputSequence, values: patch, expectedSessionId: sessionId, expectedModelVersion: modelVersion }),
+  input => 'id' in input
+    ? post('/api/playback/facial', { action: 'viseme', id: input.id })
+    : post('/api/playback/parameters', { source: inputSource, sequence: ++inputSequence, ...input, expectedSessionId: sessionId, expectedModelVersion: modelVersion }),
   acceptPlayback,
   error => { report(error); applyState(); }
 );
@@ -222,34 +226,33 @@ async function post(url: string, body: unknown) {
   if (!response.ok || result.ok === false) throw new Error(JSON.stringify(result));
   return result;
 }
-function changePose(patch: ParameterValues) {
+function changePose(patch: ParameterValues, clearViseme = Object.keys(patch).some(id => visemeParameters.has(id))) {
+  if (latest?.sessionId !== sessionId || latest?.modelVersion !== modelVersion) return;
   Object.assign(values, patch);
   render();
-  poseInput.enqueue(patch);
+  poseInput.enqueue(patch, clearViseme);
 }
-async function previewInitialViseme(patch: ParameterValues) {
-  const session = sessionId;
-  const version = modelVersion;
-  if (!latest || latest.sessionId !== session || latest.modelVersion !== version) return;
-  try {
-    acceptPlayback(await post('/api/playback/facial', { action: 'clear', layer: 'viseme', immediate: true }));
-    if (latest?.sessionId !== session || latest?.modelVersion !== version) return;
-    changePose(patch);
-    parameterControls.update();
-  } catch (error) { report(error); }
+function previewViseme(id: VisemeId) {
+  if (latest?.sessionId === sessionId && latest?.modelVersion === modelVersion) poseInput.enqueueViseme(id);
 }
-const facialPanel = createFacialPanel({rig:()=>rig,values:()=>values,state:()=>latest,post,reload,report});
+function previewInitialViseme(patch: ParameterValues) {
+  changePose(patch, true);
+  parameterControls.update();
+}
+const facialPanel = createFacialPanel({rig:()=>rig,values:()=>values,state:()=>latest,post,reload,report,previewViseme});
 const parameterControls = createParameterControls(document.querySelector<HTMLElement>('#params')!, {
   values: () => values ?? {},
   change: changePose,
-  previewViseme: facialPanel.previewViseme,
+  previewViseme,
   previewInitialViseme,
   editViseme: facialPanel.editViseme
 });
 function parameters() {
+  const visemes = activeVisemeBank(rig.facialPresets, rig);
+  visemeParameters = new Set(visemes?.presets.flatMap(preset => Object.keys(preset.values)));
   parameterControls.load(parameterDefinitionsForRig(rig), rig.name, facePitchUpSign(rig), rig.assets.length ? {
     axes: ['ParamMouthForm', mouthOpenParameterForRig(rig)],
-    visemes: activeVisemeBank(rig.facialPresets, rig),
+    visemes,
     imported: !!rig.facialPresets?.motionSync?.selectedId
   } : undefined);
 }

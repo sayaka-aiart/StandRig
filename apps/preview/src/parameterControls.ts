@@ -87,8 +87,8 @@ export function restorePads(raw: unknown, definitions: ParameterDefinition[]): P
 export function createParameterControls(container: HTMLElement, host: {
   values(): ParameterValues;
   change(patch: ParameterValues): void;
-  previewViseme(id: VisemeId): Promise<void>;
-  previewInitialViseme(values: ParameterValues): Promise<void>;
+  previewViseme(id: VisemeId): void;
+  previewInitialViseme(values: ParameterValues): void;
   editViseme(id?: VisemeId): void;
 }) {
   let definitions: ParameterDefinition[] = [];
@@ -158,17 +158,13 @@ export function createParameterControls(container: HTMLElement, host: {
     const [x, y] = axes;
     const points = mouthPadPoints(axes, mouth?.visemes, pitchUp === 1, mouth?.imported);
     let selected: VisemeId | undefined;
-    let selecting = false;
-    function visemeButton(id: VisemeId, preview: () => Promise<void>) {
+    function visemeButton(id: VisemeId, preview: () => void) {
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = visemeLabels[id];
-      button.onclick = async () => {
-        if (selecting) return;
-        selecting = true;
+      button.onclick = () => {
         selected = id;
-        try { await preview(); }
-        finally { selecting = false; }
+        preview();
       };
       return button;
     }
@@ -191,12 +187,12 @@ export function createParameterControls(container: HTMLElement, host: {
         group.style.top = top + '%';
         group.dataset.side = left < 15 ? 'left' : left > 85 ? 'right' : 'middle';
         if (top < 15) group.dataset.edge = 'top';
-        group.onpointerdown = event => event.stopPropagation();
         groups.set(key, group);
         surface.append(group);
       }
       const button = visemeButton(point.id, () => point.registered
         ? host.previewViseme(point.id) : host.previewInitialViseme(point.values));
+      button.onpointerdown = event => event.stopPropagation();
       button.dataset.registered = String(point.registered);
       button.setAttribute('aria-label', visemeLabels[point.id] + (point.registered ? '（登録済み）' : '（Cubism基本の目安）'));
       group.append(button);
@@ -222,7 +218,7 @@ export function createParameterControls(container: HTMLElement, host: {
     const edit = document.createElement('button');
     edit.type = 'button';
     edit.textContent = mouth?.imported ? '手動登録の母音を編集' : '母音を登録／編集';
-    edit.onclick = () => { if (!selecting) host.editViseme(selected); };
+    edit.onclick = () => host.editViseme(selected);
     footer.append(edit);
     return footer;
   }
