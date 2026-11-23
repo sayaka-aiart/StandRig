@@ -2,12 +2,12 @@ import { VISEME_IDS, importExpression, exportExpression, parseFacialPresets, typ
 import { parameterDefinitionsForRig } from '@standrig/core/parameters';
 import type { RigDocument, ParameterValues } from '@standrig/core/types';
 import type { PlaybackSnapshot } from '@standrig/runtime';
+import { visemeLabels as labels } from './parameterControls';
 
 interface Host {
   rig:()=>RigDocument|undefined; values:()=>ParameterValues|undefined; state:()=>PlaybackSnapshot|undefined;
   post:(url:string,body:unknown)=>Promise<unknown>; reload:()=>Promise<void>; report:(error:unknown)=>void;
 }
-const labels:Record<VisemeId,string>={A:'あ',I:'い',U:'う',E:'え',O:'お',Silence:'無音'};
 const empty=():FacialPresets=>({version:1,expressions:[]});
 export function createFacialPanel(host:Host) {
   const section=document.createElement('section');section.id='facial-panel';
@@ -59,7 +59,21 @@ export function createFacialPanel(host:Host) {
   query<HTMLButtonElement>('expression-use-current').onclick=()=>{const ids=[...dialog.querySelectorAll<HTMLInputElement>('input[data-parameter]:checked')].map(e=>e.dataset.parameter);imported=undefined;rebuildRows();for(const input of dialog.querySelectorAll<HTMLInputElement>('input[data-parameter]'))input.checked=ids.includes(input.dataset.parameter);editorStatus('現在の姿勢から登録します。');};
   query<HTMLInputElement>('expression-file').onchange=()=>{void(async()=>{const file=query<HTMLInputElement>('expression-file').files?.[0];if(!file)return;if(file.size>1024*1024)throw Error('表情JSONは1 MiB以下にしてください。');imported=importExpression(JSON.parse(await file.text()),requireRig());query<HTMLInputElement>('expression-id').value=file.name.replace(/\.exp3\.json$|\.json$/i,'');query<HTMLInputElement>('expression-name').value=query<HTMLInputElement>('expression-id').value;query<HTMLInputElement>('facial-fade-in').value=String(imported.FadeInTime??.2);query<HTMLInputElement>('facial-fade-out').value=String(imported.FadeOutTime??.2);rebuildRows(imported);editorStatus('読み込みました。対象・値・合成方法を確認し、登録してください。');})().catch(failure).finally(()=>{query<HTMLInputElement>('expression-file').value='';});};
   query<HTMLButtonElement>('expression-export').onclick=()=>{try{const id=query<HTMLInputElement>('expression-id').value,e=bank().expressions.find(e=>e.id===id);if(!e)throw Error('保存済みの表情IDを選択してください。');const url=URL.createObjectURL(new Blob([JSON.stringify(exportExpression(e,requireRig()),null,2)+'\n'],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=id.replace(/[^a-zA-Z0-9_-]/g,'_')+'.exp3.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){failure(e);}};
-  query<HTMLButtonElement>('facial-edit').onclick=()=>{try{requireRig();chooseMode();editorStatus('');dialog.showModal();}catch(e){host.report(e);}};
+  function openEditor(viseme = false, id?: VisemeId) {
+    try {
+      requireRig();
+      if (viseme) {
+        query<HTMLSelectElement>('facial-kind').value = 'viseme';
+        if (id) query<HTMLSelectElement>('viseme-id').value = id;
+      }
+      chooseMode(); editorStatus(''); dialog.showModal();
+    } catch (error) { host.report(error); }
+  }
+  async function previewViseme(id: VisemeId) {
+    try { await host.post('/api/playback/facial', { action: 'viseme', id }); }
+    catch (error) { host.report(error); }
+  }
+  query<HTMLButtonElement>('facial-edit').onclick=()=>openEditor();
   query<HTMLButtonElement>('facial-close').onclick=()=>dialog.close();query<HTMLSelectElement>('facial-kind').onchange=chooseMode;
   query<HTMLSelectElement>('viseme-id').onchange=()=>rebuildRows();query<HTMLSelectElement>('viseme-mode').onchange=()=>rebuildRows();
   // With 重ねる checked, the expression is toggled on top of the active ones instead of replacing them.
@@ -68,10 +82,10 @@ export function createFacialPanel(host:Host) {
   query<HTMLButtonElement>('facial-clear').onclick=()=>{void host.post('/api/playback/facial',{action:'clear',immediate:true}).catch(host.report);};
   query<HTMLSelectElement>('expression-select').onchange=()=>{const e=bank().expressions.find(e=>e.id===query<HTMLSelectElement>('expression-select').value);if(e){query<HTMLInputElement>('expression-id').value=e.id;query<HTMLInputElement>('expression-name').value=e.name;}};
   function refresh(){const catalog=bank(),editSelect=query<HTMLSelectElement>('expression-edit-select'),oldEdit=editSelect.value;editSelect.replaceChildren(new Option('新規登録',''));for(const e of catalog.expressions)editSelect.add(new Option(e.name,e.id));if(catalog.expressions.some(e=>e.id===oldEdit))editSelect.value=oldEdit;const select=query<HTMLSelectElement>('expression-select'),old=select.value;select.replaceChildren();for(const e of catalog.expressions)select.add(new Option(e.name,e.id));if(catalog.expressions.some(e=>e.id===old))select.value=old;query<HTMLButtonElement>('expression-preview').disabled=!catalog.expressions.length;
-    const buttons=query('viseme-buttons');buttons.replaceChildren();for(const id of VISEME_IDS){const button=document.createElement('button');button.textContent=labels[id];button.disabled=!catalog.visemes?.presets.some(p=>p.id===id);button.onclick=()=>{void host.post('/api/playback/facial',{action:'viseme',id}).catch(host.report);};buttons.append(button);}query<HTMLSelectElement>('viseme-mode').value=catalog.visemes?.mode??'pose';
+    const buttons=query('viseme-buttons');buttons.replaceChildren();for(const id of VISEME_IDS){const button=document.createElement('button');button.textContent=labels[id];button.disabled=!catalog.visemes?.presets.some(p=>p.id===id);button.onclick=()=>previewViseme(id);buttons.append(button);}query<HTMLSelectElement>('viseme-mode').value=catalog.visemes?.mode??'pose';
   }
   function update(){const state=host.state()?.facial;const active=state?.activeExpressions??(state?.expressionId?[state.expressionId]:[]);query('facial-status').textContent=active.length?`表情：${active.map(id=>bank().expressions.find(e=>e.id===id)?.name??id).join('、')}`:Object.values(state?.visemeWeights??{}).some(v=>(v??0)>0)?'母音プレビュー中':'プレビュー停止';
     if(dialog.open&&!imported){const values=host.values()??{};for(const output of dialog.querySelectorAll<HTMLOutputElement>('output[data-value]'))output.textContent=String(Number((values[output.dataset.value!]??0).toFixed(3)));}
   }
-  return {refresh,update};
+  return {refresh,update,previewViseme,editViseme:(id?:VisemeId)=>openEditor(true,id)};
 }

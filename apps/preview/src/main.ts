@@ -9,7 +9,7 @@ import './styles.css';
 import { createRigFromPsdFile } from '@standrig/core/importers';
 import { fetchRigDocument, downloadRigDocument } from '@standrig/core/io';
 import { StandRigPlayer, type PlaybackSnapshot } from '@standrig/runtime';
-import { facePitchUpSign, parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
+import { facePitchUpSign, mouthOpenParameterForRig, parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
 import type { ParameterValues, RigDocument } from '@standrig/core/types';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -55,9 +55,14 @@ let latest: PlaybackSnapshot | undefined;
 let reloadQueue = Promise.resolve();
 let inputSequence = 0;
 const inputSource = 'preview_' + crypto.randomUUID().replaceAll('-', '');
+function acceptPlayback(reply: unknown) {
+  const state = (reply as { playback: PlaybackSnapshot }).playback;
+  if (state.sessionId === latest?.sessionId && state.modelVersion === latest?.modelVersion && state.revision >= latest.revision) latest = state;
+  applyState();
+}
 const poseInput = new PoseInput(
   patch => post('/api/playback/parameters', { source: inputSource, sequence: ++inputSequence, values: patch, expectedSessionId: sessionId, expectedModelVersion: modelVersion }),
-  reply => { const state = (reply as { playback: PlaybackSnapshot }).playback; if (state.sessionId === latest?.sessionId && state.modelVersion === latest?.modelVersion && state.revision >= latest.revision) latest = state; applyState(); },
+  acceptPlayback,
   error => { report(error); applyState(); }
 );
 const demoButton = document.querySelector<HTMLButtonElement>('#demo')!;
@@ -118,14 +123,35 @@ async function post(url: string, body: unknown) {
   if (!response.ok || result.ok === false) throw new Error(JSON.stringify(result));
   return result;
 }
-function sendPose(patch: ParameterValues) { poseInput.enqueue(patch); }
+function changePose(patch: ParameterValues) {
+  Object.assign(values, patch);
+  render();
+  poseInput.enqueue(patch);
+}
+async function previewInitialViseme(patch: ParameterValues) {
+  const session = sessionId;
+  const version = modelVersion;
+  if (!latest || latest.sessionId !== session || latest.modelVersion !== version) return;
+  try {
+    acceptPlayback(await post('/api/playback/facial', { action: 'clear', layer: 'viseme', immediate: true }));
+    if (latest?.sessionId !== session || latest?.modelVersion !== version) return;
+    changePose(patch);
+    parameterControls.update();
+  } catch (error) { report(error); }
+}
 const facialPanel = createFacialPanel({rig:()=>rig,values:()=>values,state:()=>latest,post,reload,report});
 const parameterControls = createParameterControls(document.querySelector<HTMLElement>('#params')!, {
   values: () => values ?? {},
-  change(patch) { Object.assign(values, patch); render(); sendPose(patch); }
+  change: changePose,
+  previewViseme: facialPanel.previewViseme,
+  previewInitialViseme,
+  editViseme: facialPanel.editViseme
 });
 function parameters() {
-  parameterControls.load(parameterDefinitionsForRig(rig), rig.name, facePitchUpSign(rig));
+  parameterControls.load(parameterDefinitionsForRig(rig), rig.name, facePitchUpSign(rig), rig.assets.length ? {
+    axes: ['ParamMouthForm', mouthOpenParameterForRig(rig)],
+    visemes: rig.facialPresets?.visemes
+  } : undefined);
 }
 function applyState() {
   if (!latest || !rig || modelVersion !== latest.modelVersion || sessionId !== latest.sessionId) return;

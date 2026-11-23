@@ -8,7 +8,7 @@ import { DEFAULT_PARAMETERS, facePitchUpSign } from '../packages/core/dist/param
 const source = await readFile(new URL('../apps/preview/src/parameterControls.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText
   .replace("'@standrig/core/parameters'", JSON.stringify(new URL('../packages/core/dist/parameters.js', import.meta.url).href));
-const { padValue, padPatch, restorePads } = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
+const { padValue, padPatch, restorePads, mouthPadPoints } = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
 const parameter = (id, min, max, step = 0.1) => ({ id, label: id, min, max, default: min, step });
 const definitions = [parameter('x', -30, 30, 1), parameter('y', 0, 1, 0.01), parameter('z', -10, 10), parameter('w', 2, 4)];
 
@@ -56,4 +56,27 @@ test('four or more parameters survive persistence and axis changes with safe mod
   assert.deepEqual(restorePads([null, {}, { name: 'invalid', parameters: [1, null, 'missing'] }], definitions), []);
   assert.deepEqual(restorePads([group, { ...group, name: 'duplicate' }], definitions), [group]);
   assert.deepEqual(restorePads({}, definitions), []);
+});
+
+test('the mouth pad gives saved vowel coordinates priority over Cubism Basic guides', () => {
+  const form = parameter('ParamMouthForm', -1, 1);
+  const open = parameter('ParamMouthOpenY', 0, 1);
+  const guides = mouthPadPoints([form, open], undefined, true);
+  assert.deepEqual(guides.map(({ id, values }) => [id, values.ParamMouthForm, values.ParamMouthOpenY]),
+    [['A', 1, 1], ['I', 1, 0.5], ['U', -1, 0.5], ['O', -1, 1]]);
+  assert.ok(guides.every(point => !point.registered));
+  const saved = {
+    mode: 'pose',
+    presets: [
+      { id: 'A', values: { ParamMouthForm: 0.23, ParamMouthOpenY: 0.78, ParamMouthRound: 0.42 } },
+      { id: 'E', values: { ParamMouthForm: 0.48, ParamMouthOpenY: 0.63, ParamMouthRound: -0.3 } }
+    ]
+  };
+  const original = JSON.stringify(saved);
+  const registered = mouthPadPoints([open, form], saved, true).filter(point => point.registered);
+  assert.deepEqual(registered.map(({ id, values }) => ({ id, values })), saved.presets);
+  assert.equal(JSON.stringify(saved), original);
+  assert.deepEqual(mouthPadPoints([form, open], { ...saved, mode: 'blend-shape' }, true), []);
+  assert.deepEqual(mouthPadPoints([form, { ...open, id: 'ParamMouthOpen' }], undefined, false), []);
+  assert.deepEqual(mouthPadPoints([form, { ...open, max: 0.7 }], undefined, true).map(point => point.id), ['I', 'U']);
 });

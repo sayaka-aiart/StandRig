@@ -91,6 +91,8 @@ npm start
 
 新しくPSDから作るモデルは [Live2D Cubismの標準パラメータ規約](https://docs.live2d.com/cubism-editor-manual/standard-parameter-list/) に合わせます。顔・身体・視線の上下はプラスが上、身体の角度は標準で−10〜+10です。目は0で閉じ、1で開きます。口の開閉は `ParamMouthOpenY`、笑顔・への字は `ParamMouthForm` です。丸口・横長口にはStandRig独自の `ParamMouthRound` を使えます。従来のモデルは保存時の規約で動作し、XYパッドはモデルに合わせて上下の入力値を選びます。
 
+Cubism規約のモデルでは、**口のXYパッド**に [Cubismモーションシンク「基本」の配置例](https://docs.live2d.com/cubism-editor-manual/motion-sync/) に基づく「あ・い・う・お」の目安が点線で表示されます。点線のラベルを押して口形を調整し、「母音を登録／編集」から保存できます。「え」と無音もモデルに合わせて登録します。登録済みのラベルを押すと、パッドの2軸以外も含めた保存済みの口形をプレビューします。Connectで同じ口形を使うには、登録後に画像込みモデル（`.srig`）を書き出して開き直します。
+
 ### 4. 動作デモを試す
 
 プレビュー上部の **「動作デモ」** で種類を選び、**「デモを開始」**を押します。
