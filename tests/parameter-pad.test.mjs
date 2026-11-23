@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
+import { modelingPosePresetById } from '../packages/core/dist/modeling.js';
+import { DEFAULT_PARAMETERS } from '../packages/core/dist/parameters.js';
 
 const source = await readFile(new URL('../apps/preview/src/parameterControls.ts', import.meta.url), 'utf8');
 const js = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } }).outputText;
@@ -19,6 +21,20 @@ test('XY coordinates respect asymmetric bounds, steps, vertical direction and at
   const pose = { x: 0, y: 0, z: 4, w: 3 };
   Object.assign(pose, padPatch([definitions[0], definitions[2]], 0.5, 0.1));
   assert.deepEqual(pose, { x: 0, y: 0, z: 8, w: 3 });
+});
+
+test('dragging above or below center uses the StandRig Face Up or Face Down pitch', () => {
+  const yaw = DEFAULT_PARAMETERS.find(parameter => parameter.id === 'ParamAngleX');
+  const pitch = DEFAULT_PARAMETERS.find(parameter => parameter.id === 'ParamAngleY');
+  assert.deepEqual(padPatch([yaw, pitch], 0.5, 0.25), {
+    ParamAngleX: 0,
+    ParamAngleY: modelingPosePresetById('face-up').values.ParamAngleY
+  });
+  assert.deepEqual(padPatch([yaw, pitch], 0.5, 0.75), {
+    ParamAngleX: 0,
+    ParamAngleY: modelingPosePresetById('face-down').values.ParamAngleY
+  });
+  assert.equal(padPatch([pitch, yaw], 0.75, 0.5).ParamAngleY, 15);
 });
 
 test('four or more parameters survive persistence and axis changes with safe model reconciliation', () => {

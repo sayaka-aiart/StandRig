@@ -15,8 +15,21 @@ export function padValue(parameter: ParameterDefinition, fraction: number): numb
   return Math.max(parameter.min, Math.min(parameter.max, Number(value.toPrecision(14))));
 }
 
+function verticalPadDirection(parameter: ParameterDefinition): 1 | -1 {
+  // StandRig's Face Up pose uses negative pitch.
+  return parameter.id === 'ParamAngleY' ? 1 : -1;
+}
+
+function verticalPadFraction(parameter: ParameterDefinition, fraction: number): number {
+  return verticalPadDirection(parameter) === 1 ? fraction : 1 - fraction;
+}
+
 export function padPatch(axes: [ParameterDefinition, ParameterDefinition], x: number, y: number): ParameterValues {
-  return { [axes[0].id]: padValue(axes[0], x), [axes[1].id]: padValue(axes[1], 1 - y) };
+  const [horizontal, vertical] = axes;
+  return {
+    [horizontal.id]: padValue(horizontal, x),
+    [vertical.id]: padValue(vertical, verticalPadFraction(vertical, y))
+  };
 }
 
 export function restorePads(raw: unknown, definitions: ParameterDefinition[]): ParameterPad[] {
@@ -116,7 +129,8 @@ export function createParameterControls(container: HTMLElement, host: {
     const horizontal = document.createElement('span'); horizontal.className = 'pad-default-x';
     const vertical = document.createElement('span'); vertical.className = 'pad-default-y';
     horizontal.style.left = ratio(definition(pad.axes[0]), definition(pad.axes[0]).default) * 100 + '%';
-    vertical.style.top = (1 - ratio(definition(pad.axes[1]), definition(pad.axes[1]).default)) * 100 + '%';
+    const y = definition(pad.axes[1]);
+    vertical.style.top = verticalPadFraction(y, ratio(y, y.default)) * 100 + '%';
     surface.append(horizontal, vertical, marker);
     let pointer: number | undefined;
     function move(event: PointerEvent) {
@@ -149,7 +163,8 @@ export function createParameterControls(container: HTMLElement, host: {
       if (!horizontal && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
       event.preventDefault();
       const p = horizontal ? x : y;
-      const direction = event.key === 'ArrowRight' || event.key === 'ArrowUp' ? 1 : -1;
+      const screenDirection = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
+      const direction = horizontal ? screenDirection : screenDirection * verticalPadDirection(p);
       const delta = (p.step ?? 0.1) * direction * (event.shiftKey ? 10 : 1);
       change({ [p.id]: padValue(p, ((current[p.id] ?? p.default) + delta - p.min) / (p.max - p.min)) });
     };
@@ -218,7 +233,7 @@ export function createParameterControls(container: HTMLElement, host: {
     for (const { pad, marker, surface } of padViews) {
       const x = definition(pad.axes[0]), y = definition(pad.axes[1]);
       marker.style.left = ratio(x, values[x.id] ?? x.default) * 100 + '%';
-      marker.style.top = (1 - ratio(y, values[y.id] ?? y.default)) * 100 + '%';
+      marker.style.top = verticalPadFraction(y, ratio(y, values[y.id] ?? y.default)) * 100 + '%';
       surface.setAttribute('aria-label', pad.name + ' XYパッド、' + x.label + ' ' + (values[x.id] ?? x.default) + '、' + y.label + ' ' + (values[y.id] ?? y.default));
     }
   }
