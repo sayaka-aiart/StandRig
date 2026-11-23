@@ -4,7 +4,7 @@ import type { FacialRequest, FacialState } from '@standrig/core/facial';
 import type { MotionState } from '@standrig/core/motion';
 import { parameterDefinitionsForRig, previewParameterValuesForRig } from '@standrig/core/parameters';
 import type { ParameterValues, RigDocument } from '@standrig/core/types';
-import { RigRuntime } from './renderer.js';
+import { RigRuntime, type RenderOptions } from './renderer.js';
 
 /** Input is already mapped into model coordinates. Camera/face inference stays outside. */
 export interface ParameterFrame { source: string; sequence: number; values: ParameterValues }
@@ -52,6 +52,7 @@ export class StandRigPlayer {
   private frameId: number | undefined;
   private disposed = false;
   private renderer: PlaybackRenderer = 'canvas';
+  private view: Pick<RenderOptions, 'zoom' | 'panX' | 'panY'> = {};
   private readonly resize: ResizeObserver;
   constructor(private canvas: HTMLCanvasElement, private rig: RigDocument) {
     this.facial = new FacialController(rig);
@@ -69,6 +70,11 @@ export class StandRigPlayer {
     if (!this.playing) this.render();
   }
   get rendererStatus() { return { requested: this.renderer, ...this.runtime.getWebGLMeshStatus() }; }
+  setView(zoom: number, panX: number, panY: number) {
+    if (this.view.zoom === zoom && this.view.panX === panX && this.view.panY === panY) return;
+    this.view = { zoom, panX, panY };
+    if (!this.playing) this.render();
+  }
   get parameters() { return this.facial.evaluate(this.values,performance.now()); }
   get baseParameters() { return { ...this.values }; }
   get facialState() { return this.facial.snapshot(performance.now()); }
@@ -95,6 +101,11 @@ export class StandRigPlayer {
     this.frameId = requestAnimationFrame(tick);
   }
   pause() { if(this.motion.snapshot().loaded)Object.assign(this.values,this.motion.pause(performance.now()));if (this.frameId !== undefined) cancelAnimationFrame(this.frameId); this.frameId = undefined; this.render(); }
-  private render() { if (!this.disposed) this.runtime.render(this.canvas, this.facial.evaluate(this.values,performance.now()), { transparent: true, webglWarp: this.renderer === 'webgl', webglFrame: this.renderer === 'webgl' }); }
+  private render() {
+    if (this.disposed) return;
+    this.runtime.render(this.canvas, this.facial.evaluate(this.values, performance.now()), {
+      ...this.view, transparent: true, webglWarp: this.renderer === 'webgl', webglFrame: this.renderer === 'webgl'
+    });
+  }
   dispose() { this.pause(); this.disposed = true; this.resize.disconnect(); this.runtime.dispose(); }
 }

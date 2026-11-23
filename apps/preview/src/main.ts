@@ -32,6 +32,54 @@ const modelImportButton = document.querySelector<HTMLButtonElement>('#model-impo
 const qaButton = document.querySelector<HTMLButtonElement>('#qa')!;
 let rig: RigDocument;
 let runtime: StandRigPlayer;
+const previewZoomControls = document.createElement('div');
+previewZoomControls.className = 'preview-zoom';
+previewZoomControls.setAttribute('role', 'group');
+previewZoomControls.setAttribute('aria-label', 'プレビューの表示倍率');
+previewZoomControls.innerHTML = `
+  <p id="preview-pan-hint" hidden>拡大中はドラッグで位置を移動</p>
+  <div class="preview-zoom-buttons">
+    <button type="button" id="preview-zoom-out" aria-label="プレビューを縮小" disabled>−</button>
+    <button type="button" id="preview-zoom-reset" title="全体表示に戻す" disabled>100%</button>
+    <button type="button" id="preview-zoom-in" aria-label="プレビューを拡大" disabled>+</button>
+  </div>
+`;
+canvas.parentElement!.after(previewZoomControls);
+const previewZoomOut = document.querySelector<HTMLButtonElement>('#preview-zoom-out')!;
+const previewZoomReset = document.querySelector<HTMLButtonElement>('#preview-zoom-reset')!;
+const previewZoomIn = document.querySelector<HTMLButtonElement>('#preview-zoom-in')!;
+const previewPanHint = document.querySelector<HTMLElement>('#preview-pan-hint')!;
+const minPreviewZoom = 50;
+const maxPreviewZoom = 500;
+let previewZoom = 100;
+let previewPanX = 0, previewPanY = 0;
+let previewDrag: { pointerId: number; x: number; y: number } | undefined;
+function applyPreviewView() {
+  runtime.setView(previewZoom / 100, previewPanX, previewPanY);
+}
+function updatePreviewZoom() {
+  const available = !!rig?.assets.length;
+  previewZoomOut.disabled = !available || previewZoom === minPreviewZoom;
+  previewZoomIn.disabled = !available || previewZoom === maxPreviewZoom;
+  previewZoomReset.disabled = !available || previewZoom === 100;
+  previewZoomReset.textContent = `${previewZoom}%`;
+  previewZoomReset.setAttribute('aria-label', `現在 ${previewZoom}%。全体表示に戻す`);
+  previewPanHint.hidden = !available || previewZoom <= 100;
+  canvas.classList.toggle('can-pan', !previewPanHint.hidden);
+}
+function setPreviewZoom(percent: number) {
+  previewZoom = Math.max(minPreviewZoom, Math.min(maxPreviewZoom, percent));
+  if (previewZoom <= 100) {
+    endPreviewDrag();
+    previewPanX = previewPanY = 0;
+  }
+  updatePreviewZoom();
+  applyPreviewView();
+}
+previewZoomOut.onclick = () => setPreviewZoom(previewZoom - 25);
+previewZoomIn.onclick = () => setPreviewZoom(previewZoom + 25);
+previewZoomReset.onclick = () => setPreviewZoom(100);
+
 const rendererSelect = document.querySelector<HTMLSelectElement>('#renderer')!;
 rendererSelect.value = new URLSearchParams(location.search).get('renderer') === 'webgl' ? 'webgl' : 'canvas';
 function applyRenderer() {
@@ -72,13 +120,48 @@ demoButton.onclick = () => { void post('/api/playback/control', { command: lates
 demoMode.onchange = () => { if (latest?.demo?.active) void post('/api/playback/control', { command: 'demo-start', mode: demoMode.value }).catch(report); };
 let pointerPending: { x: number; y: number } | undefined;
 let pointerSending = false;
+function movePreviewDrag(event: PointerEvent) {
+  if (previewDrag?.pointerId !== event.pointerId) return;
+  const { width, height } = canvas.getBoundingClientRect();
+  // Match the renderer's bounds so turning back at an edge moves immediately.
+  previewPanX = Math.max(-2 * width, Math.min(2 * width, previewPanX + event.clientX - previewDrag.x));
+  previewPanY = Math.max(-2 * height, Math.min(2 * height, previewPanY + event.clientY - previewDrag.y));
+  previewDrag.x = event.clientX;
+  previewDrag.y = event.clientY;
+  applyPreviewView();
+}
+function endPreviewDrag(event?: PointerEvent) {
+  const drag = previewDrag;
+  if (!drag || (event && event.pointerId !== drag.pointerId)) return;
+  previewDrag = undefined;
+  canvas.classList.remove('is-panning');
+  if (canvas.hasPointerCapture(drag.pointerId)) canvas.releasePointerCapture(drag.pointerId);
+}
+canvas.onpointerdown = event => {
+  if (previewZoom <= 100 || !rig?.assets.length || previewDrag || !event.isPrimary || event.button !== 0) return;
+  event.preventDefault();
+  canvas.setPointerCapture(event.pointerId);
+  previewDrag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+  canvas.classList.add('is-panning');
+  pointerPending = undefined;
+};
+canvas.onpointerup = event => {
+  movePreviewDrag(event);
+  endPreviewDrag(event);
+};
+canvas.onpointercancel = endPreviewDrag;
+canvas.onlostpointercapture = endPreviewDrag;
 canvas.onpointermove = event => {
+  if (previewDrag) {
+    movePreviewDrag(event);
+    return;
+  }
   if (!latest?.demo?.active || latest.demo.mode !== 'mouse-expression') return;
   const rect = canvas.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
   pointerPending = { x: Math.max(-1, Math.min(1, (event.clientX - rect.left) / rect.width * 2 - 1)), y: Math.max(-1, Math.min(1, (event.clientY - rect.top) / rect.height * 2 - 1)) };
 };
-canvas.onpointerleave = () => { pointerPending = { x: 0, y: 0 }; };
+canvas.onpointerleave = () => { if (!previewDrag) pointerPending = { x: 0, y: 0 }; };
 const pointerTimer = setInterval(() => {
   if (pointerSending || !pointerPending) return;
   const pointer = pointerPending; pointerPending = undefined;
@@ -169,7 +252,7 @@ function applyState() {
   demoButton.textContent = active ? 'デモを停止' : 'デモを開始';
   demoButton.setAttribute('aria-pressed', String(active));
   if (active) demoMode.value = demo!.mode;
-  canvas.style.cursor = active && demo?.mode === 'mouse-expression' ? 'crosshair' : '';
+  canvas.classList.toggle('pointer-demo', active && demo?.mode === 'mouse-expression');
   document.querySelector('#demo-status')!.textContent = !demo?.parameterIds.length
     ? '動きの設定がありません。サンプルを試すか、AIでモデリングしてください。'
     : active ? (demo.mode === 'mouse-expression' ? 'プレビュー上でマウスを動かすと追従します。瞬き・ウィンク・口の動きは自動です。' : 'Showcase再生中：顔・体・視線・表情を自動で動かします。')
@@ -181,8 +264,14 @@ function reload() {
     const version = latest?.modelVersion ?? -1;
     const session = latest?.sessionId;
     rig = await fetchRigDocument(); values = previewParameterValuesForRig(rig);
+    endPreviewDrag();
     runtime?.dispose();
-    runtime = new StandRigPlayer(canvas, rig); applyRenderer(); await runtime.load(); modelVersion = version;
+    runtime = new StandRigPlayer(canvas, rig);
+    applyPreviewView();
+    applyRenderer();
+    await runtime.load();
+    updatePreviewZoom();
+    modelVersion = version;
     sessionId = session; physicsEpoch = undefined;
     document.querySelector('#model-name')!.textContent = rig.name;
     document.querySelector<HTMLElement>('#empty')!.hidden = rig.assets.length > 0;

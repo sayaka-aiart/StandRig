@@ -1590,7 +1590,7 @@ export class RigRuntime {
     const scale = Math.min(availableWidth / this.rig.stage.width, availableHeight / this.rig.stage.height);
     const canvasZoom = Number(canvas.dataset.codexPreviewZoom ?? Number.NaN);
     const requestedZoom = options.zoom ?? canvasZoom;
-    const zoom = Number.isFinite(requestedZoom) ? Math.min(3, Math.max(0.5, requestedZoom)) : 1;
+    const zoom = Number.isFinite(requestedZoom) ? Math.min(5, Math.max(0.5, requestedZoom)) : 1;
     const fittedScale = Math.max(MIN_SCALE, scale * zoom);
     const canvasPanX = Number(canvas.dataset.codexPreviewPanX ?? Number.NaN);
     const canvasPanY = Number(canvas.dataset.codexPreviewPanY ?? Number.NaN);
