@@ -75,6 +75,11 @@ export class StandRigPlayer {
     this.view = { zoom, panX, panY };
     if (!this.playing) this.render();
   }
+  zoomAt(zoom: number, clientX: number, clientY: number) {
+    const pan = this.runtime.panForZoom(this.canvas, zoom, clientX, clientY, this.view);
+    this.setView(zoom, pan.panX, pan.panY);
+    return pan;
+  }
   get parameters() { return this.facial.evaluate(this.values,performance.now()); }
   get baseParameters() { return { ...this.values }; }
   get facialState() { return this.facial.snapshot(performance.now()); }

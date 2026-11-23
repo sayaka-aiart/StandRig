@@ -37,7 +37,7 @@ previewZoomControls.className = 'preview-zoom';
 previewZoomControls.setAttribute('role', 'group');
 previewZoomControls.setAttribute('aria-label', 'プレビューの表示倍率');
 previewZoomControls.innerHTML = `
-  <p id="preview-pan-hint" hidden>拡大中はドラッグで位置を移動</p>
+  <p id="preview-view-hint" hidden>ホイールでズーム<span id="preview-pan-hint" hidden> ・ ドラッグで移動</span></p>
   <div class="preview-zoom-buttons">
     <button type="button" id="preview-zoom-out" aria-label="プレビューを縮小" disabled>−</button>
     <button type="button" id="preview-zoom-reset" title="全体表示に戻す" disabled>100%</button>
@@ -48,9 +48,12 @@ canvas.parentElement!.after(previewZoomControls);
 const previewZoomOut = document.querySelector<HTMLButtonElement>('#preview-zoom-out')!;
 const previewZoomReset = document.querySelector<HTMLButtonElement>('#preview-zoom-reset')!;
 const previewZoomIn = document.querySelector<HTMLButtonElement>('#preview-zoom-in')!;
+const previewViewHint = document.querySelector<HTMLElement>('#preview-view-hint')!;
 const previewPanHint = document.querySelector<HTMLElement>('#preview-pan-hint')!;
 const minPreviewZoom = 50;
 const maxPreviewZoom = 500;
+const previewZoomStep = 25;
+const clampPreviewZoom = (percent: number) => Math.max(minPreviewZoom, Math.min(maxPreviewZoom, percent));
 let previewZoom = 100;
 let previewPanX = 0, previewPanY = 0;
 let previewDrag: { pointerId: number; x: number; y: number } | undefined;
@@ -61,14 +64,15 @@ function updatePreviewZoom() {
   const available = !!rig?.assets.length;
   previewZoomOut.disabled = !available || previewZoom === minPreviewZoom;
   previewZoomIn.disabled = !available || previewZoom === maxPreviewZoom;
-  previewZoomReset.disabled = !available || previewZoom === 100;
+  previewZoomReset.disabled = !available || (previewZoom === 100 && previewPanX === 0 && previewPanY === 0);
   previewZoomReset.textContent = `${previewZoom}%`;
   previewZoomReset.setAttribute('aria-label', `現在 ${previewZoom}%。全体表示に戻す`);
-  previewPanHint.hidden = !available || previewZoom <= 100;
-  canvas.classList.toggle('can-pan', !previewPanHint.hidden);
+  previewViewHint.hidden = !available;
+  previewPanHint.hidden = previewZoom <= 100;
+  canvas.classList.toggle('can-pan', available && !previewPanHint.hidden);
 }
 function setPreviewZoom(percent: number) {
-  previewZoom = Math.max(minPreviewZoom, Math.min(maxPreviewZoom, percent));
+  previewZoom = clampPreviewZoom(percent);
   if (previewZoom <= 100) {
     endPreviewDrag();
     previewPanX = previewPanY = 0;
@@ -76,9 +80,20 @@ function setPreviewZoom(percent: number) {
   updatePreviewZoom();
   applyPreviewView();
 }
-previewZoomOut.onclick = () => setPreviewZoom(previewZoom - 25);
-previewZoomIn.onclick = () => setPreviewZoom(previewZoom + 25);
+previewZoomOut.onclick = () => setPreviewZoom(previewZoom - previewZoomStep);
+previewZoomIn.onclick = () => setPreviewZoom(previewZoom + previewZoomStep);
 previewZoomReset.onclick = () => setPreviewZoom(100);
+canvas.addEventListener('wheel', event => {
+  if (!rig?.assets.length || !event.deltaY || event.ctrlKey || event.metaKey) return;
+  event.preventDefault();
+  const next = clampPreviewZoom(previewZoom - Math.sign(event.deltaY) * previewZoomStep);
+  if (previewDrag || next === previewZoom) return;
+  const pan = runtime.zoomAt(next / 100, event.clientX, event.clientY);
+  previewZoom = next;
+  previewPanX = pan.panX;
+  previewPanY = pan.panY;
+  updatePreviewZoom();
+}, { passive: false });
 
 const rendererSelect = document.querySelector<HTMLSelectElement>('#renderer')!;
 rendererSelect.value = new URLSearchParams(location.search).get('renderer') === 'webgl' ? 'webgl' : 'canvas';

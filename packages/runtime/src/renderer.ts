@@ -125,6 +125,9 @@ export interface GlueSeamHandle {
 }
 
 const MIN_SCALE = 0.001;
+function clampViewPan(pan: number, size: number): number {
+  return Number.isFinite(pan) ? Math.max(-2 * size, Math.min(2 * size, pan)) : 0;
+}
 
 export interface RenderOptions {
   transparent?: boolean;
@@ -678,6 +681,18 @@ export class RigRuntime {
     const view = this.getCanvasView(canvas, options);
     const point = this.cssPointFromClient(canvas, clientX, clientY);
     return transformMatrixPoint(invertMatrix(view.cssBaseMatrix), point.x, point.y);
+  }
+
+  /** Position the new view so the same stage point stays under the cursor. */
+  panForZoom(canvas: HTMLCanvasElement, zoom: number, clientX: number, clientY: number, current: RenderOptions) {
+    const anchor = this.clientPointToStage(canvas, clientX, clientY, current);
+    const cursor = this.cssPointFromClient(canvas, clientX, clientY);
+    const next = this.getCanvasView(canvas, { ...current, zoom, panX: 0, panY: 0 });
+    const projected = transformMatrixPoint(next.cssBaseMatrix, anchor.x, anchor.y);
+    return {
+      panX: clampViewPan(cursor.x - projected.x, next.cssWidth),
+      panY: clampViewPan(cursor.y - projected.y, next.cssHeight)
+    };
   }
   hitTestSharedWarpHandle(canvas: HTMLCanvasElement, deformerId: string, clientX: number, clientY: number, options: RenderOptions = {}): SharedWarpHandle | undefined {
     const point = this.cssPointFromClient(canvas, clientX, clientY);
@@ -1596,8 +1611,8 @@ export class RigRuntime {
     const canvasPanY = Number(canvas.dataset.codexPreviewPanY ?? Number.NaN);
     const requestedPanX = options.panX ?? canvasPanX;
     const requestedPanY = options.panY ?? canvasPanY;
-    const panX = Number.isFinite(requestedPanX) ? Math.max(-cssWidth * 2, Math.min(cssWidth * 2, requestedPanX)) : 0;
-    const panY = Number.isFinite(requestedPanY) ? Math.max(-cssHeight * 2, Math.min(cssHeight * 2, requestedPanY)) : 0;
+    const panX = clampViewPan(requestedPanX, cssWidth);
+    const panY = clampViewPan(requestedPanY, cssHeight);
     const offsetX = (cssWidth - this.rig.stage.width * fittedScale) / 2 + panX;
     const offsetY = (cssHeight - this.rig.stage.height * fittedScale) / 2 + panY;
 
