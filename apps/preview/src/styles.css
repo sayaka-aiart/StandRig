@@ -5,3 +5,77 @@ canvas{position:absolute;inset:0;width:100%;height:100%;min-height:0;min-width:0
 
 #motion-panel>label{display:block;font-size:12px;margin:12px 0}#motion-file{display:block;width:100%;font-size:11px;margin-top:8px}#motion-time{display:block;width:100%;accent-color:#a9dac7;margin-top:8px}#motion-speed{width:76px;margin-left:8px;background:#29323e;color:#edf3f8;border:1px solid #475361;border-radius:4px;padding:6px}#motion-loop{accent-color:#a9dac7;vertical-align:middle;margin-right:6px}.parameter{min-width:0}.parameter output{font-variant-numeric:tabular-nums}
 .facial-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.facial-actions select{max-width:100%}.facial-dialog{width:min(760px,95vw);max-height:88dvh;overflow:auto;border:1px solid #475361;border-radius:12px;padding:22px;background:#1a2029;color:#e9edf3}.facial-dialog::backdrop{background:#0009}.facial-dialog>label,.facial-dialog>div>label{display:block;font-size:12px;margin:10px 0}.facial-dialog input:not([type=checkbox]):not([type=file]),.facial-dialog select,#facial-panel select{background:#29323e;color:#edf3f8;border:1px solid #475361;border-radius:4px;padding:6px;max-width:100%}.facial-dialog input[type=number]{width:85px}.facial-parameter{display:grid;grid-template-columns:20px minmax(0,1fr) 70px 90px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #303842;font-size:11px}.facial-parameter span{overflow-wrap:anywhere}.facial-parameter output{text-align:right;font-variant-numeric:tabular-nums}.facial-dialog [hidden]{display:none!important}.facial-dialog .primary{width:auto}#facial-parameters{max-height:42dvh;overflow:auto;scrollbar-gutter:stable;padding-right:12px}
+.parameter-pad-card {
+  margin: 12px 0 18px;
+  padding: 12px;
+  border: 1px solid #475361;
+  border-radius: 8px;
+  background: #141b23;
+}
+#params:has(.parameter-pad-card) { max-height: min(76dvh, 780px); }
+.parameter-pad-card .parameter { padding: 6px 0; gap: 4px; }
+.pad-heading, .pad-axes, .pad-dialog-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pad-heading h3 { flex: 1; margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+.pad-heading button { padding: 5px 8px; }
+.pad-axes { margin: 8px 0; align-items: stretch; }
+.pad-axes label { flex: 1; min-width: 0; font-size: 11px; }
+.pad-axes select { display: block; width: 100%; min-width: 0; margin-top: 4px; }
+.pad-axes select, .parameter-pad-dialog input:not([type=checkbox]) {
+  background: #29323e;
+  color: #edf3f8;
+  border: 1px solid #475361;
+  border-radius: 4px;
+  padding: 7px;
+  font: inherit;
+}
+.parameter-pad {
+  position: relative;
+  width: min(100%, 240px);
+  aspect-ratio: 1;
+  margin: 14px auto;
+  border: 1px solid #596c7d;
+  border-radius: 4px;
+  background-color: #1e2934;
+  background-image: linear-gradient(#8193a21c 1px, transparent 1px), linear-gradient(90deg, #8193a21c 1px, transparent 1px);
+  background-size: 25% 25%;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+.parameter-pad:focus-visible { outline: 2px solid #a9dac7; outline-offset: 4px; }
+.pad-marker {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e8fff5;
+  background: #79c8ac;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 3px #79c8ac30;
+}
+.pad-default-x, .pad-default-y { position: absolute; pointer-events: none; background: #95c8b666; }
+.pad-default-x { top: 0; bottom: 0; width: 1px; }
+.pad-default-y { left: 0; right: 0; height: 1px; }
+.pad-help, .pad-message { font-size: 11px; }
+.pad-message:empty { display: none; }
+.parameter-pad-dialog {
+  width: min(440px, 94vw);
+  max-height: 88dvh;
+  overflow: auto;
+  color: inherit;
+  background: #1a2029;
+  border: 1px solid #596c7d;
+  border-radius: 12px;
+  padding: 22px;
+}
+.parameter-pad-dialog::backdrop { background: #0009; }
+.parameter-pad-dialog input:not([type=checkbox]) { display: block; width: 100%; margin-top: 6px; }
+.pad-choices { max-height: 42dvh; overflow: auto; margin: 12px 0; }
+.pad-choices label { display: flex; gap: 10px; align-items: center; padding: 7px 0; font-size: 13px; }
+.pad-choices input { width: auto; margin: 0; accent-color: #a9dac7; }
+.pad-dialog-actions { justify-content: flex-end; }

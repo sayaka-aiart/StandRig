@@ -1,4 +1,5 @@
 import { PoseInput } from './poseInput';
+import { createParameterControls } from './parameterControls';
 import { playbackEvents } from './playbackEvents.js';
 import { jsonRequest } from '@standrig/core/httpTransport';
 import { packModelBundle } from '@standrig/core/bundle';
@@ -119,31 +120,20 @@ async function post(url: string, body: unknown) {
 }
 function sendPose(patch: ParameterValues) { poseInput.enqueue(patch); }
 const facialPanel = createFacialPanel({rig:()=>rig,values:()=>values,state:()=>latest,post,reload,report});
+const parameterControls = createParameterControls(document.querySelector<HTMLElement>('#params')!, {
+  values: () => values ?? {},
+  change(patch) { Object.assign(values, patch); render(); sendPose(patch); }
+});
 function parameters() {
-  const container = document.querySelector('#params')!;
-  container.replaceChildren();
-  for (const param of parameterDefinitionsForRig(rig)) {
-    const label = document.createElement('label'); label.className = 'parameter';
-    const caption = document.createElement('span'); caption.textContent = param.label;
-    const output = document.createElement('output'); output.textContent = String(Number(values[param.id].toFixed(3)));
-    const input = document.createElement('input');
-    input.type = 'range'; input.min = String(param.min); input.max = String(param.max); input.step = String(param.step ?? 0.1); input.value = String(Number(values[param.id].toFixed(3))); input.setAttribute('aria-label', param.id);
-    input.oninput = () => { values[param.id] = Number(input.value); shownValues.set(input, values[param.id]); output.textContent = input.value; render(); sendPose({ [param.id]: Number(input.value) }); };
-    label.append(caption, output, input); container.append(label);
-  }
+  parameterControls.load(parameterDefinitionsForRig(rig), rig.name);
 }
-const shownValues = new WeakMap<HTMLInputElement, number>();
 function applyState() {
   if (!latest || !rig || modelVersion !== latest.modelVersion || sessionId !== latest.sessionId) return;
   if (physicsEpoch !== latest.physicsEpoch) { runtime.resetPhysics(); physicsEpoch = latest.physicsEpoch; }
   updateMotion();
   values = { ...latest.values, ...poseInput.optimistic };
   facialPanel.update();
-  // Playback pushes every value about 30 times a second; only touch the sliders whose value moved.
-  for (const input of document.querySelectorAll<HTMLInputElement>('#params input')) {
-    const id = input.getAttribute('aria-label')!;
-    if (document.activeElement !== input && shownValues.get(input) !== values[id]) { shownValues.set(input, values[id]); input.value = String(values[id]); input.parentElement!.querySelector('output')!.textContent = String(Number(values[id].toFixed(3))); }
-  }
+  parameterControls.update();
   if (latest.playing && !runtime.playing) runtime.play(); else if (!latest.playing && runtime.playing) runtime.pause();
   const demo = latest.demo;
   const active = !!demo?.active;
