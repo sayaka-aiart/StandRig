@@ -1,4 +1,5 @@
 import { VISEME_IDS, importExpression, exportExpression, parseFacialPresets, type FacialPresets, type ExpressionDocument, type VisemeId } from '@standrig/core/facial';
+import { activeVisemeBank, exportMotionSync, importMotionSync } from '@standrig/core/motionSync';
 import { parameterDefinitionsForRig } from '@standrig/core/parameters';
 import type { RigDocument, ParameterValues } from '@standrig/core/types';
 import type { PlaybackSnapshot } from '@standrig/runtime';
@@ -12,6 +13,17 @@ const empty=():FacialPresets=>({version:1,expressions:[]});
 export function createFacialPanel(host:Host) {
   const section=document.createElement('section');section.id='facial-panel';
   section.innerHTML=`<h2>表情・母音</h2><p>登録済みの表情や口形をプレビューします。作成にはモデル側の変形設定が必要です。</p><div class="facial-actions"><select id="expression-select" aria-label="登録済み表情"></select><button id="expression-preview">表情を試す</button><label><input id="expression-stack" type="checkbox"> 重ねる</label><button id="facial-clear">プレビュー解除</button></div><div id="viseme-buttons" class="facial-actions"></div><p id="facial-status" role="status">未登録</p><button id="facial-edit">表情・母音を登録／編集</button>`;
+  section.insertAdjacentHTML('beforeend', `<details>
+    <summary>Live2D モーションシンク</summary>
+    <div class="facial-actions">
+      <label>使用する口形 <select id="motion-sync-profile"></select></label>
+      <label class="file-label">読み込む (.motionsync3.json) <input id="motion-sync-file" type="file" accept=".json"></label>
+      <button id="motion-sync-export" type="button">使用中の口形を書き出す</button>
+    </div>
+    <p>読み込んだ口形はモデルに保存され、手動登録と切り替えられます。Connectで使うときは選択後に .srig を書き出してください。</p>
+    <p id="motion-sync-audio"></p>
+    <p id="motion-sync-status" role="status"></p>
+  </details>`);
   document.querySelector('#motion-panel')!.before(section);
   const dialog=document.createElement('dialog');dialog.className='facial-dialog';
   dialog.innerHTML=`<div class="stage-heading"><h2>表情・母音の登録</h2><button id="facial-close">閉じる</button></div><p>プレビューを解除し、本体のスライダーで形を作ってから登録します。選択したパラメーターだけを保存します。</p><label>登録種類 <select id="facial-kind"><option value="expression">表情</option><option value="viseme">母音</option></select></label><div id="expression-editor"><label>保存済み表情 <select id="expression-edit-select"><option value="">新規登録</option></select></label><button id="expression-use-current">現在の姿勢を使用</button><label>識別ID <input id="expression-id" maxlength="160" placeholder="smile"></label><label>表示名 <input id="expression-name" maxlength="160" placeholder="笑顔"></label><label class="file-label">Live2D表情を読む (.exp3.json)<input id="expression-file" type="file" accept=".json"></label><p>読込後、内容を確認して「登録」でモデルに保存します。</p></div><div id="viseme-editor" hidden><label>母音 <select id="viseme-id">${VISEME_IDS.map(id=>`<option value="${id}">${labels[id]}</option>`).join('')}</select></label><label>方式 <select id="viseme-mode"><option value="pose">口形プリセット（既存パラメーター）</option><option value="blend-shape">母音別Blend Shape（0〜1）</option></select></label><p>同じ方式の全母音は同じパラメーターを使います。母音別方式には、事前に作成した0〜1・初期値0の変形パラメーターが必要です。</p></div><div class="facial-actions"><label>フェードイン（秒）<input id="facial-fade-in" type="number" min="0" max="60" step="0.01" value="0.2"></label><label>フェードアウト（秒）<input id="facial-fade-out" type="number" min="0" max="60" step="0.01" value="0.2"></label></div><p>加算は初期値との差分、乗算は初期値に対する倍率、上書きは現在値で登録します。瞬きを残す半目には乗算を選びます。</p><div id="facial-parameters"></div><div class="facial-actions"><button id="facial-register" class="primary">現在の姿勢を登録</button><button id="facial-delete">選択した登録を削除</button><button id="expression-export">選択した表情を書き出す (.exp3.json)</button></div><p id="facial-editor-status" role="status"></p>`;
@@ -37,7 +49,7 @@ export function createFacialPanel(host:Host) {
     }
   }
   function documentElement<K extends keyof HTMLElementTagNameMap>(tag:K,className?:string){const e=document.createElement(tag);if(className)e.className=className;return e;}
-  async function save(next:FacialPresets){if(busy)return;const rig=requireRig(),state=host.state();parseFacialPresets(next,rig);busy=true;query<HTMLButtonElement>('facial-register').disabled=true;editorStatus('検証してモデルへ保存しています…');
+  async function save(next:FacialPresets){if(busy)throw Error('別の登録を保存しています。保存が済んでからやり直してください。');const rig=requireRig(),state=host.state();parseFacialPresets(next,rig);busy=true;query<HTMLButtonElement>('facial-register').disabled=true;editorStatus('検証してモデルへ保存しています…');
     try{const response=await fetch('/api/context',{cache:'no-store'}),result=await response.json();if(!response.ok||!result.context?.revision)throw Error('モデルの状態を確認できません。');
       // Pin both the catalog read and revision. Another writer must not be overwritten.
       const stored=await fetch('/api/playback/facial',{cache:'no-store'}).then(r=>r.json());if(stored.playback?.sessionId!==state?.sessionId||stored.playback?.modelVersion!==state?.modelVersion||JSON.stringify(stored.presets)!==JSON.stringify(rig.facialPresets??empty()))throw Error('モデルか登録内容が別の操作で変わりました。再読み込みしてから保存してください。');
@@ -59,6 +71,63 @@ export function createFacialPanel(host:Host) {
   query<HTMLButtonElement>('expression-use-current').onclick=()=>{const ids=[...dialog.querySelectorAll<HTMLInputElement>('input[data-parameter]:checked')].map(e=>e.dataset.parameter);imported=undefined;rebuildRows();for(const input of dialog.querySelectorAll<HTMLInputElement>('input[data-parameter]'))input.checked=ids.includes(input.dataset.parameter);editorStatus('現在の姿勢から登録します。');};
   query<HTMLInputElement>('expression-file').onchange=()=>{void(async()=>{const file=query<HTMLInputElement>('expression-file').files?.[0];if(!file)return;if(file.size>1024*1024)throw Error('表情JSONは1 MiB以下にしてください。');imported=importExpression(JSON.parse(await file.text()),requireRig());query<HTMLInputElement>('expression-id').value=file.name.replace(/\.exp3\.json$|\.json$/i,'');query<HTMLInputElement>('expression-name').value=query<HTMLInputElement>('expression-id').value;query<HTMLInputElement>('facial-fade-in').value=String(imported.FadeInTime??.2);query<HTMLInputElement>('facial-fade-out').value=String(imported.FadeOutTime??.2);rebuildRows(imported);editorStatus('読み込みました。対象・値・合成方法を確認し、登録してください。');})().catch(failure).finally(()=>{query<HTMLInputElement>('expression-file').value='';});};
   query<HTMLButtonElement>('expression-export').onclick=()=>{try{const id=query<HTMLInputElement>('expression-id').value,e=bank().expressions.find(e=>e.id===id);if(!e)throw Error('保存済みの表情IDを選択してください。');const url=URL.createObjectURL(new Blob([JSON.stringify(exportExpression(e,requireRig()),null,2)+'\n'],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=id.replace(/[^a-zA-Z0-9_-]/g,'_')+'.exp3.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e){failure(e);}};
+
+  const motionSyncFile = query<HTMLInputElement>('motion-sync-file');
+  const motionSyncSelect = query<HTMLSelectElement>('motion-sync-profile');
+  const motionSyncExport = query<HTMLButtonElement>('motion-sync-export');
+  const motionSyncStatus = query('motion-sync-status');
+  let savingMotionSync = false;
+  async function saveMotionSync(update: (next: FacialPresets, rig: RigDocument) => Promise<string> | string) {
+    savingMotionSync = true;
+    motionSyncFile.disabled = motionSyncSelect.disabled = motionSyncExport.disabled = true;
+    motionSyncStatus.textContent = '検証してモデルに保存しています…';
+    try {
+      const rig = requireRig(), next = structuredClone(bank());
+      const message = await update(next, rig);
+      if (host.rig() !== rig) throw Error('モデルが切り替わりました。読み込みをやり直してください。');
+      await save(next);
+      motionSyncStatus.textContent = message;
+    } catch (error) {
+      motionSyncStatus.textContent = error instanceof Error ? error.message : String(error);
+    } finally {
+      savingMotionSync = false;
+      motionSyncFile.value = '';
+      refresh();
+    }
+  }
+  motionSyncFile.onchange = () => {
+    const file = motionSyncFile.files?.[0];
+    if (!file) return;
+    void saveMotionSync(async (next, rig) => {
+      if (file.size > 1024 * 1024) throw Error('モーションシンクJSONは1 MiB以下にしてください。');
+      const count = next.motionSync?.profiles.length ?? 0;
+      next.motionSync = importMotionSync(JSON.parse((await file.text()).replace(/^\uFEFF/, '')), rig, () => crypto.randomUUID());
+      const added = next.motionSync.profiles.slice(count);
+      return `${added.length}件を保存し、「${added[0].name}」を選択しました。`;
+    });
+  };
+  motionSyncSelect.onchange = () => {
+    const selectedId = motionSyncSelect.value;
+    void saveMotionSync(next => {
+      if (!next.motionSync) throw Error('モーションシンクの登録が見つかりません。');
+      if (selectedId) next.motionSync.selectedId = selectedId;
+      else delete next.motionSync.selectedId;
+      return '使用する口形をモデルに保存しました。';
+    });
+  };
+  motionSyncExport.onclick = () => {
+    try {
+      const doc = exportMotionSync(requireRig());
+      const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2) + '\n'], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.Meta.Dictionary[0].Name.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_') + '.motionsync3.json';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      motionSyncStatus.textContent = error instanceof Error ? error.message : String(error);
+    }
+  };
   function openEditor(viseme = false, id?: VisemeId) {
     try {
       requireRig();
@@ -66,7 +135,9 @@ export function createFacialPanel(host:Host) {
         query<HTMLSelectElement>('facial-kind').value = 'viseme';
         if (id) query<HTMLSelectElement>('viseme-id').value = id;
       }
-      chooseMode(); editorStatus(''); dialog.showModal();
+      chooseMode();
+      editorStatus(viseme && bank().motionSync?.selectedId ? 'この画面では手動登録の口形を編集します。' : '');
+      dialog.showModal();
     } catch (error) { host.report(error); }
   }
   async function previewViseme(id: VisemeId) {
@@ -82,7 +153,16 @@ export function createFacialPanel(host:Host) {
   query<HTMLButtonElement>('facial-clear').onclick=()=>{void host.post('/api/playback/facial',{action:'clear',immediate:true}).catch(host.report);};
   query<HTMLSelectElement>('expression-select').onchange=()=>{const e=bank().expressions.find(e=>e.id===query<HTMLSelectElement>('expression-select').value);if(e){query<HTMLInputElement>('expression-id').value=e.id;query<HTMLInputElement>('expression-name').value=e.name;}};
   function refresh(){const catalog=bank(),editSelect=query<HTMLSelectElement>('expression-edit-select'),oldEdit=editSelect.value;editSelect.replaceChildren(new Option('新規登録',''));for(const e of catalog.expressions)editSelect.add(new Option(e.name,e.id));if(catalog.expressions.some(e=>e.id===oldEdit))editSelect.value=oldEdit;const select=query<HTMLSelectElement>('expression-select'),old=select.value;select.replaceChildren();for(const e of catalog.expressions)select.add(new Option(e.name,e.id));if(catalog.expressions.some(e=>e.id===old))select.value=old;query<HTMLButtonElement>('expression-preview').disabled=!catalog.expressions.length;
-    const buttons=query('viseme-buttons');buttons.replaceChildren();for(const id of VISEME_IDS){const button=document.createElement('button');button.textContent=labels[id];button.disabled=!catalog.visemes?.presets.some(p=>p.id===id);button.onclick=()=>previewViseme(id);buttons.append(button);}query<HTMLSelectElement>('viseme-mode').value=catalog.visemes?.mode??'pose';
+    const rig=host.rig(),active=rig&&activeVisemeBank(catalog,rig);
+    const buttons=query('viseme-buttons');buttons.replaceChildren();for(const id of VISEME_IDS){const button=document.createElement('button');button.textContent=labels[id];button.disabled=!active?.presets.some(p=>p.id===id);button.onclick=()=>previewViseme(id);buttons.append(button);}query<HTMLSelectElement>('viseme-mode').value=catalog.visemes?.mode??'pose';
+    motionSyncSelect.replaceChildren(new Option('手動登録', ''));
+    for (const profile of catalog.motionSync?.profiles ?? []) motionSyncSelect.add(new Option(profile.name, profile.id));
+    motionSyncSelect.value = catalog.motionSync?.selectedId ?? '';
+    motionSyncSelect.disabled = savingMotionSync || !catalog.motionSync;
+    motionSyncFile.disabled = savingMotionSync || !rig?.assets.length;
+    motionSyncExport.disabled = savingMotionSync || !rig?.assets.length || !active?.presets.length;
+    query('motion-sync-audio').textContent = catalog.motionSync?.selectedId && active?.presets.length !== VISEME_IDS.length
+      ? 'Connectの音声リップシンクには、5母音と無音の計6種類が必要です。' : '';
   }
   function update(){const state=host.state()?.facial;const active=state?.activeExpressions??(state?.expressionId?[state.expressionId]:[]);query('facial-status').textContent=active.length?`表情：${active.map(id=>bank().expressions.find(e=>e.id===id)?.name??id).join('、')}`:Object.values(state?.visemeWeights??{}).some(v=>(v??0)>0)?'母音プレビュー中':'プレビュー停止';
     if(dialog.open&&!imported){const values=host.values()??{};for(const output of dialog.querySelectorAll<HTMLOutputElement>('output[data-value]'))output.textContent=String(Number((values[output.dataset.value!]??0).toFixed(3)));}

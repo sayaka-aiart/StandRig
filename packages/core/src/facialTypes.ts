@@ -11,6 +11,7 @@ export interface ExpressionDocument {
 }
 export interface RegisteredExpression { id: string; name: string; document: ExpressionDocument; }
 export type VisemeId = 'A' | 'I' | 'U' | 'E' | 'O' | 'Silence';
+export const VISEME_IDS: readonly VisemeId[] = ['A', 'I', 'U', 'E', 'O', 'Silence'];
 export interface VisemePreset { id: VisemeId; values: ParameterValues; }
 export interface VisemeBank {
   mode: 'pose' | 'blend-shape';
@@ -20,7 +21,23 @@ export interface VisemeBank {
   fadeOutTime?: number;
   presets: VisemePreset[];
 }
-export interface FacialPresets { version: 1; expressions: RegisteredExpression[]; visemes?: VisemeBank; }
+export interface MotionSyncSetting {
+  Id: string;
+  AnalysisType: 'CRI';
+  UseCase: 'Mouth';
+  CubismParameters: Array<{ Id: string; Name: string; Min: number; Max: number; Damper: number; Smooth: number }>;
+  AudioParameters: Array<{ Id: VisemeId; Name: string; Min: number; Max: number; Scale: number; Enabled: boolean }>;
+  Mappings: Array<{ Type: 'Shape'; Id: VisemeId; Targets: Array<{ Id: string; Value: number }> }>;
+  PostProcessing: { BlendRatio: number; Smoothing: number; SampleRate: number };
+}
+export interface MotionSyncProfile { id: string; name: string; setting: MotionSyncSetting; }
+export interface MotionSyncProfiles { selectedId?: string; profiles: MotionSyncProfile[]; }
+export interface FacialPresets {
+  version: 1;
+  expressions: RegisteredExpression[];
+  visemes?: VisemeBank;
+  motionSync?: MotionSyncProfiles;
+}
 export interface VisemeWeights {
   /** @minimum 0 @maximum 1 */
   A?: number;

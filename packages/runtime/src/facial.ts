@@ -1,4 +1,5 @@
-import { parseFacialPresets, VISEME_IDS, type FacialRequest, type FacialState, type FacialPresets, type VisemeId } from '@standrig/core/facial';
+import { parseFacialPresets, VISEME_IDS, type FacialRequest, type FacialState, type FacialPresets, type VisemeBank, type VisemeId } from '@standrig/core/facial';
+import { activeVisemeBank } from '@standrig/core/motionSync';
 import { parameterDefinitionsForRig } from '@standrig/core/parameters';
 import type { ParameterValues, RigDocument } from '@standrig/core/types';
 interface Fade { from:number; to:number; start:number; duration:number; }
@@ -7,13 +8,23 @@ const finiteSaturation=(v:number)=>Math.max(-Number.MAX_VALUE,Math.min(Number.MA
 /** Re-evaluates against the live base each frame; never accumulates facial values into it. */
 export class FacialController {
   private presets:FacialPresets;
+  private visemeBank:VisemeBank|undefined;
   private definitions:ReturnType<typeof parameterDefinitionsForRig>;
   private byId:Map<string,ReturnType<typeof parameterDefinitionsForRig>[number]>;
   private expressions=new Map<string,Fade>();
   private visemes=new Map<VisemeId,Fade>();
   private expressionId:string|null=null;
-  constructor(rig:RigDocument){this.presets=rig.facialPresets===undefined?{version:1,expressions:[]}:parseFacialPresets(rig.facialPresets,rig);this.definitions=parameterDefinitionsForRig(rig);this.byId=new Map(this.definitions.map(p=>[p.id,p]));}
+  constructor(rig:RigDocument){
+    this.presets=rig.facialPresets===undefined?{version:1,expressions:[]}:parseFacialPresets(rig.facialPresets,rig);
+    this.visemeBank=activeVisemeBank(this.presets,rig);
+    this.definitions=parameterDefinitionsForRig(rig);this.byId=new Map(this.definitions.map(p=>[p.id,p]));
+  }
   catalog(){return structuredClone(this.presets);}
+  /** For playback clients that discover the currently playable entries through visemes. */
+  playbackCatalog(): FacialPresets {
+    const { motionSync: _motionSync, ...catalog } = this.presets;
+    return structuredClone({ ...catalog, visemes: this.visemeBank });
+  }
   private clock(now:number){if(!Number.isFinite(now))throw Error('facial clock must be finite');}
   private fades(map:Map<string,Fade>,now:number){for(const [id,f] of map)if(f.to===0&&weight(f,now)===0)map.delete(id);}
   snapshot(now:number):FacialState {this.clock(now);this.fades(this.expressions,now);this.fades(this.visemes,now);
@@ -43,7 +54,7 @@ export class FacialController {
         this.transition(this.expressions,new Map([[entry.id,strength]]),now,entry.document.FadeInTime??.2,outExpression);this.expressionId=strength?entry.id:null;
       }
     }else if(request.action==='viseme'||request.action==='visemes'){
-      const bank=this.presets.visemes;if(!bank)throw Error('no viseme bank');
+      const bank=this.visemeBank;if(!bank)throw Error('no viseme bank');
       const values=request.action==='viseme'?{[request.id]:this.strength(request.strength)}:request.weights;
       if(!values||typeof values!=='object'||Array.isArray(values)||Object.keys(values).some(k=>!VISEME_IDS.includes(k as VisemeId)))throw Error('invalid viseme weights');
       const entries=Object.entries(values).map(([id,v])=>{this.strength(v);if(typeof v!=='number')throw Error('invalid viseme weight');if(!bank.presets.some(p=>p.id===id))throw Error('unregistered viseme ID: '+id);return [id as VisemeId,v] as const;});
@@ -52,14 +63,14 @@ export class FacialController {
     }else if(request.action==='clear'){
       if(request.layer!==undefined&&!['all','expression','viseme'].includes(request.layer)||request.immediate!==undefined&&typeof request.immediate!=='boolean')throw Error('invalid facial clear');
       if(request.layer!=='viseme'){this.transition(this.expressions,new Map(),now,0,outExpression,request.immediate);this.expressionId=null;}
-      if(request.layer!=='expression')this.transition(this.visemes,new Map(),now,0,()=>this.presets.visemes?.fadeOutTime??.08,request.immediate);
+      if(request.layer!=='expression')this.transition(this.visemes,new Map(),now,0,()=>this.visemeBank?.fadeOutTime??.08,request.immediate);
     }else throw Error('unknown facial command');
     return this.snapshot(now);
   }
   /** Manual edits release only an overlapping layer. Disjoint tracker/motion input coexists. */
   external(patch:ParameterValues,now:number){const current=this.snapshot(now);
     const expressionTouched=this.presets.expressions.some(e=>this.expressions.has(e.id)&&e.document.Parameters.some(p=>Object.hasOwn(patch,p.Id)));
-    const visemeTouched=this.visemes.size>0&&this.presets.visemes?.presets.some(p=>Object.keys(p.values).some(id=>Object.hasOwn(patch,id)));
+    const visemeTouched=this.visemes.size>0&&this.visemeBank?.presets.some(p=>Object.keys(p.values).some(id=>Object.hasOwn(patch,id)));
     if(expressionTouched){this.expressions.clear();this.expressionId=null;}if(visemeTouched)this.visemes.clear();
   }
   reset(){this.expressions.clear();this.visemes.clear();this.expressionId=null;}
@@ -74,7 +85,7 @@ export class FacialController {
     }}
     for(const [id,c] of channels){const p=this.byId.get(id)!,b=result[id]??p.default;let value=b*c.mult+c.add;if(c.overwriteWeight)value=(c.overwriteWeight<1?value*(1-c.overwriteWeight):0)+c.overwrite/Math.max(1,c.overwriteWeight);result[id]=Math.max(p.min,Math.min(p.max,value));}
     // Visemes own their explicitly registered mouth channels, after the expression layer.
-    const bank=this.presets.visemes;
+    const bank=this.visemeBank;
     if(bank){const weights=state.visemeWeights,total=Object.values(weights).reduce((sum,v)=>sum+(v??0),0),scale=1/Math.max(1,total),sumWeight=Math.min(1,total);
       if(total>0)for(const id of Object.keys(bank.presets[0]?.values??{})){let target=0;for(const p of bank.presets)target+=p.values[id]*(weights[p.id]??0)*scale;result[id]=(result[id]??this.byId.get(id)!.default)*(1-sumWeight)+target;}
     }

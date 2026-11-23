@@ -1,8 +1,8 @@
-import type { FacialPresets, ExpressionDocument, RegisteredExpression, VisemeId } from './facialTypes.js';
+import { VISEME_IDS, type FacialPresets, type ExpressionDocument, type RegisteredExpression, type VisemeId } from './facialTypes.js';
 import type { ParameterDefinition, RigDocument } from './types.js';
 import { parameterDefinitionsForRig } from './parameters.js';
+import { validateMotionSyncProfiles } from './motionSync.js';
 export * from './facialTypes.js';
-export const VISEME_IDS: readonly VisemeId[] = ['A','I','U','E','O','Silence'];
 function object(value: unknown, allowed: readonly string[]): asserts value is Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some(k=>!allowed.includes(k))) throw Error('invalid facial object/unknown field');
 }
@@ -37,7 +37,7 @@ export function exportExpression(expression:RegisteredExpression,rig:RigDocument
   return parseExpression({...doc,Parameters:doc.Parameters.map(p=>({...p,Id:Object.hasOwn(parameterMap,p.Id)?parameterMap[p.Id]:p.Id==='ParamMouthOpen'&&!ids.has('ParamMouthOpenY')?'ParamMouthOpenY':p.Id}))});
 }
 export function parseFacialPresets(value:unknown,rig:RigDocument):FacialPresets {
-  object(value,['version','expressions','visemes']);if(value.version!==1||!Array.isArray(value.expressions)||value.expressions.length>128)throw Error('invalid facial catalog version/count');
+  object(value,['version','expressions','visemes','motionSync']);if(value.version!==1||!Array.isArray(value.expressions)||value.expressions.length>128)throw Error('invalid facial catalog version/count');
   const defs=parameterDefinitionsForRig(rig),definitionMap=new Map(defs.map(p=>[p.id,p])),seen=new Set<string>();
   for(const e of value.expressions){object(e,['id','name','document']);text(e.id,'expression ID');text(e.name,'expression name');if(seen.has(e.id as string))throw Error('duplicate expression ID');seen.add(e.id as string);validateExpression(parseExpression(e.document),defs);}
   if(value.visemes!==undefined){object(value.visemes,['mode','fadeInTime','fadeOutTime','presets']);const bank=value.visemes;
@@ -51,5 +51,6 @@ export function parseFacialPresets(value:unknown,rig:RigDocument):FacialPresets 
       if(preset.id==='Silence'&&bank.mode==='blend-shape'&&entries.some(([,v])=>v!==0))throw Error('blend-shape Silence must have zero weights');
     }
   }
+  if(value.motionSync!==undefined)validateMotionSyncProfiles(value.motionSync,rig);
   return structuredClone(value) as unknown as FacialPresets;
 }

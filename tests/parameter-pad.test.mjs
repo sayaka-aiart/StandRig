@@ -80,3 +80,14 @@ test('the mouth pad gives saved vowel coordinates priority over Cubism Basic gui
   assert.deepEqual(mouthPadPoints([form, { ...open, id: 'ParamMouthOpen' }], undefined, false), []);
   assert.deepEqual(mouthPadPoints([form, { ...open, max: 0.7 }], undefined, true).map(point => point.id), ['I', 'U']);
 });
+
+test('imported mouth-pad points use their selected axes and only the imported shapes', () => {
+  const form = parameter('ParamMouthForm', -1, 1);
+  const open = parameter('ParamMouthOpenY', 0, 1);
+  const vowel = parameter('ParamA', 0, 1);
+  const basic = { mode: 'pose', presets: [{ id: 'E', values: { ParamMouthForm: -0.5, ParamMouthOpenY: 0.79 } }] };
+  assert.deepEqual(mouthPadPoints([form, open], basic, true, true).map(point => point.id), ['E']);
+  const custom = { mode: 'pose', presets: [{ id: 'A', values: { ParamA: 1, ParamMouthOpenY: 0.8 } }] };
+  assert.deepEqual(mouthPadPoints([form, open], custom, true, true), []);
+  assert.deepEqual(mouthPadPoints([vowel, open], custom, true, true)[0].values, custom.presets[0].values);
+});

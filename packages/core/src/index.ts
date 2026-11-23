@@ -1,5 +1,6 @@
 export * from "./types.js";
 export * from './facial.js';
+export { activeVisemeBank, importMotionSync, exportMotionSync } from './motionSync.js';
 export { executeModelingOperation } from "./modelingOps.js";
 export type { ModelingOperation, ModelingOperationAction } from "./modelingOps.js";
 export { parameterDefinitionsForRig, previewParameterValuesForRig } from "./parameters.js";

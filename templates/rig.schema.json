@@ -1590,6 +1590,244 @@
             "presets"
           ],
           "additionalProperties": false
+        },
+        "motionSync": {
+          "type": "object",
+          "properties": {
+            "selectedId": {
+              "type": "string"
+            },
+            "profiles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "setting": {
+                    "type": "object",
+                    "properties": {
+                      "Id": {
+                        "type": "string"
+                      },
+                      "AnalysisType": {
+                        "type": "string",
+                        "const": "CRI"
+                      },
+                      "UseCase": {
+                        "type": "string",
+                        "const": "Mouth"
+                      },
+                      "CubismParameters": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "Id": {
+                              "type": "string"
+                            },
+                            "Name": {
+                              "type": "string"
+                            },
+                            "Min": {
+                              "type": "number"
+                            },
+                            "Max": {
+                              "type": "number"
+                            },
+                            "Damper": {
+                              "type": "number"
+                            },
+                            "Smooth": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "Id",
+                            "Name",
+                            "Min",
+                            "Max",
+                            "Damper",
+                            "Smooth"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "AudioParameters": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "Id": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": "A"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "I"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "U"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "E"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "O"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "Silence"
+                                }
+                              ]
+                            },
+                            "Name": {
+                              "type": "string"
+                            },
+                            "Min": {
+                              "type": "number"
+                            },
+                            "Max": {
+                              "type": "number"
+                            },
+                            "Scale": {
+                              "type": "number"
+                            },
+                            "Enabled": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "Id",
+                            "Name",
+                            "Min",
+                            "Max",
+                            "Scale",
+                            "Enabled"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "Mappings": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "Type": {
+                              "type": "string",
+                              "const": "Shape"
+                            },
+                            "Id": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "const": "A"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "I"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "U"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "E"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "O"
+                                },
+                                {
+                                  "type": "string",
+                                  "const": "Silence"
+                                }
+                              ]
+                            },
+                            "Targets": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "Id": {
+                                    "type": "string"
+                                  },
+                                  "Value": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "Id",
+                                  "Value"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "Type",
+                            "Id",
+                            "Targets"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "PostProcessing": {
+                        "type": "object",
+                        "properties": {
+                          "BlendRatio": {
+                            "type": "number"
+                          },
+                          "Smoothing": {
+                            "type": "number"
+                          },
+                          "SampleRate": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "BlendRatio",
+                          "Smoothing",
+                          "SampleRate"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "Id",
+                      "AnalysisType",
+                      "UseCase",
+                      "CubismParameters",
+                      "AudioParameters",
+                      "Mappings",
+                      "PostProcessing"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "setting"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "profiles"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

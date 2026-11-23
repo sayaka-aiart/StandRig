@@ -26,13 +26,13 @@ function isMouthPad(axes: readonly string[]): boolean {
     (axes.includes('ParamMouthOpenY') || axes.includes('ParamMouthOpen'));
 }
 
-export function mouthPadPoints(axes: [ParameterDefinition, ParameterDefinition], bank: VisemeBank | undefined, cubism: boolean) {
+export function mouthPadPoints(axes: [ParameterDefinition, ParameterDefinition], bank: VisemeBank | undefined, cubism: boolean, imported = false) {
   const ids = axes.map(axis => axis.id);
-  if (!isMouthPad(ids) || bank?.mode === 'blend-shape') return [];
+  if ((!imported && !isMouthPad(ids)) || bank?.mode === 'blend-shape') return [];
   const points: Array<{ id: VisemeId; values: ParameterValues; registered: boolean }> = [];
   for (const id of Object.keys(visemeLabels) as VisemeId[]) {
     const saved = bank?.presets.find(preset => preset.id === id);
-    const values = saved?.values ?? (cubism ? cubismBasic[id] : undefined);
+    const values = saved?.values ?? (cubism && !imported ? cubismBasic[id] : undefined);
     if (!values || !axes.every(axis => {
       const value = values[axis.id];
       return typeof value === 'number' && value >= axis.min && value <= axis.max;
@@ -94,7 +94,7 @@ export function createParameterControls(container: HTMLElement, host: {
   let definitions: ParameterDefinition[] = [];
   let pads: ParameterPad[] = [];
   let pitchUp: 1 | -1 = -1;
-  let mouth: { axes: [string, string]; visemes?: VisemeBank } | undefined;
+  let mouth: { axes: [string, string]; visemes?: VisemeBank; imported?: boolean } | undefined;
   let storageKey = '';
   const sliders: Array<{ parameter: ParameterDefinition; input: HTMLInputElement; output: HTMLOutputElement }> = [];
   const padViews: Array<{ pad: ParameterPad; marker: HTMLElement; surface: HTMLElement }> = [];
@@ -156,9 +156,22 @@ export function createParameterControls(container: HTMLElement, host: {
   }
   function addMouthLabels(surface: HTMLElement, axes: [ParameterDefinition, ParameterDefinition]) {
     const [x, y] = axes;
-    const points = mouthPadPoints(axes, mouth?.visemes, pitchUp === 1);
+    const points = mouthPadPoints(axes, mouth?.visemes, pitchUp === 1, mouth?.imported);
     let selected: VisemeId | undefined;
     let selecting = false;
+    function visemeButton(id: VisemeId, preview: () => Promise<void>) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = visemeLabels[id];
+      button.onclick = async () => {
+        if (selecting) return;
+        selecting = true;
+        selected = id;
+        try { await preview(); }
+        finally { selecting = false; }
+      };
+      return button;
+    }
     const groups = new Map<string, HTMLElement>();
     for (const point of points) {
       const left = ratio(x, point.values[x.id]) * 100;
@@ -182,26 +195,25 @@ export function createParameterControls(container: HTMLElement, host: {
         groups.set(key, group);
         surface.append(group);
       }
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = visemeLabels[point.id];
+      const button = visemeButton(point.id, () => point.registered
+        ? host.previewViseme(point.id) : host.previewInitialViseme(point.values));
       button.dataset.registered = String(point.registered);
       button.setAttribute('aria-label', visemeLabels[point.id] + (point.registered ? '（登録済み）' : '（Cubism基本の目安）'));
-      button.onclick = async () => {
-        if (selecting) return;
-        selecting = true;
-        selected = point.id;
-        try {
-          if (point.registered) await host.previewViseme(point.id);
-          else await host.previewInitialViseme(point.values);
-        } finally {
-          selecting = false;
-        }
-      };
       group.append(button);
     }
     const footer = document.createElement('div');
     footer.className = 'pad-viseme-actions';
+    if (mouth?.imported) {
+      const unplotted = mouth.visemes?.presets.filter(preset => !points.some(point => point.id === preset.id)) ?? [];
+      if (unplotted.length) {
+        const label = document.createElement('p');
+        label.textContent = '別の軸を使う口形';
+        const buttons = document.createElement('div');
+        buttons.className = 'facial-actions';
+        for (const preset of unplotted) buttons.append(visemeButton(preset.id, () => host.previewViseme(preset.id)));
+        footer.append(label, buttons);
+      }
+    }
     if (points.some(point => !point.registered)) {
       const legend = document.createElement('p');
       legend.textContent = '点線はCubism基本の目安です。';
@@ -209,7 +221,7 @@ export function createParameterControls(container: HTMLElement, host: {
     }
     const edit = document.createElement('button');
     edit.type = 'button';
-    edit.textContent = '母音を登録／編集';
+    edit.textContent = mouth?.imported ? '手動登録の母音を編集' : '母音を登録／編集';
     edit.onclick = () => { if (!selecting) host.editViseme(selected); };
     footer.append(edit);
     return footer;
@@ -238,7 +250,11 @@ export function createParameterControls(container: HTMLElement, host: {
     const y = definition(pad.axes[1]);
     vertical.style.top = verticalPadFraction(y, ratio(y, y.default), pitchUp) * 100 + '%';
     surface.append(horizontal, vertical, marker);
-    const mouthActions = mouth && isMouthPad(pad.axes) ? addMouthLabels(surface, [x, y]) : undefined;
+    const mappedAxes = mouth?.imported ? mouth.visemes?.presets[0]?.values : undefined;
+    const displaysMouth = mouth?.imported
+      ? isMouthPad(pad.parameters) || mappedAxes && pad.axes.every(id => Object.hasOwn(mappedAxes, id))
+      : isMouthPad(pad.axes);
+    const mouthActions = mouth && displaysMouth ? addMouthLabels(surface, [x, y]) : undefined;
     let pointer: number | undefined;
     function move(event: PointerEvent) {
       const bounds = surface.getBoundingClientRect();

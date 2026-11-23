@@ -3,6 +3,7 @@ import { createParameterControls } from './parameterControls';
 import { playbackEvents } from './playbackEvents.js';
 import { jsonRequest } from '@standrig/core/httpTransport';
 import { packModelBundle } from '@standrig/core/bundle';
+import { activeVisemeBank } from '@standrig/core/motionSync';
 import { createFacialPanel } from './facialPanel';
 import { parseModelFile } from './modelFile';
 import './styles.css';
@@ -150,7 +151,8 @@ const parameterControls = createParameterControls(document.querySelector<HTMLEle
 function parameters() {
   parameterControls.load(parameterDefinitionsForRig(rig), rig.name, facePitchUpSign(rig), rig.assets.length ? {
     axes: ['ParamMouthForm', mouthOpenParameterForRig(rig)],
-    visemes: rig.facialPresets?.visemes
+    visemes: activeVisemeBank(rig.facialPresets, rig),
+    imported: !!rig.facialPresets?.motionSync?.selectedId
   } : undefined);
 }
 function applyState() {
